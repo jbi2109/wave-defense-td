@@ -91,6 +91,13 @@ func _setup_map_visuals():
 
 	for cell in path_cells:
 		dirt_layer.set_cell(cell, 0, Vector2i(0, 0))
+		
+	# Update Flow Field Obstacles
+	# The grid size is 80x50. We need to mark everything NOT in path_cells as an obstacle.
+	for x in range(0, 80):
+		for y in range(0, 50):
+			var is_path = path_cells.has(Vector2i(x, y))
+			flow_field.set_obstacle(Vector2i(x, y), not is_path)
 
 func _on_restart_button_pressed():
 	get_tree().reload_current_scene()
@@ -127,6 +134,7 @@ func _start_next_wave():
 	print("--- WAVE ", current_wave, " STARTED! ---")
 
 func _spawn_single_enemy():
-	var offset = Vector2(randf_range(-16, 16), randf_range(-16, 16))
+	# Reduce spawn jitter so they stay strictly within the path
+	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	enemy_manager.spawn_enemy(spawn_point + offset)
 	enemies_spawned += 1
