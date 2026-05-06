@@ -18,10 +18,18 @@ func _ready():
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_2D
 	multimesh.mesh = QuadMesh.new()
-	multimesh.mesh.size = Vector2(32, 32)
+	multimesh.mesh.size = Vector2(24, 24) # Squarish, smaller footprint
 	multimesh.instance_count = max_enemies
 	
-	texture = load("res://assets/enemies/dino1.png")
+	var raw_tex = load("res://assets/enemies/dino1.png")
+	
+	# If it's a spritesheet (e.g. 4 frames wide), we need an AtlasTexture to just show 1 frame
+	var atlas = AtlasTexture.new()
+	atlas.atlas = raw_tex
+	# Assuming it's a 4-frame horizontal sheet, grab the first frame. 
+	# If raw_tex is e.g. 96x24, frame is 24x24. Let's guess 24x24.
+	atlas.region = Rect2(0, 0, raw_tex.get_width() / 4.0, raw_tex.get_height())
+	texture = atlas
 	
 	positions.resize(max_enemies)
 	velocities.resize(max_enemies)
@@ -64,6 +72,31 @@ func _update_spatial_grid():
 func _update_enemy_batch(i: int, delta: float):
 	var pos = positions[i]
 	var dir = flow_field.get_direction(pos)
+	
+	# Separation logic (Flocking/Boids)
+	var separation = Vector2.ZERO
+	var neighbor_count = 0
+	
+	# Check immediate spatial grid cell and neighbors
+	var grid_pos = Vector2i(pos / float(grid_cell_size))
+	for x in range(grid_pos.x - 1, grid_pos.x + 2):
+		for y in range(grid_pos.y - 1, grid_pos.y + 2):
+			var cell = Vector2i(x, y)
+			if spatial_grid.has(cell):
+				for other_idx in spatial_grid[cell]:
+					if other_idx != i:
+						var other_pos = positions[other_idx]
+						var dist_sq = pos.distance_squared_to(other_pos)
+						if dist_sq < 900: # 30px separation radius
+							var push_dir = (pos - other_pos).normalized()
+							# Closer = stronger push
+							separation += push_dir * (1.0 - (dist_sq / 900.0))
+							neighbor_count += 1
+	
+	if neighbor_count > 0:
+		separation = (separation / float(neighbor_count)).normalized() * 1.5
+		dir = (dir + separation).normalized()
+	
 	velocities[i] = velocities[i].lerp(dir * enemy_speed, 4.0 * delta)
 	positions[i] += velocities[i] * delta
 
