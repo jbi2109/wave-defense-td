@@ -17,12 +17,19 @@ var wave_timer: float = 2.0 # Start first wave quickly
 
 var is_spawning: bool = false
 
+var is_game_over: bool = false
+
 func _ready():
     # Wait for nodes to be ready
     await get_tree().process_frame
     flow_field.generate_field(nexus.global_position)
+    
+    GlobalEvents.nexus_destroyed.connect(_on_nexus_destroyed)
+    $HUD/Overlay/NextWaveButton.pressed.connect(_on_next_wave_button_pressed)
 
 func _process(delta):
+    if is_game_over: return
+    
     if is_spawning:
         spawn_timer -= delta
         if spawn_timer <= 0:
@@ -31,12 +38,21 @@ func _process(delta):
             
         if enemies_spawned >= enemies_to_spawn:
             is_spawning = false
-    else:
-        # Check if wave is clear
-        if enemy_manager.active_count == 0:
-            wave_timer -= delta
-            if wave_timer <= 0:
-                _start_next_wave()
+            $HUD/Overlay/NextWaveButton.visible = true
+    elif enemy_manager.active_count == 0 and not is_game_over:
+        $HUD/Overlay/NextWaveButton.visible = true
+
+func _on_next_wave_button_pressed():
+    if not is_spawning and enemy_manager.active_count == 0:
+        _start_next_wave()
+        $HUD/Overlay/NextWaveButton.visible = false
+
+func _on_nexus_destroyed():
+    is_game_over = true
+    is_spawning = false
+    $HUD/Overlay/GameOverLabel.visible = true
+    $HUD/Overlay/NextWaveButton.visible = false
+    print("GAME OVER")
 
 func _start_next_wave():
     current_wave += 1
@@ -44,7 +60,7 @@ func _start_next_wave():
     enemies_to_spawn = current_wave * 50 
     enemies_spawned = 0
     is_spawning = true
-    wave_timer = time_between_waves
+    spawn_timer = 0 # Start spawning immediately
     print("--- WAVE ", current_wave, " STARTED! Spawning ", enemies_to_spawn, " enemies ---")
 
 func _spawn_single_enemy():

@@ -34,3 +34,36 @@ position = Vector2(400, 300)
 
 [node name="Turret2" parent="." unique_id=1139366454 instance=ExtResource("4_o6xl0")]
 position = Vector2(750, 400)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=196950014]
+
+[node name="Overlay" type="Control" parent="HUD" unique_id=322969562]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="NextWaveButton" type="Button" parent="HUD/Overlay" unique_id=81308966]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -81.0
+offset_right = 67.0
+offset_bottom = -50.0
+text = "Start Next Wave"
+
+[node name="GameOverLabel" type="Label" parent="HUD/Overlay" unique_id=1382045013]
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -126.5
+offset_top = -11.5
+offset_right = 126.5
+offset_bottom = 11.5
+text = "GAME OVER - NEXUS DESTROYED"
