@@ -26,6 +26,10 @@ func _ready():
     
     GlobalEvents.nexus_destroyed.connect(_on_nexus_destroyed)
     $HUD/Overlay/NextWaveButton.pressed.connect(_on_next_wave_button_pressed)
+    $HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(_on_restart_button_pressed)
+
+func _on_restart_button_pressed():
+    get_tree().reload_current_scene()
 
 func _process(delta):
     if is_game_over: return
@@ -50,17 +54,17 @@ func _on_next_wave_button_pressed():
 func _on_nexus_destroyed():
     is_game_over = true
     is_spawning = false
-    $HUD/Overlay/GameOverLabel.visible = true
+    $HUD/Overlay/GameOverContainer.visible = true
     $HUD/Overlay/NextWaveButton.visible = false
     print("GAME OVER")
 
 func _start_next_wave():
     current_wave += 1
-    # Scale difficulty: Wave 1 = 50, Wave 2 = 100, Wave 3 = 150...
-    enemies_to_spawn = current_wave * 50 
+    # Scale difficulty: Wave 1 = 150, Wave 2 = 200...
+    enemies_to_spawn = 100 + (current_wave * 50) 
     enemies_spawned = 0
     is_spawning = true
-    spawn_timer = 0 # Start spawning immediately
+    spawn_timer = 0
     print("--- WAVE ", current_wave, " STARTED! Spawning ", enemies_to_spawn, " enemies ---")
 
 func _spawn_single_enemy():
