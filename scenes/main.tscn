@@ -55,15 +55,19 @@ offset_right = 67.0
 offset_bottom = -50.0
 text = "Start Next Wave"
 
-[node name="GameOverLabel" type="Label" parent="HUD/Overlay" unique_id=1382045013]
+[node name="GameOverContainer" type="VBoxContainer" parent="HUD/Overlay" unique_id=1680384709]
 visible = false
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -126.5
-offset_top = -11.5
-offset_right = 126.5
-offset_bottom = 11.5
+
+[node name="GameOverLabel" type="Label" parent="HUD/Overlay/GameOverContainer" unique_id=1531036610]
+layout_mode = 2
 text = "GAME OVER - NEXUS DESTROYED"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="HUD/Overlay/GameOverContainer" unique_id=1408135083]
+layout_mode = 2
+text = "Restart Game"
