@@ -1,3 +1,8 @@
 [gd_scene format=3 uid="uid://dugwa3g8iq6sq"]
 
+[ext_resource type="Script" uid="uid://csfgagdsq0p0b" path="res://scripts/nexus.gd" id="1_cg0o0"]
+
 [node name="Nexus" type="StaticBody2D" unique_id=1081137368]
+script = ExtResource("1_cg0o0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1018545069]
