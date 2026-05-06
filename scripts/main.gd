@@ -52,6 +52,8 @@ func _setup_map_visuals():
 		dirt_grad.add_point(0, Color("#5a3e2b"))
 		dirt_grad.add_point(1, Color("#8b6b4f"))
 		dirt_tex.color_ramp = dirt_grad
+		
+		var grass_source = TileSetAtlasSource.new()
 		grass_source.texture = grass_tex
 		grass_source.texture_region_size = Vector2i(32, 32)
 		grass_source.create_tile(Vector2i(0, 0))
