@@ -1,6 +1,6 @@
 extends Sprite2D
 
-@export var range: float = 300.0
+@export var attack_range: float = 300.0
 @export var fire_rate: float = 0.2
 @onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
 
@@ -21,9 +21,12 @@ func _process(delta):
 
 func _find_closest_enemy() -> int:
     var closest_idx = -1
-    var min_dist_sq = range * range
+    var min_dist_sq = attack_range * attack_range
     
-    for i in range(enemy_manager.active_count):
+    # Use spatial partitioning
+    var nearby_enemies = enemy_manager.get_nearby_enemies(global_position, attack_range)
+    
+    for i in nearby_enemies:
         var dist_sq = global_position.distance_squared_to(enemy_manager.positions[i])
         if dist_sq < min_dist_sq:
             min_dist_sq = dist_sq
