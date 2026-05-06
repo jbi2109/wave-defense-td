@@ -3,7 +3,7 @@ class_name EnemyManager
 
 @export var max_enemies: int = 2000
 @export var enemy_speed: float = 100.0
-@export var flow_field: FlowFieldManager
+@onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 
 var active_count: int = 0
 var positions = PackedVector2Array()

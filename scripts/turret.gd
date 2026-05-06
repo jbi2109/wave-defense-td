@@ -2,7 +2,7 @@ extends Sprite2D
 
 @export var range: float = 300.0
 @export var fire_rate: float = 0.2
-@export var enemy_manager: EnemyManager
+@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
 
 var fire_timer: float = 0.0
 
