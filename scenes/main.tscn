@@ -71,3 +71,40 @@ horizontal_alignment = 1
 [node name="RestartButton" type="Button" parent="HUD/Overlay/GameOverContainer" unique_id=1408135083]
 layout_mode = 2
 text = "Restart Game"
+
+[node name="HUD2" type="CanvasLayer" parent="." unique_id=1464886009]
+
+[node name="Overlay" type="Control" parent="HUD2" unique_id=559958995]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="NextWaveButton" type="Button" parent="HUD2/Overlay" unique_id=1487306539]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -81.0
+offset_right = 67.0
+offset_bottom = -50.0
+text = "Start Next Wave"
+
+[node name="GameOverContainer" type="VBoxContainer" parent="HUD2/Overlay" unique_id=709156236]
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+
+[node name="GameOverLabel" type="Label" parent="HUD2/Overlay/GameOverContainer" unique_id=805447626]
+layout_mode = 2
+text = "GAME OVER - NEXUS DESTROYED"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="HUD2/Overlay/GameOverContainer" unique_id=10606367]
+layout_mode = 2
+text = "Restart Game"
