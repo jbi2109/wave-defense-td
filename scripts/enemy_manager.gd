@@ -30,6 +30,7 @@ func _ready():
 	# If raw_tex is e.g. 96x24, frame is 24x24. Let's guess 24x24.
 	atlas.region = Rect2(0, 0, raw_tex.get_width() / 4.0, raw_tex.get_height())
 	texture = atlas
+	modulate = Color("#55ff55") # Make them "little green men"
 	
 	positions.resize(max_enemies)
 	velocities.resize(max_enemies)
@@ -73,12 +74,29 @@ func _update_enemy_batch(i: int, delta: float):
 	var pos = positions[i]
 	var dir = flow_field.get_direction(pos)
 	
+	# To prevent corner clipping, we add a physics-based raycast or just inflate the obstacle size slightly during pathing.
+	# The simplest fix for a grid-based vector field is to ensure the steering vector pushes them slightly away from walls.
+	
 	# Separation logic (Flocking/Boids)
 	var separation = Vector2.ZERO
 	var neighbor_count = 0
 	
-	# Check immediate spatial grid cell and neighbors
+	# Wall avoidance logic
+	var wall_push = Vector2.ZERO
 	var grid_pos = Vector2i(pos / float(grid_cell_size))
+	var tile_pos = Vector2i(pos / 32.0)
+	
+	# Check adjacent tiles for walls
+	var offsets = [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1), Vector2i(1,1), Vector2i(-1,-1), Vector2i(1,-1), Vector2i(-1,1)]
+	for off in offsets:
+		var check_pos = tile_pos + off
+		if check_pos.x >= 0 and check_pos.x < flow_field.grid_size.x and check_pos.y >= 0 and check_pos.y < flow_field.grid_size.y:
+			if flow_field.obstacle_field[check_pos.x][check_pos.y]:
+				var wall_center = Vector2(check_pos) * 32.0 + Vector2(16, 16)
+				var dist_sq_wall = pos.distance_squared_to(wall_center)
+				if dist_sq_wall < 1024: # 32px radius
+					wall_push += (pos - wall_center).normalized() * (1.0 - (dist_sq_wall / 1024.0))
+	
 	for x in range(grid_pos.x - 1, grid_pos.x + 2):
 		for y in range(grid_pos.y - 1, grid_pos.y + 2):
 			var cell = Vector2i(x, y)
@@ -89,13 +107,14 @@ func _update_enemy_batch(i: int, delta: float):
 						var dist_sq = pos.distance_squared_to(other_pos)
 						if dist_sq < 900: # 30px separation radius
 							var push_dir = (pos - other_pos).normalized()
-							# Closer = stronger push
 							separation += push_dir * (1.0 - (dist_sq / 900.0))
 							neighbor_count += 1
 	
 	if neighbor_count > 0:
 		separation = (separation / float(neighbor_count)).normalized() * 1.5
-		dir = (dir + separation).normalized()
+		
+	# Combine forces: Flow Field + Wall Avoidance + Enemy Separation
+	dir = (dir + separation + wall_push * 2.0).normalized()
 	
 	velocities[i] = velocities[i].lerp(dir * enemy_speed, 4.0 * delta)
 	positions[i] += velocities[i] * delta

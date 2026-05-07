@@ -56,8 +56,8 @@ func _setup_map_visuals():
 	dirt_layer.clear()
 	var path_cells = []
 	
-	# Start (Left) to Top-Middle
-	for x in range(0, 20):
+	# Start (Left edge off-screen) to Top-Middle
+	for x in range(-5, 20):
 		for y in range(6, 12): path_cells.append(Vector2i(x, y))
 	
 	# Middle-Top Horizontal
@@ -88,7 +88,7 @@ func _setup_map_visuals():
 	for y in range(33, 36):
 		for x in range(30, 36): path_cells.append(Vector2i(x, y))
 		
-	# Bottom Right Exit
+	# Bottom Right Exit (Extend off-screen)
 	for x in range(36, 65):
 		for y in range(20, 26): path_cells.append(Vector2i(x, y))
 		
@@ -100,8 +100,8 @@ func _setup_map_visuals():
 		dirt_layer.set_cell(cell, 0, Vector2i(0, 0))
 		
 	# Update Flow Field Obstacles based on Path
-	for x in range(0, 80):
-		for y in range(0, 50):
+	for x in range(-5, 80):
+		for y in range(-5, 50):
 			var is_path = path_cells.has(Vector2i(x, y))
 			flow_field.set_obstacle(Vector2i(x, y), not is_path)
 			
@@ -149,7 +149,7 @@ func _start_next_wave():
 	print("--- WAVE ", current_wave, " STARTED! ---")
 
 func _spawn_single_enemy():
-	# Small random jitter to let swarm build up
-	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
+	# Tiny jitter so they are guaranteed to spawn exactly on the path
+	var offset = Vector2(randf_range(-2, 2), randf_range(-2, 2))
 	enemy_manager.spawn_enemy(spawn_point + offset)
 	enemies_spawned += 1
