@@ -14,7 +14,6 @@ script = ExtResource("1_tbgi4")
 [node name="GrassLayer" type="TileMapLayer" parent="."]
 
 [node name="DirtLayer" type="TileMapLayer" parent="."]
-script = ExtResource("dual_script")
 
 [node name="FlowFieldManager" type="Node2D" parent="."]
 script = ExtResource("1_jyhfs")

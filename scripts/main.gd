@@ -28,9 +28,9 @@ func _ready():
 	$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(_on_restart_button_pressed)
 
 func _setup_map_visuals():
-	# 1. SETUP TILEMAPDUAL TILESET (Visuals)
+	# 1. SETUP DUAL-GRID VISUAL TILESET (DirtLayer)
 	var ts = TileSet.new()
-	ts.tile_size = Vector2i(32, 32)
+	ts.tile_size = Vector2i(16, 16) # Dual grid is exactly half the logical 32x32 size
 	
 	ts.add_terrain_set(0)
 	ts.set_terrain_set_mode(0, TileSet.TERRAIN_MODE_MATCH_CORNERS)
@@ -40,9 +40,8 @@ func _setup_map_visuals():
 	var dual_tex = load("res://assets/shader/shader-tileset.png")
 	var source = TileSetAtlasSource.new()
 	source.texture = dual_tex
-	source.texture_region_size = Vector2i(16, 16) # Dual grid uses half-size tiles
+	source.texture_region_size = Vector2i(16, 16)
 	
-	# The 16 preset tiles required by TileMapDual topology SQUARE Standard
 	var preset_tiles = [
 		Vector2i(0, 3), Vector2i(3, 3), Vector2i(0, 2), Vector2i(1, 2),
 		Vector2i(0, 0), Vector2i(3, 2), Vector2i(2, 3), Vector2i(3, 1),
@@ -55,29 +54,28 @@ func _setup_map_visuals():
 		source.create_tile(atlas_pos)
 		var td = source.get_tile_data(atlas_pos, 0)
 		td.terrain_set = 0
-		td.terrain = -1
 		
-		# Set peering bits (0 is bg, 1 is fg)
-		var tl = 1 if (i & 1) else 0
-		var tr = 1 if (i & 2) else 0
-		var bl = 1 if (i & 4) else 0
-		var br = 1 if (i & 8) else 0
+		if i == 0: td.terrain = 0
+		elif i == 15: td.terrain = 1
+		else: td.terrain = -1
 		
-		# In Match Corners and Sides, we set the corners
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_LEFT_CORNER, tl)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_RIGHT_CORNER, tr)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, bl)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, br)
+		# In Match Corners, 0 is bg, 1 is fg
+		var t_l = 1 if (i & 1) else 0
+		var t_r = 1 if (i & 2) else 0
+		var b_l = 1 if (i & 4) else 0
+		var b_r = 1 if (i & 8) else 0
+		
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_LEFT_CORNER, t_l)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_RIGHT_CORNER, t_r)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, b_l)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, b_r)
 
 	ts.add_source(source, 0)
-	
 	dirt_layer.tile_set = ts
+	# The magic offset that makes dual-grid rounding work perfectly
+	dirt_layer.position = Vector2(-8, -8) 
 	
-	# Tell TileMapDual to manually initialize
-	if dirt_layer.has_method("_changed"):
-		dirt_layer._changed()
-		
-	# 2. SETUP PHYSICS TILESET (Invisible layer just for collisions)
+	# 2. SETUP PHYSICS TILESET (Invisible GrassLayer just for collisions)
 	var physics_ts = TileSet.new()
 	physics_ts.tile_size = Vector2i(32, 32)
 	physics_ts.add_physics_layer(0)
@@ -94,18 +92,9 @@ func _setup_map_visuals():
 	physics_ts.add_source(phys_source, 0)
 	
 	grass_layer.tile_set = physics_ts
-	grass_layer.visible = false # Hide it so we only see TileMapDual
+	grass_layer.visible = false # Hide it so we only see the beautiful DirtLayer
 	
-	# 3. DRAW MAP
-	# Fill EVERYTHING with Grass (Walls)
-	grass_layer.clear()
-	for x in range(-5, 65):
-		for y in range(-5, 40):
-			grass_layer.set_cell(Vector2i(x, y), 0, Vector2i(0, 0))
-			if dirt_layer.has_method("draw_cell"):
-				dirt_layer.draw_cell(Vector2i(x, y), 0)
-	
-	# Draw Complex Dirt Path
+	# 3. DEFINE LOGICAL MAP (32x32 cells)
 	var path_cells = []
 	for x in range(-5, 22):
 		for y in range(4, 9): path_cells.append(Vector2i(x, y))
@@ -126,16 +115,41 @@ func _setup_map_visuals():
 	for x in range(50, 65):
 		for y in range(20, 25): path_cells.append(Vector2i(x, y))
 
-	for cell in path_cells:
-		grass_layer.set_cell(cell, -1, Vector2i(-1, -1)) # Remove collision
-		if dirt_layer.has_method("draw_cell"):
-			dirt_layer.draw_cell(cell, 1) # Draw Dirt
-		
-	# Update Flow Field Obstacles based on Path
+	# 4. DRAW MAPS
+	grass_layer.clear()
+	dirt_layer.clear()
+	
+	var dual_path_cells = []
+	var dual_grass_cells = []
+	
+	for x in range(-5, 65):
+		for y in range(-5, 40):
+			var logic_cell = Vector2i(x, y)
+			var is_path = path_cells.has(logic_cell)
+			
+			# Map 1 logical 32x32 cell to 4 physical 16x16 dual-grid cells
+			var cx = x * 2
+			var cy = y * 2
+			var q1 = Vector2i(cx, cy)
+			var q2 = Vector2i(cx+1, cy)
+			var q3 = Vector2i(cx, cy+1)
+			var q4 = Vector2i(cx+1, cy+1)
+			
+			if is_path:
+				dual_path_cells.append_array([q1, q2, q3, q4])
+			else:
+				# It's a wall. Set collision in GrassLayer.
+				grass_layer.set_cell(logic_cell, 0, Vector2i(0, 0))
+				dual_grass_cells.append_array([q1, q2, q3, q4])
+				
+	# Tell Godot to beautifully autotile the 16x16 dual grid!
+	dirt_layer.set_cells_terrain_connect(dual_grass_cells, 0, 0, false)
+	dirt_layer.set_cells_terrain_connect(dual_path_cells, 0, 1, false)
+
+	# 5. UPDATE FLOW FIELD
 	for x in range(-5, 80):
 		for y in range(-5, 50):
-			var is_path = path_cells.has(Vector2i(x, y))
-			flow_field.set_obstacle(Vector2i(x, y), not is_path)
+			flow_field.set_obstacle(Vector2i(x, y), not path_cells.has(Vector2i(x, y)))
 			
 	nexus.global_position = Vector2(1900, 720)
 	var t1 = get_node_or_null("Turret1")
