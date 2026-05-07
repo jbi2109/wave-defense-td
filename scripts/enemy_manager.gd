@@ -18,19 +18,24 @@ func _ready():
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_2D
 	multimesh.mesh = QuadMesh.new()
-	multimesh.mesh.size = Vector2(24, 24) # Squarish, smaller footprint
+	multimesh.mesh.size = Vector2(24, 24)
 	multimesh.instance_count = max_enemies
 	
+	# Load the raw dino image and crop it to the first frame
 	var raw_tex = load("res://assets/enemies/dino1.png")
+	var raw_img = raw_tex.get_image()
+	var frame_width = raw_img.get_width() / 4
+	var frame_img = raw_img.get_region(Rect2i(0, 0, frame_width, raw_img.get_height()))
 	
-	# If it's a spritesheet (e.g. 4 frames wide), we need an AtlasTexture to just show 1 frame
-	var atlas = AtlasTexture.new()
-	atlas.atlas = raw_tex
-	# Assuming it's a 4-frame horizontal sheet, grab the first frame. 
-	# If raw_tex is e.g. 96x24, frame is 24x24. Let's guess 24x24.
-	atlas.region = Rect2(0, 0, raw_tex.get_width() / 4.0, raw_tex.get_height())
-	texture = atlas
-	modulate = Color("#55ff55") # Make them "little green men"
+	# Tint them green to make "little green men"
+	var green_tint = Color("#55ff55")
+	for x in range(frame_img.get_width()):
+		for y in range(frame_img.get_height()):
+			var c = frame_img.get_pixel(x, y)
+			if c.a > 0.1:
+				frame_img.set_pixel(x, y, c * green_tint)
+				
+	texture = ImageTexture.create_from_image(frame_img)
 	
 	positions.resize(max_enemies)
 	velocities.resize(max_enemies)
@@ -73,9 +78,6 @@ func _update_spatial_grid():
 func _update_enemy_batch(i: int, delta: float):
 	var pos = positions[i]
 	var dir = flow_field.get_direction(pos)
-	
-	# To prevent corner clipping, we add a physics-based raycast or just inflate the obstacle size slightly during pathing.
-	# The simplest fix for a grid-based vector field is to ensure the steering vector pushes them slightly away from walls.
 	
 	# Separation logic (Flocking/Boids)
 	var separation = Vector2.ZERO

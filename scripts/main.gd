@@ -6,7 +6,7 @@ extends Node2D
 @onready var grass_layer = $GrassLayer
 @onready var dirt_layer = $DirtLayer
 
-var spawn_point: Vector2 = Vector2(0, 272) # Left side entry
+var spawn_point: Vector2 = Vector2(0, 176) # Left side entry
 
 var current_wave: int = 0
 var enemies_to_spawn: int = 0
@@ -27,11 +27,12 @@ func _ready():
 	$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(_on_restart_button_pressed)
 
 func _setup_map_visuals():
-	# Use Solid Colors for visibility
+	# Grass Layer (Background/Walls)
 	grass_layer.tile_set = TileSet.new()
 	grass_layer.tile_set.tile_size = Vector2i(32, 32)
 	grass_layer.modulate = Color("#3a6b32") # Dark Green (Walls)
 	
+	# Dirt Layer (Path)
 	dirt_layer.tile_set = TileSet.new()
 	dirt_layer.tile_set.tile_size = Vector2i(32, 32)
 	dirt_layer.modulate = Color("#8b6b4f") # Dirt Brown (Path)
@@ -52,49 +53,45 @@ func _setup_map_visuals():
 		for y in range(-5, 40):
 			grass_layer.set_cell(Vector2i(x, y), 0, Vector2i(0, 0))
 	
-	# 2. Draw Complex Dirt Path based on new reference image
+	# 2. Draw Complex Dirt Path exactly like "Sir, We Have an Orc Problem"
 	dirt_layer.clear()
 	var path_cells = []
 	
-	# Start (Left edge off-screen) to Top-Middle
-	for x in range(-5, 20):
-		for y in range(6, 12): path_cells.append(Vector2i(x, y))
-	
-	# Middle-Top Horizontal
-	for x in range(20, 30):
-		for y in range(4, 10): path_cells.append(Vector2i(x, y))
-		
-	# Top Horizontal to Right
-	for x in range(30, 65):
+	# Start Top-Left, moving Right
+	for x in range(-5, 22):
 		for y in range(4, 9): path_cells.append(Vector2i(x, y))
-		
-	# Right Drop Down
-	for y in range(9, 20):
-		for x in range(20, 26): path_cells.append(Vector2i(x, y))
 	
-	# Middle Loop Back Left
-	for x in range(12, 26):
-		for y in range(15, 21): path_cells.append(Vector2i(x, y))
+	# Drop Down
+	for y in range(9, 22):
+		for x in range(17, 22): path_cells.append(Vector2i(x, y))
 		
-	# Left Drop Down
-	for y in range(21, 28):
-		for x in range(12, 18): path_cells.append(Vector2i(x, y))
+	# Loop Back Left
+	for x in range(12, 17):
+		for y in range(17, 22): path_cells.append(Vector2i(x, y))
 		
-	# Bottom Loop Right
-	for x in range(12, 35):
-		for y in range(27, 33): path_cells.append(Vector2i(x, y))
+	# Drop Down again
+	for y in range(22, 28):
+		for x in range(12, 17): path_cells.append(Vector2i(x, y))
 		
-	# Dip down
-	for y in range(33, 36):
-		for x in range(30, 36): path_cells.append(Vector2i(x, y))
+	# Move Right across bottom
+	for x in range(12, 38):
+		for y in range(28, 33): path_cells.append(Vector2i(x, y))
 		
-	# Bottom Right Exit (Extend off-screen)
-	for x in range(36, 65):
-		for y in range(20, 26): path_cells.append(Vector2i(x, y))
+	# Move UP
+	for y in range(12, 28):
+		for x in range(33, 38): path_cells.append(Vector2i(x, y))
 		
-	# Connecting piece
-	for y in range(26, 36):
-		for x in range(36, 42): path_cells.append(Vector2i(x, y))
+	# Move Right across top
+	for x in range(38, 50):
+		for y in range(12, 17): path_cells.append(Vector2i(x, y))
+		
+	# Drop Down
+	for y in range(17, 25):
+		for x in range(45, 50): path_cells.append(Vector2i(x, y))
+		
+	# Move Right to Nexus
+	for x in range(50, 65):
+		for y in range(20, 25): path_cells.append(Vector2i(x, y))
 
 	for cell in path_cells:
 		dirt_layer.set_cell(cell, 0, Vector2i(0, 0))
@@ -106,13 +103,13 @@ func _setup_map_visuals():
 			flow_field.set_obstacle(Vector2i(x, y), not is_path)
 			
 	# Move Nexus to End of Path (Right side)
-	nexus.global_position = Vector2(1900, 750)
+	nexus.global_position = Vector2(1900, 720)
 	
-	# Position Turrets in Grass pockets
+	# Position Turrets in Grass pockets (island in the middle)
 	var t1 = get_node_or_null("Turret1")
-	if t1: t1.global_position = Vector2(550, 400)
+	if t1: t1.global_position = Vector2(850, 450)
 	var t2 = get_node_or_null("Turret2")
-	if t2: t2.global_position = Vector2(750, 800)
+	if t2: t2.global_position = Vector2(850, 750)
 
 func _on_restart_button_pressed():
 	get_tree().reload_current_scene()
@@ -142,6 +139,7 @@ func _on_nexus_destroyed():
 
 func _start_next_wave():
 	current_wave += 1
+	# Wave 1 = 150
 	enemies_to_spawn = 100 + (current_wave * 50) 
 	enemies_spawned = 0
 	is_spawning = true
@@ -149,7 +147,6 @@ func _start_next_wave():
 	print("--- WAVE ", current_wave, " STARTED! ---")
 
 func _spawn_single_enemy():
-	# Tiny jitter so they are guaranteed to spawn exactly on the path
-	var offset = Vector2(randf_range(-2, 2), randf_range(-2, 2))
+	var offset = Vector2(randf_range(-16, 16), randf_range(-16, 16))
 	enemy_manager.spawn_enemy(spawn_point + offset)
 	enemies_spawned += 1
