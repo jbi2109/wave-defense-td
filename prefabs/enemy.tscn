@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://enemy12345"]
+[gd_scene load_steps=6 format=3 uid="uid://enemy12345"]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
 [ext_resource type="Texture2D" path="res://assets/enemies/Dino.png" id="2_dino"]
@@ -47,8 +47,5 @@ shape = SubResource("CircleShape2D_7h0ns")
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 "": SubResource("AnimationLibrary_obqca")
-}
-autoplay = "move"
-Library_obqca")
 }
 autoplay = "move"
