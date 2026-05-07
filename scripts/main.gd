@@ -30,7 +30,6 @@ func _ready():
 func _setup_map_visuals():
 	grass_layer.tile_set = TileSet.new()
 	grass_layer.tile_set.tile_size = Vector2i(32, 32)
-	grass_layer.modulate = Color("#3a6b32")
 	
 	# Grass gets collision layer 1
 	grass_layer.tile_set.add_physics_layer(0)
@@ -39,14 +38,12 @@ func _setup_map_visuals():
 	
 	dirt_layer.tile_set = TileSet.new()
 	dirt_layer.tile_set.tile_size = Vector2i(32, 32)
-	dirt_layer.modulate = Color("#8b6b4f")
 
-	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color.WHITE)
-	var tex = ImageTexture.create_from_image(img)
+	var grass_tex = load("res://assets/shader/shader-tileset-normal.png")
+	var dirt_tex = load("res://assets/shader/shader-texture_1.png")
 	
 	var source_grass = TileSetAtlasSource.new()
-	source_grass.texture = tex
+	source_grass.texture = grass_tex
 	source_grass.texture_region_size = Vector2i(32, 32)
 	source_grass.create_tile(Vector2i(0, 0))
 	# Add physics polygon to grass
@@ -58,7 +55,7 @@ func _setup_map_visuals():
 	grass_layer.tile_set.add_source(source_grass, 0)
 	
 	var source_dirt = TileSetAtlasSource.new()
-	source_dirt.texture = tex
+	source_dirt.texture = dirt_tex
 	source_dirt.texture_region_size = Vector2i(32, 32)
 	source_dirt.create_tile(Vector2i(0, 0))
 	dirt_layer.tile_set.add_source(source_dirt, 0)
