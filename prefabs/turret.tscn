@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://c867r5v5frnt0"]
 
-[ext_resource type="Texture2D" uid="uid://bxi6grd54xubj" path="res://icon.svg" id="1_2pe4l"]
+[ext_resource type="Texture2D" uid="uid://b3vpsexjflrid" path="res://assets/turrets/technoturret.png" id="1_2pe4l"]
 [ext_resource type="Script" uid="uid://cjetgayae1flq" path="res://scripts/turret.gd" id="2_f7yh5"]
 
 [node name="Turret" type="Sprite2D" unique_id=1106922920]
-scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_2pe4l")
 script = ExtResource("2_f7yh5")
 
