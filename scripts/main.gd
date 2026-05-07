@@ -39,7 +39,7 @@ func _setup_map_visuals():
 	dirt_layer.tile_set = TileSet.new()
 	dirt_layer.tile_set.tile_size = Vector2i(32, 32)
 
-	var grass_tex = load("res://assets/shader/shader-tileset-normal.png")
+	var grass_tex = load("res://assets/shader/Shader_cliff.png")
 	var dirt_tex = load("res://assets/shader/shader-texture_1.png")
 	
 	var source_grass = TileSetAtlasSource.new()
