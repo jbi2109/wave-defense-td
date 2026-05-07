@@ -22,6 +22,10 @@ func _physics_process(delta):
 	
 	move_and_slide()
 	
+	for i in get_slide_collision_count():
+		var col = get_slide_collision(i)
+		velocity += col.get_normal() * speed * 4.0 * delta
+		
 	if is_instance_valid(nexus) and global_position.distance_squared_to(nexus.global_position) < 2500:
 		GlobalEvents.nexus_damaged.emit(1)
 		queue_free()
