@@ -2,37 +2,35 @@
 
 [ext_resource type="Script" uid="uid://m08crnaxh5rm" path="res://scripts/flow_field_manager.gd" id="1_jyhfs"]
 [ext_resource type="Script" uid="uid://cah0tv05es1tm" path="res://scripts/main.gd" id="1_tbgi4"]
-[ext_resource type="TileSet" uid="uid://chi8u0gmo6qvk" path="res://assets/map_tileset.tres" id="2_o6xl0"]
-[ext_resource type="Script" path="res://addons/TileMapDual/tile_map_dual.gd" id="dual_script"]
 [ext_resource type="PackedScene" uid="uid://dugwa3g8iq6sq" path="res://prefabs/nexus.tscn" id="3_tefeu"]
 [ext_resource type="PackedScene" uid="uid://c867r5v5frnt0" path="res://prefabs/turret.tscn" id="4_o6xl0"]
 [ext_resource type="Environment" uid="uid://bfc4cdr4e7s8p" path="res://default_env.tres" id="6_tefeu"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
 
-[node name="GrassLayer" type="TileMapLayer" parent="."]
+[node name="GrassLayer" type="TileMapLayer" parent="." unique_id=365082186]
 
-[node name="DirtLayer" type="TileMapLayer" parent="."]
+[node name="DirtLayer" type="TileMapLayer" parent="." unique_id=1242717083]
 
-[node name="FlowFieldManager" type="Node2D" parent="."]
+[node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
 script = ExtResource("1_jyhfs")
 
-[node name="EnemyManager" type="Node2D" parent="."]
+[node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 
-[node name="Nexus" parent="." instance=ExtResource("3_tefeu")]
+[node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_tefeu")]
 position = Vector2(1856, 976)
 scale = Vector2(2, 2)
 
-[node name="Turret1" parent="." instance=ExtResource("4_o6xl0")]
+[node name="Turret1" parent="." unique_id=1015196751 instance=ExtResource("4_o6xl0")]
 position = Vector2(800, 352)
 
-[node name="Turret2" parent="." instance=ExtResource("4_o6xl0")]
+[node name="Turret2" parent="." unique_id=457879874 instance=ExtResource("4_o6xl0")]
 position = Vector2(800, 768)
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=969667685]
 
-[node name="Overlay" type="Control" parent="HUD"]
+[node name="Overlay" type="Control" parent="HUD" unique_id=574670527]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,8 +38,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="NextWaveButton" type="Button" parent="HUD/Overlay"]
-visible = false
+[node name="NextWaveButton" type="Button" parent="HUD/Overlay" unique_id=1843973277]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -56,7 +53,7 @@ grow_horizontal = 2
 grow_vertical = 0
 text = "Start Next Wave"
 
-[node name="GameOverContainer" type="VBoxContainer" parent="HUD/Overlay"]
+[node name="GameOverContainer" type="VBoxContainer" parent="HUD/Overlay" unique_id=1487033009]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -71,21 +68,21 @@ offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GameOverLabel" type="Label" parent="HUD/Overlay/GameOverContainer"]
+[node name="GameOverLabel" type="Label" parent="HUD/Overlay/GameOverContainer" unique_id=1145925798]
 layout_mode = 2
 text = "GAME OVER - NEXUS DESTROYED"
 horizontal_alignment = 1
 
-[node name="RestartButton" type="Button" parent="HUD/Overlay/GameOverContainer"]
+[node name="RestartButton" type="Button" parent="HUD/Overlay/GameOverContainer" unique_id=1657200128]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Restart Game"
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1851217568]
 environment = ExtResource("6_tefeu")
 
-[node name="DirectionalLight2D" type="DirectionalLight2D" parent="."]
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="." unique_id=1357250526]
 energy = 0.5
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=93793647]
 anchor_mode = 0

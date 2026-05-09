@@ -76,13 +76,27 @@ func generate_field(target_pos: Vector2):
 
 func _get_neighbors(pos: Vector2i) -> Array[Vector2i]:
 	var neighbors: Array[Vector2i] = []
-	# 8-way movement
-	var dirs = [Vector2i(0, 1), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0),
-				Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
-	for d in dirs:
+	var cardinals = [Vector2i(0, 1), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0)]
+	for d in cardinals:
 		var n = pos + d
 		if n.x >= 0 and n.x < grid_size.x and n.y >= 0 and n.y < grid_size.y:
 			neighbors.append(n)
+			
+	var diagonals = [
+		{"dir": Vector2i(1, 1), "c1": Vector2i(1, 0), "c2": Vector2i(0, 1)},
+		{"dir": Vector2i(1, -1), "c1": Vector2i(1, 0), "c2": Vector2i(0, -1)},
+		{"dir": Vector2i(-1, 1), "c1": Vector2i(-1, 0), "c2": Vector2i(0, 1)},
+		{"dir": Vector2i(-1, -1), "c1": Vector2i(-1, 0), "c2": Vector2i(0, -1)}
+	]
+	for d in diagonals:
+		var n = pos + d["dir"]
+		if n.x >= 0 and n.x < grid_size.x and n.y >= 0 and n.y < grid_size.y:
+			var p1 = pos + d["c1"]
+			var p2 = pos + d["c2"]
+			var valid1 = p1.x >= 0 and p1.x < grid_size.x and p1.y >= 0 and p1.y < grid_size.y
+			var valid2 = p2.x >= 0 and p2.x < grid_size.x and p2.y >= 0 and p2.y < grid_size.y
+			if valid1 and valid2 and not obstacle_field[p1.x][p1.y] and not obstacle_field[p2.x][p2.y]:
+				neighbors.append(n)
 	return neighbors
 
 func get_direction(world_pos: Vector2) -> Vector2:

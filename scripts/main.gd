@@ -7,12 +7,12 @@ extends Node2D
 @onready var dirt_layer = $DirtLayer
 
 var enemy_scene = preload("res://prefabs/enemy.tscn")
-var spawn_point: Vector2 = Vector2(0, 176) # Left side entry
+var spawn_point: Vector2 = Vector2(-200, 832) # Left entrance
 
 var current_wave: int = 0
 var enemies_to_spawn: int = 0
 var enemies_spawned: int = 0
-var spawn_rate: float = 0.05
+var spawn_rate: float = 0.02
 var spawn_timer: float = 0.0
 
 var is_spawning: bool = false
@@ -42,6 +42,7 @@ func _setup_map_visuals():
 	source.texture = dual_tex
 	source.texture_region_size = Vector2i(16, 16)
 	
+	# Dual-grid bitmask mapping (Standard 16-tile set)
 	var preset_tiles = [
 		Vector2i(0, 3), Vector2i(3, 3), Vector2i(0, 2), Vector2i(1, 2),
 		Vector2i(0, 0), Vector2i(3, 2), Vector2i(2, 3), Vector2i(3, 1),
@@ -54,108 +55,128 @@ func _setup_map_visuals():
 		source.create_tile(atlas_pos)
 		var td = source.get_tile_data(atlas_pos, 0)
 		td.terrain_set = 0
-		
-		if i == 0: td.terrain = 0
-		elif i == 15: td.terrain = 1
-		else: td.terrain = -1
+		td.terrain = -1
 		
 		# In Match Corners, 0 is bg, 1 is fg
-		var t_l = 1 if (i & 1) else 0
-		var t_r = 1 if (i & 2) else 0
-		var b_l = 1 if (i & 4) else 0
-		var b_r = 1 if (i & 8) else 0
-		
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_LEFT_CORNER, t_l)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_RIGHT_CORNER, t_r)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, b_l)
-		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, b_r)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_LEFT_CORNER, 1 if (i & 1) else 0)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_TOP_RIGHT_CORNER, 1 if (i & 2) else 0)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, 1 if (i & 4) else 0)
+		td.set_terrain_peering_bit(TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, 1 if (i & 8) else 0)
 
 	ts.add_source(source, 0)
 	dirt_layer.tile_set = ts
-	# The magic offset that makes dual-grid rounding work perfectly
+	dirt_layer.material = load("res://assets/shader/shader-material.tres")
+	# Offset to align 16x16 grid vertices with 32x32 logical centers
 	dirt_layer.position = Vector2(-8, -8) 
 	
-	# 2. SETUP PHYSICS TILESET (Invisible GrassLayer just for collisions)
+	# 2. SETUP PHYSICS TILESET (Invisible GrassLayer for collisions)
 	var physics_ts = TileSet.new()
 	physics_ts.tile_size = Vector2i(32, 32)
 	physics_ts.add_physics_layer(0)
 	physics_ts.set_physics_layer_collision_layer(0, 1)
-	physics_ts.set_physics_layer_collision_mask(0, 1)
 	
 	var phys_source = TileSetAtlasSource.new()
 	phys_source.texture = load("res://assets/shader/Shader_cliff.png")
 	phys_source.texture_region_size = Vector2i(32, 32)
 	phys_source.create_tile(Vector2i(0, 0))
+	physics_ts.add_source(phys_source, 0)
 	var ptd = phys_source.get_tile_data(Vector2i(0,0), 0)
 	ptd.add_collision_polygon(0)
-	ptd.set_collision_polygon_points(0, 0, PackedVector2Array([Vector2(-16, -16), Vector2(16, -16), Vector2(16, 16), Vector2(-16, 16)]))
-	physics_ts.add_source(phys_source, 0)
+	ptd.set_collision_polygon_points(0, 0, PackedVector2Array([Vector2(-16,-16), Vector2(16,-16), Vector2(16,16), Vector2(-16,16)]))
 	
 	grass_layer.tile_set = physics_ts
-	grass_layer.visible = false # Hide it so we only see the beautiful DirtLayer
+	grass_layer.visible = false 
 	
-	# 3. DEFINE LOGICAL MAP (32x32 cells)
+	# 3. DEFINE LOGICAL MAP (Serpentine Blueprint)
 	var path_cells = []
-	for x in range(-5, 22):
-		for y in range(4, 9): path_cells.append(Vector2i(x, y))
-	for y in range(9, 22):
-		for x in range(17, 22): path_cells.append(Vector2i(x, y))
-	for x in range(12, 17):
-		for y in range(17, 22): path_cells.append(Vector2i(x, y))
-	for y in range(22, 28):
-		for x in range(12, 17): path_cells.append(Vector2i(x, y))
-	for x in range(12, 38):
-		for y in range(28, 33): path_cells.append(Vector2i(x, y))
-	for y in range(12, 28):
-		for x in range(33, 38): path_cells.append(Vector2i(x, y))
-	for x in range(38, 50):
-		for y in range(12, 17): path_cells.append(Vector2i(x, y))
-	for y in range(17, 25):
-		for x in range(45, 50): path_cells.append(Vector2i(x, y))
-	for x in range(50, 65):
-		for y in range(20, 25): path_cells.append(Vector2i(x, y))
+	
+	# Row 1: Bottom (Left to Right)
+	for x in range(-10, 52):
+		for y in range(24, 28): path_cells.append(Vector2i(x, y))
+	
+	# Connector 1: UP
+	for x in range(48, 52):
+		for y in range(16, 24): path_cells.append(Vector2i(x, y))
+		
+	# Row 2: Middle (Right to Left)
+	for x in range(6, 52):
+		for y in range(16, 20): path_cells.append(Vector2i(x, y))
+		
+	# Connector 2: UP
+	for x in range(6, 10):
+		for y in range(8, 16): path_cells.append(Vector2i(x, y))
+		
+	# Row 3: Top (Left to Right)
+	for x in range(6, 65):
+		for y in range(8, 12): path_cells.append(Vector2i(x, y))
 
-	# 4. DRAW MAPS
+	# 4. DRAW MAPS WITH SMART CHAMFER
 	grass_layer.clear()
 	dirt_layer.clear()
 	
 	var dual_path_cells = []
 	var dual_grass_cells = []
 	
-	for x in range(-5, 65):
-		for y in range(-5, 40):
-			var logic_cell = Vector2i(x, y)
-			var is_path = path_cells.has(logic_cell)
+	# We iterate at the 16x16 dual-grid level
+	# Each 16x16 cell q is part of logic cell L = (q.x/2, q.y/2)
+	for x in range(-20, 140):
+		for y in range(-20, 80):
+			var q = Vector2i(x, y)
+			var lx = floor(x / 2.0)
+			var ly = floor(y / 2.0)
+			var L = Vector2i(lx, ly)
 			
-			# Map 1 logical 32x32 cell to 4 physical 16x16 dual-grid cells
-			var cx = x * 2
-			var cy = y * 2
-			var q1 = Vector2i(cx, cy)
-			var q2 = Vector2i(cx+1, cy)
-			var q3 = Vector2i(cx, cy+1)
-			var q4 = Vector2i(cx+1, cy+1)
+			var is_p = path_cells.has(L)
 			
-			if is_path:
-				dual_path_cells.append_array([q1, q2, q3, q4])
-			else:
-				# It's a wall. Set collision in GrassLayer.
-				grass_layer.set_cell(logic_cell, 0, Vector2i(0, 0))
-				dual_grass_cells.append_array([q1, q2, q3, q4])
+			# CHAMFER LOGIC: Shave corners to 45 degrees
+			# If a logic cell is a corner, one of its 4 quadrants should be flipped
+			var off_x = x % 2 # 0 is Left quadrant, 1 is Right
+			var off_y = y % 2 # 0 is Top quadrant, 1 is Bottom
+			
+			# Check neighbors of logic cell L
+			var n_u = path_cells.has(L + Vector2i(0, -1))
+			var n_d = path_cells.has(L + Vector2i(0, 1))
+			var n_l = path_cells.has(L + Vector2i(-1, 0))
+			var n_r = path_cells.has(L + Vector2i(1, 0))
+			
+			if is_p:
+				# Convex corners: Shave the outer quadrant
+				var shave = false
+				if not n_u and not n_l and off_x == 0 and off_y == 0: shave = true # Top-Left
+				if not n_u and not n_r and off_x == 1 and off_y == 0: shave = true # Top-Right
+				if not n_d and not n_l and off_x == 0 and off_y == 1: shave = true # Bottom-Left
+				if not n_d and not n_r and off_x == 1 and off_y == 1: shave = true # Bottom-Right
 				
-	# Tell Godot to beautifully autotile the 16x16 dual grid!
+				if shave: dual_grass_cells.append(q)
+				else: dual_path_cells.append(q)
+			else:
+				# Concave corners: Fill the inner quadrant
+				var fill = false
+				if n_u and n_l and off_x == 0 and off_y == 0: fill = true # Top-Left
+				if n_u and n_r and off_x == 1 and off_y == 0: fill = true # Top-Right
+				if n_d and n_l and off_x == 0 and off_y == 1: fill = true # Bottom-Left
+				if n_d and n_r and off_x == 1 and off_y == 1: fill = true # Bottom-Right
+				
+				if fill: dual_path_cells.append(q)
+				else:
+					dual_grass_cells.append(q)
+					# Add collision only for logic cells
+					if off_x == 0 and off_y == 0:
+						grass_layer.set_cell(L, 0, Vector2i(0, 0))
+				
 	dirt_layer.set_cells_terrain_connect(dual_grass_cells, 0, 0, false)
 	dirt_layer.set_cells_terrain_connect(dual_path_cells, 0, 1, false)
 
 	# 5. UPDATE FLOW FIELD
-	for x in range(-5, 80):
-		for y in range(-5, 50):
+	for x in range(-10, 80):
+		for y in range(-10, 50):
 			flow_field.set_obstacle(Vector2i(x, y), not path_cells.has(Vector2i(x, y)))
 			
-	nexus.global_position = Vector2(1900, 720)
+	nexus.global_position = Vector2(1900, 320) # End of Row 3
 	var t1 = get_node_or_null("Turret1")
-	if t1: t1.global_position = Vector2(850, 450)
+	if t1: t1.global_position = Vector2(800, 480) # In the middle of the snake
 	var t2 = get_node_or_null("Turret2")
-	if t2: t2.global_position = Vector2(850, 750)
+	if t2: t2.global_position = Vector2(1100, 480)
 
 func _on_restart_button_pressed():
 	get_tree().reload_current_scene()

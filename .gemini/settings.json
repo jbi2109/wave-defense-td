@@ -1,0 +1,38 @@
+{
+  "experimental": {
+    "contextManagement": true,
+    "generalistProfile": true,
+    "autoMemory": true,
+    "useOSC52Copy": true,
+    "useOSC52Paste": true,
+    "worktrees": true,
+    "gemma": true
+  },
+  "mcpServers": {
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server:latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
+      }
+    }
+  },
+  "model": {
+    "name": ""
+  },
+  "ide": {
+    "enabled": true
+  },
+  "ui": {
+    "terminalBuffer": true,
+    "showModelInfoInChat": true,
+    "showMemoryUsage": true
+  }
+}

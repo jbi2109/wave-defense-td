@@ -63,7 +63,7 @@ func _physics_process(delta):
 		var t = Transform2D(velocities[i].angle(), positions[i])
 		multimesh.set_instance_transform_2d(i, t)
 		
-		if positions[i].distance_squared_to(nexus.global_position) < 2500: # 50px
+		if positions[i].x > 1950.0: # Exit screen right
 			GlobalEvents.nexus_damaged.emit(1)
 			_remove_enemy(i)
 
