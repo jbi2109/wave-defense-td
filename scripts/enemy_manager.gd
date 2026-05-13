@@ -1,8 +1,10 @@
 extends Node2D
 class_name EnemyManager
 
+const EnemyDef = preload("res://scripts/enemy_definition.gd")
+
 @export var max_enemies: int = 2000
-var enemy_types: Array[EnemyDefinition] = []
+var enemy_types: Array[Node] = []
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var nexus: Node2D = get_node("../Nexus")
@@ -12,19 +14,21 @@ var positions = PackedVector2Array()
 var velocities = PackedVector2Array()
 var healths = PackedFloat32Array()
 var types = PackedInt32Array()
-
 @export var grid_cell_size: int = 128
-var spatial_grid = {} 
+const GRID_WIDTH: int = 64
+const GRID_HEIGHT: int = 64
+var grid_heads = PackedInt32Array()
+var grid_next = PackedInt32Array()
 var multimeshes: Array[MultiMeshInstance2D] = []
 
 func _ready():
 	for child in get_children():
-		if child is EnemyDefinition:
+		if child is EnemyDef or (child.get_script() != null and "enemy_definition.gd" in child.get_script().resource_path):
 			enemy_types.append(child)
 			
 	if enemy_types.is_empty():
 		# Create a default swarmer
-		var swarmer = EnemyDefinition.new()
+		var swarmer = EnemyDef.new()
 		swarmer.enemy_name = "Swarmer"
 		swarmer.texture_path = "res://assets/enemies/dino1.png"
 		swarmer.hframes = 24
@@ -36,7 +40,7 @@ func _ready():
 		add_child(swarmer)
 		
 		# Create a default tank
-		var tank = EnemyDefinition.new()
+		var tank = EnemyDef.new()
 		tank.enemy_name = "Tank"
 		tank.texture_path = "res://assets/enemies/dino2.png" # Assuming dino2 exists, fallback to dino1 otherwise
 		if not ResourceLoader.exists(tank.texture_path):
@@ -53,6 +57,8 @@ func _ready():
 	velocities.resize(max_enemies)
 	healths.resize(max_enemies)
 	types.resize(max_enemies)
+	grid_heads.resize(GRID_WIDTH * GRID_HEIGHT)
+	grid_next.resize(max_enemies)
 	
 	for type in enemy_types:
 		var mmi = MultiMeshInstance2D.new()
@@ -147,12 +153,15 @@ func damage_enemy(index: int, amount: float):
 		healths[index] -= amount
 
 func _update_spatial_grid():
-	spatial_grid.clear()
+	grid_heads.fill(-1)
 	for i in range(active_count):
-		var grid_pos = Vector2i(positions[i] / float(grid_cell_size))
-		if not spatial_grid.has(grid_pos):
-			spatial_grid[grid_pos] = []
-		spatial_grid[grid_pos].append(i)
+		var p = positions[i]
+		var gx = clampi(int(p.x / float(grid_cell_size)), 0, GRID_WIDTH - 1)
+		var gy = clampi(int(p.y / float(grid_cell_size)), 0, GRID_HEIGHT - 1)
+		var cell_idx = gy * GRID_WIDTH + gx
+		
+		grid_next[i] = grid_heads[cell_idx]
+		grid_heads[cell_idx] = i
 
 func _update_enemy_batch(i: int, delta: float):
 	var pos = positions[i]
@@ -165,7 +174,8 @@ func _update_enemy_batch(i: int, delta: float):
 	
 	# Wall avoidance logic
 	var wall_push = Vector2.ZERO
-	var grid_pos = Vector2i(pos / float(grid_cell_size))
+	var gx = clampi(int(pos.x / float(grid_cell_size)), 0, GRID_WIDTH - 1)
+	var gy = clampi(int(pos.y / float(grid_cell_size)), 0, GRID_HEIGHT - 1)
 	var tile_pos = Vector2i(pos / 32.0)
 	
 	# Check adjacent tiles for walls
@@ -192,24 +202,32 @@ func _update_enemy_batch(i: int, delta: float):
 						if push_dir == Vector2.ZERO: push_dir = Vector2(1, 0)
 						wall_push += push_dir.normalized() * (1.0 - (dist_sq_wall / 1600.0))
 	
-	for x in range(grid_pos.x - 1, grid_pos.x + 2):
-		for y in range(grid_pos.y - 1, grid_pos.y + 2):
-			var cell = Vector2i(x, y)
-			if spatial_grid.has(cell):
-				for other_idx in spatial_grid[cell]:
-					if other_idx != i:
-						var other_pos = positions[other_idx]
-						var other_type_def = enemy_types[types[other_idx]]
-						var dist_sq = pos.distance_squared_to(other_pos)
-						
-						# Dynamic separation radius based on scale
-						var sep_dist = 12.0 * type_def.scale + 12.0 * other_type_def.scale
-						var sep_sq = sep_dist * sep_dist
-						
-						if dist_sq < sep_sq:
-							var push_dir = (pos - other_pos).normalized()
-							separation += push_dir * (1.0 - (dist_sq / sep_sq))
-							neighbor_count += 1
+	var gx_min = maxi(0, gx - 1)
+	var gx_max = mini(GRID_WIDTH - 1, gx + 1)
+	var gy_min = maxi(0, gy - 1)
+	var gy_max = mini(GRID_HEIGHT - 1, gy + 1)
+	
+	for y in range(gy_min, gy_max + 1):
+		for x in range(gx_min, gx_max + 1):
+			var cell_idx = y * GRID_WIDTH + x
+			var other_idx = grid_heads[cell_idx]
+			while other_idx != -1:
+				if other_idx != i:
+					var other_pos = positions[other_idx]
+					var other_type_def = enemy_types[types[other_idx]]
+					var dist_sq = pos.distance_squared_to(other_pos)
+					
+					# Dynamic separation radius based on scale
+					var sep_dist = 12.0 * type_def.scale + 12.0 * other_type_def.scale
+					var sep_sq = sep_dist * sep_dist
+					
+					if dist_sq < sep_sq:
+						var push_dir = (pos - other_pos).normalized()
+						if push_dir == Vector2.ZERO: push_dir = Vector2(1, 0)
+						separation += push_dir * (1.0 - (dist_sq / sep_sq))
+						neighbor_count += 1
+				
+				other_idx = grid_next[other_idx]
 	
 	if neighbor_count > 0:
 		separation = (separation / float(neighbor_count)).normalized() * 1.2
@@ -223,11 +241,23 @@ func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
 	var results: Array[int] = []
 	var grid_pos = Vector2i(world_pos / float(grid_cell_size))
 	var grid_radius = int(ceil(radius / float(grid_cell_size)))
-	for x in range(grid_pos.x - grid_radius, grid_pos.x + grid_radius + 1):
-		for y in range(grid_pos.y - grid_radius, grid_pos.y + grid_radius + 1):
-			var cell = Vector2i(x, y)
-			if spatial_grid.has(cell):
-				results.append_array(spatial_grid[cell])
+	
+	var gx_min = clampi(grid_pos.x - grid_radius, 0, GRID_WIDTH - 1)
+	var gx_max = clampi(grid_pos.x + grid_radius, 0, GRID_WIDTH - 1)
+	var gy_min = clampi(grid_pos.y - grid_radius, 0, GRID_HEIGHT - 1)
+	var gy_max = clampi(grid_pos.y + grid_radius, 0, GRID_HEIGHT - 1)
+	
+	var radius_sq = radius * radius
+	
+	for y in range(gy_min, gy_max + 1):
+		for x in range(gx_min, gx_max + 1):
+			var cell_idx = y * GRID_WIDTH + x
+			var other_idx = grid_heads[cell_idx]
+			while other_idx != -1:
+				if world_pos.distance_squared_to(positions[other_idx]) <= radius_sq:
+					results.append(other_idx)
+				other_idx = grid_next[other_idx]
+				
 	return results
 
 func _remove_enemy(index):
