@@ -1,8 +1,9 @@
-extends MultiMeshInstance2D
+extends Node2D
 class_name EnemyManager
 
 @export var max_enemies: int = 2000
-@export var enemy_speed: float = 120.0
+var enemy_types: Array[EnemyDefinition] = []
+
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var nexus: Node2D = get_node("../Nexus")
 
@@ -10,43 +11,78 @@ var active_count: int = 0
 var positions = PackedVector2Array()
 var velocities = PackedVector2Array()
 var healths = PackedFloat32Array()
+var types = PackedInt32Array()
 
 @export var grid_cell_size: int = 128
 var spatial_grid = {} 
+var multimeshes: Array[MultiMeshInstance2D] = []
 
 func _ready():
-	multimesh = MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_2D
-	multimesh.mesh = QuadMesh.new()
-	multimesh.mesh.size = Vector2(24, 24)
-	multimesh.instance_count = max_enemies
-	
-	# Load the raw dino image and crop it to the first frame
-	var raw_tex = load("res://assets/enemies/dino1.png")
-	var raw_img = raw_tex.get_image()
-	var frame_width = raw_img.get_width() / 24
-	var frame_img = raw_img.get_region(Rect2i(0, 0, frame_width, raw_img.get_height()))
-	
-	# Ensure the image is in a standard format and remove any lingering tint logic
-	frame_img.convert(Image.FORMAT_RGBA8)
-	
-	texture = ImageTexture.create_from_image(frame_img)
+	for child in get_children():
+		if child is EnemyDefinition:
+			enemy_types.append(child)
+			
+	if enemy_types.is_empty():
+		# Create a default swarmer
+		var swarmer = EnemyDefinition.new()
+		swarmer.enemy_name = "Swarmer"
+		swarmer.texture_path = "res://assets/enemies/dino1.png"
+		swarmer.hframes = 24
+		swarmer.scale = 1.0
+		swarmer.speed = 120.0
+		swarmer.health = 10.0
+		swarmer.spawn_weight = 10.0
+		enemy_types.append(swarmer)
+		add_child(swarmer)
+		
+		# Create a default tank
+		var tank = EnemyDefinition.new()
+		tank.enemy_name = "Tank"
+		tank.texture_path = "res://assets/enemies/dino2.png" # Assuming dino2 exists, fallback to dino1 otherwise
+		if not ResourceLoader.exists(tank.texture_path):
+			tank.texture_path = "res://assets/enemies/dino1.png"
+		tank.hframes = 24
+		tank.scale = 1.8
+		tank.speed = 60.0
+		tank.health = 50.0
+		tank.spawn_weight = 2.0
+		enemy_types.append(tank)
+		add_child(tank)
 	
 	positions.resize(max_enemies)
 	velocities.resize(max_enemies)
 	healths.resize(max_enemies)
+	types.resize(max_enemies)
 	
-	for i in range(max_enemies):
-		multimesh.set_instance_transform_2d(i, Transform2D(0, Vector2(-5000, -5000)))
+	for type in enemy_types:
+		var mmi = MultiMeshInstance2D.new()
+		mmi.multimesh = MultiMesh.new()
+		mmi.multimesh.transform_format = MultiMesh.TRANSFORM_2D
+		mmi.multimesh.mesh = QuadMesh.new()
+		mmi.multimesh.mesh.size = Vector2(24, 24)
+		mmi.multimesh.instance_count = max_enemies
+		
+		var raw_tex = load(type.texture_path)
+		if raw_tex:
+			var raw_img = raw_tex.get_image()
+			var frame_width = raw_img.get_width() / type.hframes
+			var frame_img = raw_img.get_region(Rect2i(0, 0, frame_width, raw_img.get_height()))
+			frame_img.convert(Image.FORMAT_RGBA8)
+			mmi.texture = ImageTexture.create_from_image(frame_img)
+		
+		for i in range(max_enemies):
+			mmi.multimesh.set_instance_transform_2d(i, Transform2D(0, Vector2(-5000, -5000)))
+		
+		add_child(mmi)
+		multimeshes.append(mmi)
 
-func spawn_enemy(pos: Vector2):
-	print("EnemyManager: Spawning at ", pos)
+func spawn_enemy(pos: Vector2, type_index: int = 0):
 	if active_count < max_enemies:
 		positions[active_count] = pos
 		velocities[active_count] = Vector2.ZERO
-		healths[active_count] = 10.0
+		healths[active_count] = enemy_types[type_index].health
+		types[active_count] = type_index
 		active_count += 1
-		print("Spawned enemy at: ", pos, " Total: ", active_count)
 
 func _physics_process(delta):
 	if not flow_field: return
@@ -57,22 +93,48 @@ func _physics_process(delta):
 	WorkerThreadPool.wait_for_group_task_completion(task_id)
 	
 	var to_remove = []
+	var type_counters = []
+	type_counters.resize(enemy_types.size())
+	type_counters.fill(0)
+	
 	for i in range(active_count):
+		var t = types[i]
+		var type_def = enemy_types[t]
+		
 		# QuadMesh in 2D renders upside down, so flip Y.
-		var s = Vector2(1, -1)
+		var s = Vector2(type_def.scale, -type_def.scale)
 		if velocities[i].x < 0:
-			s.x = -1
+			s.x = -s.x
 			
-		var t = Transform2D(0, positions[i])
-		t.x *= s.x
-		t.y *= s.y
-		multimesh.set_instance_transform_2d(i, t)
+		var xform = Transform2D(0, positions[i])
+		xform.x *= s.x
+		xform.y *= s.y
+		
+		var mmi = multimeshes[t]
+		var local_idx = type_counters[t]
+		mmi.multimesh.set_instance_transform_2d(local_idx, xform)
+		type_counters[t] += 1
 		
 		if healths[i] <= 0:
 			to_remove.append(i)
 		elif is_instance_valid(nexus) and nexus.has_method("has_point") and nexus.has_point(positions[i]):
 			GlobalEvents.nexus_damaged.emit(1)
 			to_remove.append(i)
+			
+	# Hide unused multimesh instances for this frame
+	for t in range(enemy_types.size()):
+		var mmi = multimeshes[t]
+		for j in range(type_counters[t], max_enemies):
+			# Optimization: only hide if it wasn't already hidden (approximate by checking just beyond active)
+			if j > type_counters[t] + 10: break # Hacky fast skip, but proper way is keeping track of last frame count
+			mmi.multimesh.set_instance_transform_2d(j, Transform2D(0, Vector2(-5000, -5000)))
+			
+	# Proper hide loop:
+	for t in range(enemy_types.size()):
+		var mmi = multimeshes[t]
+		for j in range(type_counters[t], active_count + to_remove.size() + 1):
+			if j < max_enemies:
+				mmi.multimesh.set_instance_transform_2d(j, Transform2D(0, Vector2(-5000, -5000)))
 			
 	# Remove backwards to keep indices valid
 	to_remove.sort()
@@ -95,6 +157,7 @@ func _update_spatial_grid():
 func _update_enemy_batch(i: int, delta: float):
 	var pos = positions[i]
 	var dir = flow_field.get_direction(pos)
+	var type_def = enemy_types[types[i]]
 	
 	# Separation logic (Flocking/Boids)
 	var separation = Vector2.ZERO
@@ -110,13 +173,10 @@ func _update_enemy_batch(i: int, delta: float):
 	for off in offsets:
 		var check_pos = tile_pos + off
 		if check_pos.x >= 0 and check_pos.x < flow_field.grid_size.x and check_pos.y >= 0 and check_pos.y < flow_field.grid_size.y:
-			# Adjust for flow field offset
 			var field_pos = check_pos - flow_field.grid_offset
 			if field_pos.x >= 0 and field_pos.x < flow_field.grid_size.x and field_pos.y >= 0 and field_pos.y < flow_field.grid_size.y:
 				if flow_field.obstacle_field[field_pos.x][field_pos.y]:
 					var wall_center = Vector2(check_pos) * 32.0 + Vector2(16, 16)
-					
-					# Hard collision
 					var wall_rect = Rect2(Vector2(check_pos) * 32.0, Vector2(32, 32))
 					if wall_rect.has_point(pos):
 						var diff = pos - wall_center
@@ -127,7 +187,7 @@ func _update_enemy_batch(i: int, delta: float):
 							pos.y = wall_center.y + sign(diff.y) * 16.1
 						
 					var dist_sq_wall = pos.distance_squared_to(wall_center)
-					if dist_sq_wall < 1600: # 40px radius (up from 32)
+					if dist_sq_wall < 1600:
 						var push_dir = (pos - wall_center)
 						if push_dir == Vector2.ZERO: push_dir = Vector2(1, 0)
 						wall_push += push_dir.normalized() * (1.0 - (dist_sq_wall / 1600.0))
@@ -139,19 +199,24 @@ func _update_enemy_batch(i: int, delta: float):
 				for other_idx in spatial_grid[cell]:
 					if other_idx != i:
 						var other_pos = positions[other_idx]
+						var other_type_def = enemy_types[types[other_idx]]
 						var dist_sq = pos.distance_squared_to(other_pos)
-						if dist_sq < 900: # 30px separation radius
+						
+						# Dynamic separation radius based on scale
+						var sep_dist = 12.0 * type_def.scale + 12.0 * other_type_def.scale
+						var sep_sq = sep_dist * sep_dist
+						
+						if dist_sq < sep_sq:
 							var push_dir = (pos - other_pos).normalized()
-							separation += push_dir * (1.0 - (dist_sq / 900.0))
+							separation += push_dir * (1.0 - (dist_sq / sep_sq))
 							neighbor_count += 1
 	
 	if neighbor_count > 0:
-		separation = (separation / float(neighbor_count)).normalized() * 1.5
+		separation = (separation / float(neighbor_count)).normalized() * 1.2
 		
-	# Combine forces: Flow Field + Wall Avoidance + Enemy Separation
 	dir = (dir + separation + wall_push * 8.0).normalized()
 	
-	velocities[i] = velocities[i].lerp(dir * enemy_speed, 6.0 * delta)
+	velocities[i] = velocities[i].lerp(dir * type_def.speed, 6.0 * delta)
 	positions[i] += velocities[i] * delta
 
 func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
@@ -171,4 +236,4 @@ func _remove_enemy(index):
 		positions[index] = positions[active_count]
 		velocities[index] = velocities[active_count]
 		healths[index] = healths[active_count]
-	multimesh.set_instance_transform_2d(active_count, Transform2D(0, Vector2(-5000, -5000)))
+		types[index] = types[active_count]

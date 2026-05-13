@@ -3,11 +3,11 @@ extends Node2D
 @onready var flow_field = $FlowFieldManager
 @onready var enemy_manager = $EnemyManager
 @onready var nexus = $Nexus
+@onready var wave_manager = $WaveManager
 
 var current_wave: int = 0
 var enemies_to_spawn: int = 0
 var enemies_spawned: int = 0
-var spawn_rate: float = 0.05
 var spawn_timer: float = 0.0
 
 var is_spawning: bool = false
@@ -94,7 +94,7 @@ func _process(delta):
 		spawn_timer -= delta
 		if spawn_timer <= 0:
 			_spawn_single_enemy()
-			spawn_timer = spawn_rate
+			spawn_timer = wave_manager.spawn_rate
 		if enemies_spawned >= enemies_to_spawn:
 			is_spawning = false
 	else:
@@ -114,11 +114,12 @@ func _on_nexus_destroyed():
 
 func _start_next_wave():
 	current_wave += 1
-	enemies_to_spawn = 20 + (current_wave - 1) * 10 
+	# Scale total enemies exponentially based on wave number
+	enemies_to_spawn = int(wave_manager.base_enemies_per_wave * pow(wave_manager.wave_scaler, current_wave - 1))
 	enemies_spawned = 0
 	is_spawning = true
 	spawn_timer = 0
-	print("--- WAVE ", current_wave, " STARTED! ---")
+	print("--- WAVE ", current_wave, " STARTED! Spawning ", enemies_to_spawn, " enemies ---")
 
 func _spawn_single_enemy():
 	var spawners = get_tree().get_nodes_in_group("spawner")
@@ -126,7 +127,26 @@ func _spawn_single_enemy():
 		printerr("No spawners found!")
 		return
 	
-	var chosen_spawner = spawners[randi() % spawners.size()]
+	# Round-robin selection ensures an exact even split across all spawners
+	var chosen_spawner = spawners[enemies_spawned % spawners.size()]
 	var spawn_pos = chosen_spawner.get_random_spawn_point()
-	enemy_manager.spawn_enemy(spawn_pos)
+	var type_idx = _get_random_enemy_type()
+	enemy_manager.spawn_enemy(spawn_pos, type_idx)
 	enemies_spawned += 1
+
+func _get_random_enemy_type() -> int:
+	var types = enemy_manager.enemy_types
+	if types.is_empty(): return 0
+	
+	var total_weight = 0.0
+	for t in types:
+		total_weight += t.spawn_weight
+		
+	var roll = randf_range(0.0, total_weight)
+	var current = 0.0
+	for i in range(types.size()):
+		current += types[i].spawn_weight
+		if roll <= current:
+			return i
+			
+	return 0
