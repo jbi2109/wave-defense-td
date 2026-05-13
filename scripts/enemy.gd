@@ -40,7 +40,7 @@ func _physics_process(delta):
 		# Add a tiny bounce to slide off walls smoothly, not violently
 		velocity += col.get_normal() * speed * 2.0 * delta
 		
-	if is_instance_valid(nexus) and global_position.distance_squared_to(nexus.global_position) < 2500:
+	if is_instance_valid(nexus) and nexus.has_method("has_point") and nexus.has_point(global_position):
 		GlobalEvents.nexus_damaged.emit(1)
 		queue_free()
 

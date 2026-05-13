@@ -1,15 +1,19 @@
 extends Node2D
 class_name FlowFieldManager
 
-@export var grid_size: Vector2i = Vector2i(80, 50) # Expand to fit 1920x1080
+@export var grid_size: Vector2i = Vector2i(100, 60) # Expand to fit 1920x1080
 @export var cell_size: int = 32
+@export var grid_offset: Vector2i = Vector2i(-10, -10)
 
 var grid = [] # 2D array of Vector2 directions
 var cost_field = [] # 2D array of integers
 var obstacle_field = [] # 2D array of bools (true = blocked)
 
+@export var build_layer: TileMapLayer
+
 func _ready():
 	_init_fields()
+	scan_layers()
 
 func _init_fields():
 	grid.clear()
@@ -24,9 +28,46 @@ func _init_fields():
 			cost_field[x].append(65535) # Max value for Dijkstra
 			obstacle_field[x].append(false)
 
+func scan_layers():
+	if not build_layer:
+		return
+	
+	for x in range(grid_offset.x, grid_offset.x + grid_size.x):
+		for y in range(grid_offset.y, grid_offset.y + grid_size.y):
+			if build_layer.get_cell_source_id(Vector2i(x, y)) != -1:
+				set_obstacle(Vector2i(x, y), true)
+
 func set_obstacle(grid_pos: Vector2i, is_obstacle: bool):
-	if grid_pos.x >= 0 and grid_pos.x < grid_size.x and grid_pos.y >= 0 and grid_pos.y < grid_size.y:
-		obstacle_field[grid_pos.x][grid_pos.y] = is_obstacle
+	var gp = grid_pos - grid_offset
+	if gp.x >= 0 and gp.x < grid_size.x and gp.y >= 0 and gp.y < grid_size.y:
+		obstacle_field[gp.x][gp.y] = is_obstacle
+
+func generate_field_for_rect(target_pos: Vector2, extents: Vector2):
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			grid[x][y] = Vector2.ZERO
+			cost_field[x][y] = 65535
+	
+	var rect = Rect2(target_pos - extents, extents * 2)
+	var queue = []
+	
+	# Find all grid cells that fall within the rect
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var world_pos = Vector2(x + grid_offset.x, y + grid_offset.y) * cell_size + Vector2(cell_size / 2.0, cell_size / 2.0)
+			if rect.has_point(world_pos):
+				cost_field[x][y] = 0
+				queue.push_back(Vector2i(x, y))
+	
+	# Fallback if the rect is too small to cover any cell centers
+	if queue.is_empty():
+		var target_grid_pos = Vector2i(target_pos / float(cell_size)) - grid_offset
+		target_grid_pos.x = clamp(target_grid_pos.x, 0, grid_size.x - 1)
+		target_grid_pos.y = clamp(target_grid_pos.y, 0, grid_size.y - 1)
+		cost_field[target_grid_pos.x][target_grid_pos.y] = 0
+		queue.push_back(target_grid_pos)
+	
+	_run_flow_field_passes(queue)
 
 func generate_field(target_pos: Vector2):
 	# Don't re-init obstacle field, just cost and grid
@@ -35,14 +76,17 @@ func generate_field(target_pos: Vector2):
 			grid[x][y] = Vector2.ZERO
 			cost_field[x][y] = 65535
 	
-	var target_grid_pos = Vector2i(target_pos / float(cell_size))
+	var target_grid_pos = Vector2i(target_pos / float(cell_size)) - grid_offset
 	target_grid_pos.x = clamp(target_grid_pos.x, 0, grid_size.x - 1)
 	target_grid_pos.y = clamp(target_grid_pos.y, 0, grid_size.y - 1)
 	
-	# 1. Dijkstra Pass
 	var queue = [target_grid_pos]
 	cost_field[target_grid_pos.x][target_grid_pos.y] = 0
 	
+	_run_flow_field_passes(queue)
+
+func _run_flow_field_passes(queue: Array):
+	# 1. Dijkstra Pass
 	while queue.size() > 0:
 		var current = queue.pop_front()
 		var current_cost = cost_field[current.x][current.y]
@@ -100,8 +144,7 @@ func _get_neighbors(pos: Vector2i) -> Array[Vector2i]:
 	return neighbors
 
 func get_direction(world_pos: Vector2) -> Vector2:
-	var x = int(world_pos.x / cell_size)
-	var y = int(world_pos.y / cell_size)
-	if x >= 0 and x < grid_size.x and y >= 0 and y < grid_size.y:
-		return grid[x][y]
+	var grid_pos = Vector2i(world_pos / float(cell_size)) - grid_offset
+	if grid_pos.x >= 0 and grid_pos.x < grid_size.x and grid_pos.y >= 0 and grid_pos.y < grid_size.y:
+		return grid[grid_pos.x][grid_pos.y]
 	return Vector2.ZERO

@@ -24,17 +24,12 @@ func _ready():
 	# Load the raw dino image and crop it to the first frame
 	var raw_tex = load("res://assets/enemies/dino1.png")
 	var raw_img = raw_tex.get_image()
-	var frame_width = raw_img.get_width() / 4
+	var frame_width = raw_img.get_width() / 24
 	var frame_img = raw_img.get_region(Rect2i(0, 0, frame_width, raw_img.get_height()))
 	
-	# Tint them green to make "little green men"
-	var green_tint = Color("#55ff55")
-	for x in range(frame_img.get_width()):
-		for y in range(frame_img.get_height()):
-			var c = frame_img.get_pixel(x, y)
-			if c.a > 0.1:
-				frame_img.set_pixel(x, y, c * green_tint)
-				
+	# Ensure the image is in a standard format and remove any lingering tint logic
+	frame_img.convert(Image.FORMAT_RGBA8)
+	
 	texture = ImageTexture.create_from_image(frame_img)
 	
 	positions.resize(max_enemies)
@@ -45,11 +40,13 @@ func _ready():
 		multimesh.set_instance_transform_2d(i, Transform2D(0, Vector2(-5000, -5000)))
 
 func spawn_enemy(pos: Vector2):
+	print("EnemyManager: Spawning at ", pos)
 	if active_count < max_enemies:
 		positions[active_count] = pos
 		velocities[active_count] = Vector2.ZERO
 		healths[active_count] = 10.0
 		active_count += 1
+		print("Spawned enemy at: ", pos, " Total: ", active_count)
 
 func _physics_process(delta):
 	if not flow_field: return
@@ -59,13 +56,33 @@ func _physics_process(delta):
 	var task_id = WorkerThreadPool.add_group_task(_update_enemy_batch.bind(delta), active_count, 64)
 	WorkerThreadPool.wait_for_group_task_completion(task_id)
 	
+	var to_remove = []
 	for i in range(active_count):
-		var t = Transform2D(velocities[i].angle(), positions[i])
+		# QuadMesh in 2D renders upside down, so flip Y.
+		var s = Vector2(1, -1)
+		if velocities[i].x < 0:
+			s.x = -1
+			
+		var t = Transform2D(0, positions[i])
+		t.x *= s.x
+		t.y *= s.y
 		multimesh.set_instance_transform_2d(i, t)
 		
-		if positions[i].x > 1950.0: # Exit screen right
+		if healths[i] <= 0:
+			to_remove.append(i)
+		elif is_instance_valid(nexus) and nexus.has_method("has_point") and nexus.has_point(positions[i]):
 			GlobalEvents.nexus_damaged.emit(1)
-			_remove_enemy(i)
+			to_remove.append(i)
+			
+	# Remove backwards to keep indices valid
+	to_remove.sort()
+	to_remove.reverse()
+	for idx in to_remove:
+		_remove_enemy(idx)
+
+func damage_enemy(index: int, amount: float):
+	if index >= 0 and index < active_count:
+		healths[index] -= amount
 
 func _update_spatial_grid():
 	spatial_grid.clear()
@@ -89,15 +106,31 @@ func _update_enemy_batch(i: int, delta: float):
 	var tile_pos = Vector2i(pos / 32.0)
 	
 	# Check adjacent tiles for walls
-	var offsets = [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1), Vector2i(1,1), Vector2i(-1,-1), Vector2i(1,-1), Vector2i(-1,1)]
+	var offsets = [Vector2i(0,0), Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1), Vector2i(1,1), Vector2i(-1,-1), Vector2i(1,-1), Vector2i(-1,1)]
 	for off in offsets:
 		var check_pos = tile_pos + off
 		if check_pos.x >= 0 and check_pos.x < flow_field.grid_size.x and check_pos.y >= 0 and check_pos.y < flow_field.grid_size.y:
-			if flow_field.obstacle_field[check_pos.x][check_pos.y]:
-				var wall_center = Vector2(check_pos) * 32.0 + Vector2(16, 16)
-				var dist_sq_wall = pos.distance_squared_to(wall_center)
-				if dist_sq_wall < 1024: # 32px radius
-					wall_push += (pos - wall_center).normalized() * (1.0 - (dist_sq_wall / 1024.0))
+			# Adjust for flow field offset
+			var field_pos = check_pos - flow_field.grid_offset
+			if field_pos.x >= 0 and field_pos.x < flow_field.grid_size.x and field_pos.y >= 0 and field_pos.y < flow_field.grid_size.y:
+				if flow_field.obstacle_field[field_pos.x][field_pos.y]:
+					var wall_center = Vector2(check_pos) * 32.0 + Vector2(16, 16)
+					
+					# Hard collision
+					var wall_rect = Rect2(Vector2(check_pos) * 32.0, Vector2(32, 32))
+					if wall_rect.has_point(pos):
+						var diff = pos - wall_center
+						if diff == Vector2.ZERO: diff = Vector2(randf_range(-1,1), randf_range(-1,1)).normalized() * 0.1
+						if abs(diff.x) > abs(diff.y):
+							pos.x = wall_center.x + sign(diff.x) * 16.1
+						else:
+							pos.y = wall_center.y + sign(diff.y) * 16.1
+						
+					var dist_sq_wall = pos.distance_squared_to(wall_center)
+					if dist_sq_wall < 1600: # 40px radius (up from 32)
+						var push_dir = (pos - wall_center)
+						if push_dir == Vector2.ZERO: push_dir = Vector2(1, 0)
+						wall_push += push_dir.normalized() * (1.0 - (dist_sq_wall / 1600.0))
 	
 	for x in range(grid_pos.x - 1, grid_pos.x + 2):
 		for y in range(grid_pos.y - 1, grid_pos.y + 2):
@@ -116,9 +149,9 @@ func _update_enemy_batch(i: int, delta: float):
 		separation = (separation / float(neighbor_count)).normalized() * 1.5
 		
 	# Combine forces: Flow Field + Wall Avoidance + Enemy Separation
-	dir = (dir + separation + wall_push * 2.0).normalized()
+	dir = (dir + separation + wall_push * 8.0).normalized()
 	
-	velocities[i] = velocities[i].lerp(dir * enemy_speed, 4.0 * delta)
+	velocities[i] = velocities[i].lerp(dir * enemy_speed, 6.0 * delta)
 	positions[i] += velocities[i] * delta
 
 func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
