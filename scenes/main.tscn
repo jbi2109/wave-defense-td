@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://cyit0o1omjeet" path="res://prefabs/spawner.tscn" id="8_tipki"]
 [ext_resource type="Script" uid="uid://76x4ipe6m14d" path="res://scripts/wave_manager.gd" id="9_wavem"]
 [ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://scripts/enemy_definition.gd" id="10_edef"]
+[ext_resource type="Script" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
+[ext_resource type="Script" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -22,6 +24,9 @@ spawn_rate = 0.01
 
 [node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
 script = ExtResource("2_s8xa3")
+
+[node name="TurretPlacementManager" type="Node2D" parent="." unique_id=987654321]
+script = ExtResource("11_plcmt")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
@@ -105,6 +110,15 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 text = "Wave: 0"
+
+[node name="HUDBuildMenu" type="Control" parent="HUD/Overlay"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("12_buildm")
 
 [node name="NextWaveButton" type="Button" parent="HUD/Overlay" unique_id=1843973277]
 layout_mode = 1

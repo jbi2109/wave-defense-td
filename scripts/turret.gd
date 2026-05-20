@@ -13,14 +13,16 @@ var fire_rate: float    = 0.2    ## Seconds between shots
 var current_level: int  = 1
 var total_spent: int    = 0      ## Tracks gold spent (for sell value)
 
-@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
+var rotates: bool = true
 
+@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
 var _fire_timer: float = 0.0
 
 # ─────────────────────────────────────────────────────────────
 #  INITIALISATION
 # ─────────────────────────────────────────────────────────────
 func _ready():
+	add_to_group("turret")
 	if turret_type != "" and Data.turrets.has(turret_type):
 		_load_stats_from_data()
 
@@ -30,6 +32,15 @@ func _load_stats_from_data():
 	attack_range = def.stats.get("attack_range", attack_range)
 	fire_rate    = 1.0 / def.stats.get("attack_speed", 1.0 / fire_rate)
 	total_spent  = def.get("cost", 0)
+	rotates      = def.get("rotates", true)
+	
+	var tex_path = def.sprite
+	if tex_path.begins_with("res://Assets"):
+		tex_path = tex_path.replace("res://Assets", "res://assets")
+	texture = load(tex_path)
+	
+	var s = def.get("scale", 1.0)
+	scale = Vector2(s, s)
 
 # ─────────────────────────────────────────────────────────────
 #  PROCESS
@@ -41,7 +52,8 @@ func _process(delta):
 	var target_idx = _find_target()
 	if target_idx == -1: return
 
-	look_at(enemy_manager.positions[target_idx])
+	if rotates:
+		look_at(enemy_manager.positions[target_idx])
 
 	if _fire_timer <= 0.0:
 		_fire(target_idx)
