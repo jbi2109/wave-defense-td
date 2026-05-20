@@ -1,8 +1,8 @@
 extends Control
 class_name HUDBuildMenu
 
-@onready var placement_manager: TurretPlacementManager = get_node("../../TurretPlacementManager")
-@onready var wave_manager: WaveManager = get_node("../../WaveManager")
+@onready var placement_manager: TurretPlacementManager = get_node("../../../TurretPlacementManager")
+@onready var wave_manager: WaveManager = get_node("../../../WaveManager")
 
 # --- UI References ---
 var build_bar: PanelContainer
@@ -33,7 +33,10 @@ func _create_ui_nodes():
 	# 1. Build Bar at bottom center
 	build_bar = PanelContainer.new()
 	build_bar.name = "BuildBar"
-	build_bar.anchors_preset = Control.PRESET_BOTTOM_CENTER
+	build_bar.anchor_left = 0.5
+	build_bar.anchor_right = 0.5
+	build_bar.anchor_top = 1.0
+	build_bar.anchor_bottom = 1.0
 	build_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	build_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	build_bar.offset_bottom = -20
@@ -64,7 +67,10 @@ func _create_ui_nodes():
 	# 2. Upgrade Panel on the left side
 	upgrade_panel = PanelContainer.new()
 	upgrade_panel.name = "UpgradePanel"
-	upgrade_panel.anchors_preset = Control.PRESET_BOTTOM_LEFT
+	upgrade_panel.anchor_left = 0.0
+	upgrade_panel.anchor_right = 0.0
+	upgrade_panel.anchor_top = 1.0
+	upgrade_panel.anchor_bottom = 1.0
 	upgrade_panel.grow_horizontal = Control.GROW_DIRECTION_END
 	upgrade_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	upgrade_panel.offset_left = 20

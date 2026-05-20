@@ -4,7 +4,7 @@ class_name TurretPlacementManager
 const TURRET_PREFAB = preload("res://prefabs/turret.tscn")
 
 var selected_type: String = ""
-var ghost_instance: Sprite2D = nil
+var ghost_instance: Sprite2D = null
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
@@ -45,7 +45,7 @@ func cancel_placement():
 	selected_type = ""
 	if ghost_instance:
 		ghost_instance.queue_free()
-		ghost_instance = nil
+		ghost_instance = null
 
 func _can_place() -> bool:
 	if not wave_manager:

@@ -42,7 +42,7 @@ func _draw():
 		var ratio = hp / max_hp
 		var t = types[i]
 		var et = enemy_manager.enemy_types[t]
-		var is_boss_type = et.get("is_boss", false)
+		var is_boss_type = et.is_boss if "is_boss" in et else false
 		
 		# Draw only if boss or below 10% health
 		if is_boss_type or ratio < 0.1:
@@ -83,7 +83,7 @@ func _update_boss_hud():
 	for i in range(active_count):
 		var t = types[i]
 		var et = enemy_manager.enemy_types[t]
-		if et.get("is_boss", false):
+		if et.is_boss if "is_boss" in et else false:
 			total_boss_hp += healths[i]
 			total_boss_max_hp += max_healths[i]
 			last_boss_name = et.enemy_name
