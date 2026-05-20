@@ -162,7 +162,7 @@ func _spawn_single_enemy():
 	)
 	enemy_manager.spawn_enemy(pos, type)
 
-func _determine_enemy_type_to_spawn(wave: int, spawned_index: int, total_to_spawn: int) -> int:
+func _determine_enemy_type_to_spawn(wave: int, spawned_index: int, _total_to_spawn: int) -> int:
 	# Wave 15 is Big Boss only
 	if wave == 15:
 		return 5 # Big Boss

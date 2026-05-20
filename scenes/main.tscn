@@ -10,11 +10,11 @@
 [ext_resource type="PackedScene" uid="uid://cyit0o1omjeet" path="res://prefabs/spawner.tscn" id="8_tipki"]
 [ext_resource type="Script" uid="uid://76x4ipe6m14d" path="res://scripts/wave_manager.gd" id="9_wavem"]
 [ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://scripts/enemy_definition.gd" id="10_edef"]
-[ext_resource type="Script" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
-[ext_resource type="Script" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
-[ext_resource type="Script" path="res://scripts/enemy_health_bars.gd" id="13_hlthb"]
-[ext_resource type="Script" path="res://scripts/wave_announcement.gd" id="14_wnnce"]
-[ext_resource type="Script" path="res://scripts/camera_shake.gd" id="15_shake"]
+[ext_resource type="Script" uid="uid://c3mo6rcwqaqc2" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
+[ext_resource type="Script" uid="uid://75i6o481f7k8" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
+[ext_resource type="Script" uid="uid://b0fisn4u25xdn" path="res://scripts/enemy_health_bars.gd" id="13_hlthb"]
+[ext_resource type="Script" uid="uid://di5usepgfvpyg" path="res://scripts/wave_announcement.gd" id="14_wnnce"]
+[ext_resource type="Script" uid="uid://c3xr3m6rudg6x" path="res://scripts/camera_shake.gd" id="15_shake"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -22,7 +22,6 @@ script = ExtResource("1_tbgi4")
 [node name="WaveManager" type="Node" parent="." unique_id=484738291]
 script = ExtResource("9_wavem")
 base_enemies_per_wave = 1000
-wave_scaler = 1.1
 spawn_rate = 0.01
 
 [node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
@@ -36,16 +35,13 @@ script = ExtResource("13_hlthb")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
-separation_radius_multiplier = 8.0
+separation_radius_multiplier = 25.0
 overlap_weight = 0.1
 grid_cell_size = 16
 
 [node name="Swarmer" type="Node" parent="EnemyManager" unique_id=2000000001]
 script = ExtResource("10_edef")
 scale = 1.4
-speed = 120.0
-health = 10.0
-spawn_weight = 10.0
 gold_yield = 3
 
 [node name="Tank" type="Node" parent="EnemyManager" unique_id=2000000002]
@@ -67,7 +63,6 @@ scale = 1.2
 speed = 200.0
 health = 8.0
 spawn_weight = 3.0
-gold_yield = 5
 min_wave = 3
 
 [node name="Armored" type="Node" parent="EnemyManager" unique_id=2000000004]
@@ -99,7 +94,6 @@ min_wave = 5
 [node name="BigBoss" type="Node" parent="EnemyManager" unique_id=2000000006]
 script = ExtResource("10_edef")
 enemy_name = "Big Boss"
-texture_path = "res://assets/enemies/dino1.png"
 scale = 3.5
 speed = 25.0
 health = 2000.0
@@ -112,8 +106,6 @@ min_wave = 15
 
 [node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_2rs0q")]
 position = Vector2(1908, 325)
-health = 1000
-extents = Vector2(10, 130)
 
 [node name="Turret1" parent="." unique_id=1015196751 instance=ExtResource("4_046hq")]
 position = Vector2(983, 515)
@@ -147,7 +139,7 @@ theme_override_font_sizes/font_size = 24
 text = "Enemies: 0"
 horizontal_alignment = 2
 
-[node name="GoldLabel" type="Label" parent="HUD/Overlay"]
+[node name="GoldLabel" type="Label" parent="HUD/Overlay" unique_id=595054433]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -163,9 +155,8 @@ theme_override_font_sizes/font_size = 24
 text = "Gold: 150"
 horizontal_alignment = 2
 
-[node name="WaveLabel" type="Label" parent="HUD/Overlay"]
+[node name="WaveLabel" type="Label" parent="HUD/Overlay" unique_id=1063156871]
 layout_mode = 1
-anchors_preset = 0
 offset_left = 10.0
 offset_top = 10.0
 offset_right = 200.0
@@ -175,8 +166,8 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 text = "Wave: 0"
 
-[node name="HUDBuildMenu" type="Control" parent="HUD/Overlay"]
-layout_mode = 3
+[node name="HUDBuildMenu" type="Control" parent="HUD/Overlay" unique_id=2134665468]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -224,7 +215,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Restart Game"
 
-[node name="VictoryContainer" type="VBoxContainer" parent="HUD/Overlay"]
+[node name="VictoryContainer" type="VBoxContainer" parent="HUD/Overlay" unique_id=1472199680]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -239,19 +230,19 @@ offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VictoryLabel" type="Label" parent="HUD/Overlay/VictoryContainer"]
+[node name="VictoryLabel" type="Label" parent="HUD/Overlay/VictoryContainer" unique_id=1105844959]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 32
 text = "VICTORY! BIG BOSS DEFEATED!"
 horizontal_alignment = 1
 
-[node name="PlayAgainButton" type="Button" parent="HUD/Overlay/VictoryContainer"]
+[node name="PlayAgainButton" type="Button" parent="HUD/Overlay/VictoryContainer" unique_id=669795362]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Play Again"
 
-[node name="CountdownLabel" type="Label" parent="HUD/Overlay"]
+[node name="CountdownLabel" type="Label" parent="HUD/Overlay" unique_id=1888461292]
 visible = false
 layout_mode = 1
 anchors_preset = 7
@@ -271,7 +262,7 @@ theme_override_font_sizes/font_size = 20
 text = "Next Wave in: 30s"
 horizontal_alignment = 1
 
-[node name="BossLabel" type="Label" parent="HUD/Overlay"]
+[node name="BossLabel" type="Label" parent="HUD/Overlay" unique_id=693953496]
 visible = false
 layout_mode = 1
 anchors_preset = 5
@@ -288,7 +279,7 @@ theme_override_font_sizes/font_size = 18
 text = "BOSS"
 horizontal_alignment = 1
 
-[node name="BossProgressBar" type="ProgressBar" parent="HUD/Overlay"]
+[node name="BossProgressBar" type="ProgressBar" parent="HUD/Overlay" unique_id=781778012]
 visible = false
 layout_mode = 1
 anchors_preset = 5
@@ -301,7 +292,7 @@ offset_bottom = 65.0
 grow_horizontal = 2
 value = 100.0
 
-[node name="WaveAnnouncement" type="Control" parent="HUD/Overlay"]
+[node name="WaveAnnouncement" type="Control" parent="HUD/Overlay" unique_id=1780445051]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -317,7 +308,7 @@ grow_vertical = 2
 pivot_offset = Vector2(300, 100)
 script = ExtResource("14_wnnce")
 
-[node name="Label" type="Label" parent="HUD/Overlay/WaveAnnouncement"]
+[node name="Label" type="Label" parent="HUD/Overlay/WaveAnnouncement" unique_id=1814093357]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
