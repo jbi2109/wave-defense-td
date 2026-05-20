@@ -25,7 +25,7 @@ script = ExtResource("2_s8xa3")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
-enemy_separation = 25.0
+separation_radius_multiplier = 8.0
 overlap_weight = 0.1
 grid_cell_size = 16
 
@@ -77,6 +77,34 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 text = "Enemies: 0"
 horizontal_alignment = 2
+
+[node name="GoldLabel" type="Label" parent="HUD/Overlay"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 55.0
+offset_right = -20.0
+offset_bottom = 85.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Gold: 150"
+horizontal_alignment = 2
+
+[node name="WaveLabel" type="Label" parent="HUD/Overlay"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 40.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Wave: 0"
 
 [node name="NextWaveButton" type="Button" parent="HUD/Overlay" unique_id=1843973277]
 layout_mode = 1
