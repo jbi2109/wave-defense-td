@@ -8,25 +8,42 @@
 [ext_resource type="PackedScene" uid="uid://dd0u1wt1odenb" path="res://Maps/Map1.tscn" id="6_2rs0q"]
 [ext_resource type="Script" uid="uid://chvyvybfq8or8" path="res://scripts/enemy_manager.gd" id="7_enemy"]
 [ext_resource type="PackedScene" uid="uid://cyit0o1omjeet" path="res://prefabs/spawner.tscn" id="8_tipki"]
-[ext_resource type="Script" path="res://scripts/wave_manager.gd" id="9_wavem"]
+[ext_resource type="Script" uid="uid://76x4ipe6m14d" path="res://scripts/wave_manager.gd" id="9_wavem"]
+[ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://scripts/enemy_definition.gd" id="10_edef"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
 
 [node name="WaveManager" type="Node" parent="." unique_id=484738291]
 script = ExtResource("9_wavem")
-base_enemies_per_wave = 5000
+base_enemies_per_wave = 1000
 wave_scaler = 1.1
-spawn_rate = 0.001
+spawn_rate = 0.01
 
 [node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
 script = ExtResource("2_s8xa3")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
+enemy_separation = 25.0
+overlap_weight = 0.1
+grid_cell_size = 16
+
+[node name="Swarmer" type="Node" parent="EnemyManager" unique_id=2000000001]
+script = ExtResource("10_edef")
+scale = 1.4
+
+[node name="Tank" type="Node" parent="EnemyManager" unique_id=2000000002]
+script = ExtResource("10_edef")
+enemy_name = "Tank"
+texture_path = "res://assets/enemies/dino2.png"
+scale = 1.6
+health = 50.0
+spawn_weight = 0.5
 
 [node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_2rs0q")]
 position = Vector2(1908, 325)
+health = 1000
 extents = Vector2(10, 130)
 
 [node name="Turret1" parent="." unique_id=1015196751 instance=ExtResource("4_046hq")]
@@ -44,6 +61,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="EnemyCountLabel" type="Label" parent="HUD/Overlay" unique_id=-1294967295]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 50.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Enemies: 0"
+horizontal_alignment = 2
 
 [node name="NextWaveButton" type="Button" parent="HUD/Overlay" unique_id=1843973277]
 layout_mode = 1
