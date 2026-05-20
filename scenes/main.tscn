@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
 [ext_resource type="Script" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
 [ext_resource type="Script" path="res://scripts/enemy_health_bars.gd" id="13_hlthb"]
+[ext_resource type="Script" path="res://scripts/wave_announcement.gd" id="14_wnnce"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -298,6 +299,37 @@ offset_right = 250.0
 offset_bottom = 65.0
 grow_horizontal = 2
 value = 100.0
+
+[node name="WaveAnnouncement" type="Control" parent="HUD/Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(300, 100)
+script = ExtResource("14_wnnce")
+
+[node name="Label" type="Label" parent="HUD/Overlay/WaveAnnouncement"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 48
+text = "WAVE 1"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1851217568]
 environment = ExtResource("5_bujp1")
