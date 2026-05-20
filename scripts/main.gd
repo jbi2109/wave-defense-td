@@ -29,9 +29,9 @@ func _ready():
 	if has_node("HUD/Overlay/GameOverContainer/RestartButton"):
 		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(
 			func(): get_tree().reload_current_scene())
-	if has_node("HUD/Overlay/StartEarlyButton"):
-		$HUD/Overlay/StartEarlyButton.pressed.connect(
-			func(): wave_manager.skip_inter_wave())
+	if has_node("HUD/Overlay/VictoryContainer/PlayAgainButton"):
+		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(
+			func(): get_tree().reload_current_scene())
 
 	# Start with starting gold
 	Globals.reset_gold()
@@ -103,14 +103,37 @@ func _process(delta):
 
 	wave_manager.tick(delta, _spawn_single_enemy)
 
-	# Show "Next Wave" button when all enemies cleared and no wave running
-	if has_node("HUD/Overlay/NextWaveButton"):
-		$HUD/Overlay/NextWaveButton.visible = (
-			not wave_manager.is_spawning and
-			not wave_manager.is_inter_wave and
-			enemy_manager.active_count == 0 and
-			wave_manager.current_wave >= 0
-		)
+	# --- Wave Progression / Clear detection ---
+	if (not wave_manager.is_spawning and 
+		not wave_manager.is_inter_wave and 
+		wave_manager.current_wave > 0 and 
+		enemy_manager.active_count == 0):
+		
+		if wave_manager.current_wave == 15:
+			_on_victory()
+		else:
+			wave_manager.start_inter_wave()
+
+	# --- NextWaveButton / CountdownLabel update ---
+	var next_btn = get_node_or_null("HUD/Overlay/NextWaveButton")
+	var count_lbl = get_node_or_null("HUD/Overlay/CountdownLabel")
+	
+	if next_btn:
+		if wave_manager.current_wave == 0:
+			next_btn.visible = true
+			next_btn.text = "Start Game"
+		elif wave_manager.is_inter_wave:
+			next_btn.visible = true
+			next_btn.text = "Start Early"
+		else:
+			next_btn.visible = false
+			
+	if count_lbl:
+		if wave_manager.is_inter_wave:
+			count_lbl.visible = true
+			count_lbl.text = "Next Wave in: %ds" % ceil(wave_manager._inter_wave_timer)
+		else:
+			count_lbl.visible = false
 
 # ─────────────────────────────────────────────────────────────
 #  HUD UPDATE
@@ -131,8 +154,28 @@ func _spawn_single_enemy():
 	if spawners.is_empty(): return
 	var chosen = spawners[wave_manager.enemies_spawned % spawners.size()]
 	var pos    = chosen.get_random_spawn_point()
-	var type   = _weighted_type_for_wave(wave_manager.current_wave)
+	
+	var type   = _determine_enemy_type_to_spawn(
+		wave_manager.current_wave,
+		wave_manager.enemies_spawned,
+		wave_manager.enemies_to_spawn
+	)
 	enemy_manager.spawn_enemy(pos, type)
+
+func _determine_enemy_type_to_spawn(wave: int, spawned_index: int, total_to_spawn: int) -> int:
+	# Wave 15 is Big Boss only
+	if wave == 15:
+		return 5 # Big Boss
+		
+	# Wave 5: 1 Mini Boss (spawned first)
+	if wave == 5 and spawned_index == 0:
+		return 4 # Mini Boss
+		
+	# Wave 10: 2 Mini Bosses (spawned as first and second)
+	if wave == 10 and (spawned_index == 0 or spawned_index == 1):
+		return 4 # Mini Boss
+		
+	return _weighted_type_for_wave(wave)
 
 func _weighted_type_for_wave(wave: int) -> int:
 	var eligible: Array[int] = []
@@ -160,10 +203,15 @@ func _weighted_type_for_wave(wave: int) -> int:
 # ─────────────────────────────────────────────────────────────
 func _on_next_wave_pressed():
 	if wave_manager.is_spawning: return
-	if enemy_manager.active_count > 0: return
-	wave_manager.start_wave()
-	if has_node("HUD/Overlay/NextWaveButton"):
-		$HUD/Overlay/NextWaveButton.visible = false
+	
+	if wave_manager.current_wave == 0:
+		wave_manager.start_wave()
+	elif wave_manager.is_inter_wave:
+		# Early start bonus: +10% of enemies count in gold!
+		var bonus = int(wave_manager.enemies_to_spawn * 0.1)
+		Globals.add_gold(bonus)
+		print("Started early! Gained early start gold bonus of: ", bonus)
+		wave_manager.skip_inter_wave()
 
 func _on_enemy_killed(_type_idx: int, _position: Vector2, gold_yield: int):
 	Globals.add_gold(gold_yield)
@@ -174,3 +222,13 @@ func _on_nexus_destroyed():
 		$HUD/Overlay/GameOverContainer.visible = true
 	if has_node("HUD/Overlay/NextWaveButton"):
 		$HUD/Overlay/NextWaveButton.visible = false
+
+func _on_victory():
+	is_game_over = true
+	if has_node("HUD/Overlay/VictoryContainer"):
+		$HUD/Overlay/VictoryContainer.visible = true
+	if has_node("HUD/Overlay/NextWaveButton"):
+		$HUD/Overlay/NextWaveButton.visible = false
+	if has_node("HUD/Overlay/CountdownLabel"):
+		$HUD/Overlay/CountdownLabel.visible = false
+	print("--- VICTORY! GAME CLEARED ---")

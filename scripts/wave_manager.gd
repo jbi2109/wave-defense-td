@@ -7,7 +7,7 @@ class_name WaveManager
 @export var base_enemies_per_wave: int   = 100
 @export var wave_scaler: float           = 1.1
 @export var spawn_rate: float            = 0.001   ## Seconds between individual spawns
-@export var inter_wave_duration: float   = 10.0    ## Seconds between waves
+@export var inter_wave_duration: float   = 30.0    ## Seconds between waves
 
 # ─────────────────────────────────────────────────────────────
 #  State
@@ -30,6 +30,8 @@ var enemy_manager: EnemyManager = null
 #  Public API
 # ─────────────────────────────────────────────────────────────
 func enemies_for_wave(wave: int) -> int:
+	if wave == 15:
+		return 1 # Big Boss only!
 	return int(base_enemies_per_wave * pow(wave_scaler, wave - 1))
 
 func start_wave():

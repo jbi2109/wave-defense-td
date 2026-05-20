@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://scripts/enemy_definition.gd" id="10_edef"]
 [ext_resource type="Script" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
 [ext_resource type="Script" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
+[ext_resource type="Script" path="res://scripts/enemy_health_bars.gd" id="13_hlthb"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -28,6 +29,9 @@ script = ExtResource("2_s8xa3")
 [node name="TurretPlacementManager" type="Node2D" parent="." unique_id=987654321]
 script = ExtResource("11_plcmt")
 
+[node name="EnemyHealthBars" type="Node2D" parent="." unique_id=987654322]
+script = ExtResource("13_hlthb")
+
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
 separation_radius_multiplier = 8.0
@@ -37,14 +41,72 @@ grid_cell_size = 16
 [node name="Swarmer" type="Node" parent="EnemyManager" unique_id=2000000001]
 script = ExtResource("10_edef")
 scale = 1.4
+speed = 120.0
+health = 10.0
+spawn_weight = 10.0
+gold_yield = 3
 
 [node name="Tank" type="Node" parent="EnemyManager" unique_id=2000000002]
 script = ExtResource("10_edef")
 enemy_name = "Tank"
 texture_path = "res://assets/enemies/dino2.png"
 scale = 1.6
+speed = 60.0
 health = 50.0
 spawn_weight = 0.5
+gold_yield = 10
+armor = 0.3
+
+[node name="Runner" type="Node" parent="EnemyManager" unique_id=2000000003]
+script = ExtResource("10_edef")
+enemy_name = "Runner"
+texture_path = "res://assets/enemies/dino3.png"
+scale = 1.2
+speed = 200.0
+health = 8.0
+spawn_weight = 3.0
+gold_yield = 5
+min_wave = 3
+
+[node name="Armored" type="Node" parent="EnemyManager" unique_id=2000000004]
+script = ExtResource("10_edef")
+enemy_name = "Armored"
+texture_path = "res://assets/enemies/dino4.png"
+scale = 1.5
+speed = 70.0
+health = 80.0
+spawn_weight = 2.0
+gold_yield = 15
+armor = 0.6
+min_wave = 5
+
+[node name="MiniBoss" type="Node" parent="EnemyManager" unique_id=2000000005]
+script = ExtResource("10_edef")
+enemy_name = "Mini Boss"
+texture_path = "res://assets/enemies/dino2.png"
+scale = 2.5
+speed = 40.0
+health = 500.0
+spawn_weight = 0.0
+gold_yield = 100
+armor = 0.2
+nexus_damage = 5
+is_boss = true
+min_wave = 5
+
+[node name="BigBoss" type="Node" parent="EnemyManager" unique_id=2000000006]
+script = ExtResource("10_edef")
+enemy_name = "Big Boss"
+texture_path = "res://assets/enemies/dino1.png"
+scale = 3.5
+speed = 25.0
+health = 2000.0
+spawn_weight = 0.0
+gold_yield = 500
+armor = 0.4
+nexus_damage = 10
+is_boss = true
+min_wave = 15
 
 [node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_2rs0q")]
 position = Vector2(1908, 325)
@@ -159,6 +221,83 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Restart Game"
+
+[node name="VictoryContainer" type="VBoxContainer" parent="HUD/Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -126.5
+offset_top = -29.0
+offset_right = 126.5
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryLabel" type="Label" parent="HUD/Overlay/VictoryContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 32
+text = "VICTORY! BIG BOSS DEFEATED!"
+horizontal_alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="HUD/Overlay/VictoryContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Play Again"
+
+[node name="CountdownLabel" type="Label" parent="HUD/Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -120.0
+offset_right = 150.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Next Wave in: 30s"
+horizontal_alignment = 1
+
+[node name="BossLabel" type="Label" parent="HUD/Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 15.0
+offset_right = 200.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "BOSS"
+horizontal_alignment = 1
+
+[node name="BossProgressBar" type="ProgressBar" parent="HUD/Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 45.0
+offset_right = 250.0
+offset_bottom = 65.0
+grow_horizontal = 2
+value = 100.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1851217568]
 environment = ExtResource("5_bujp1")
