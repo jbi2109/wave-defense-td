@@ -213,8 +213,64 @@ func _on_next_wave_pressed():
 		print("Started early! Gained early start gold bonus of: ", bonus)
 		wave_manager.skip_inter_wave()
 
-func _on_enemy_killed(_type_idx: int, _position: Vector2, gold_yield: int):
+func _on_enemy_killed(type_idx: int, pos: Vector2, gold_yield: int):
 	Globals.add_gold(gold_yield)
+	_spawn_death_particles(pos, type_idx)
+
+func _spawn_death_particles(pos: Vector2, type_idx: int):
+	var particles = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.lifetime = 0.6
+	particles.spread = 180.0
+	particles.gravity = Vector2(0, 300)
+	particles.initial_velocity_min = 60.0
+	particles.initial_velocity_max = 140.0
+	
+	# Custom properties by type
+	# 0: Swarmer, 1: Tank, 2: Runner, 3: Armored, 4: MiniBoss, 5: BigBoss
+	match type_idx:
+		0: # Swarmer
+			particles.amount = 12
+			particles.color = Color(0.85, 0.3, 0.2) # Reddish orange
+			particles.scale_amount_min = 2.0
+			particles.scale_amount_max = 5.0
+		1: # Tank
+			particles.amount = 16
+			particles.color = Color(0.2, 0.4, 0.9) # Blue
+			particles.scale_amount_min = 3.0
+			particles.scale_amount_max = 7.0
+		2: # Runner
+			particles.amount = 10
+			particles.color = Color(0.9, 0.8, 0.2) # Yellow
+			particles.scale_amount_min = 2.0
+			particles.scale_amount_max = 4.0
+		3: # Armored
+			particles.amount = 15
+			particles.color = Color(0.6, 0.6, 0.65) # Metallic gray sparks
+			particles.gravity = Vector2(0, 500) # Spark gravity
+			particles.initial_velocity_min = 100.0
+			particles.initial_velocity_max = 200.0
+			particles.scale_amount_min = 1.5
+			particles.scale_amount_max = 3.5
+		4: # Mini Boss
+			particles.amount = 30
+			particles.color = Color(0.9, 0.1, 0.1) # Bright red
+			particles.initial_velocity_min = 100.0
+			particles.initial_velocity_max = 250.0
+			particles.scale_amount_min = 4.0
+			particles.scale_amount_max = 9.0
+		5: # Big Boss
+			particles.amount = 60
+			particles.color = Color(1.0, 0.2, 0.1) # Giant explosion
+			particles.initial_velocity_min = 120.0
+			particles.initial_velocity_max = 350.0
+			particles.scale_amount_min = 5.0
+			particles.scale_amount_max = 12.0
+			
+	particles.script = load("res://scripts/death_effect.gd")
+	add_child(particles)
 
 func _on_nexus_destroyed():
 	is_game_over = true

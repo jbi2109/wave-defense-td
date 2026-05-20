@@ -115,7 +115,39 @@ func _target_last(indices: Array[int]) -> int:
 # ─────────────────────────────────────────────────────────────
 func _fire(target_idx: int):
 	enemy_manager.damage_enemy(target_idx, damage)
-	# TODO Phase 2: spawn bullet node for visual
+	
+	# Spawn visual tracer
+	var tracer_scene = load("res://scripts/bullet_tracer.gd")
+	var tracer = Node2D.new()
+	tracer.set_script(tracer_scene)
+	
+	var m_pos = global_position
+	if has_node("Muzzle"):
+		m_pos = $Muzzle.global_position
+		
+	var target_pos = enemy_manager.positions[target_idx]
+	
+	var col = Color(1.0, 0.9, 0.5, 0.9)
+	var w = 3.0
+	
+	match turret_type:
+		"gatling":
+			col = Color(1.0, 0.85, 0.4, 0.9)
+			w = 2.0
+		"laser":
+			col = Color(1.0, 0.4, 0.1, 0.8) # Fire/Flamethrower color
+			w = 6.0
+		"ray":
+			col = Color(0.1, 0.8, 1.0, 0.9) # Cyan laser
+			w = 4.0
+		"melee":
+			col = Color(0.9, 0.2, 0.1, 0.7) # Red explosive shockwave
+			w = 12.0
+			
+	# Add to main scene tree
+	get_parent().add_child(tracer)
+	tracer.global_position = global_position # Anchor to local coordinate space reference
+	tracer.init(m_pos, target_pos, col, w)
 
 # ─────────────────────────────────────────────────────────────
 #  UPGRADE

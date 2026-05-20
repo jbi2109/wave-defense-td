@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
 [ext_resource type="Script" path="res://scripts/enemy_health_bars.gd" id="13_hlthb"]
 [ext_resource type="Script" path="res://scripts/wave_announcement.gd" id="14_wnnce"]
+[ext_resource type="Script" path="res://scripts/camera_shake.gd" id="15_shake"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -339,6 +340,7 @@ energy = 0.5
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=93793647]
 anchor_mode = 0
+script = ExtResource("15_shake")
 
 [node name="SmartShapeMap" parent="." unique_id=1775234243 instance=ExtResource("6_2rs0q")]
 
