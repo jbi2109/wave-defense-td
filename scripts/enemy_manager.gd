@@ -7,6 +7,8 @@ const EnemyDef = preload("res://scripts/enemy_definition.gd")
 @export var separation_radius_multiplier: float = 8.0  ## Per-scale separation radius
 @export var overlap_weight: float = 0.05               ## How hard enemies push each other
 @export var grid_cell_size: int = 32
+@export var regenerate_flow_field_periodically: bool = true
+@export var dynamic_path_ratio: float = 0.5            ## Percentage of enemies that detour around crowds
 
 # --- Enemy type registry ---
 var enemy_types: Array[Node] = []
@@ -18,12 +20,14 @@ var enemy_types: Array[Node] = []
 # --- Per-enemy SoA buffers (grow dynamically) ---
 var active_count: int = 0
 var current_capacity: int = 0
+var _type_counters: Array[int] = []
 var positions      = PackedVector2Array()
 var velocities     = PackedVector2Array()
 var healths        = PackedFloat32Array()
 var max_healths    = PackedFloat32Array()  ## For health bar rendering
 var types          = PackedInt32Array()
 var gold_yields    = PackedInt32Array()   ## Gold dropped on kill
+var uses_dynamic_path = PackedByteArray()
 
 # --- Spatial grid ---
 const GRID_WIDTH:  int = 128
@@ -38,12 +42,15 @@ var type_speeds    = PackedFloat32Array()
 var type_armors    = PackedFloat32Array()
 var type_nexus_dmg = PackedInt32Array()
 var type_gold      = PackedInt32Array()
+var type_is_boss: Array[bool] = []
+var type_names: Array[String] = []
 
 # --- Rendering ---
 var multimeshes: Array[MultiMeshInstance2D] = []
 
 # --- Cached flow field references (refreshed each physics frame) ---
 var ff_grid: Array = []
+var ff_static_grid: Array = []
 var ff_obstacle: Array = []
 var ff_grid_size: Vector2i
 var ff_grid_offset: Vector2i
@@ -93,6 +100,9 @@ func _ready():
 	type_armors.resize(enemy_types.size())
 	type_nexus_dmg.resize(enemy_types.size())
 	type_gold.resize(enemy_types.size())
+	type_is_boss.resize(enemy_types.size())
+	type_names.resize(enemy_types.size())
+	_type_counters.resize(enemy_types.size())
 
 	for i in range(enemy_types.size()):
 		var t = enemy_types[i]
@@ -101,6 +111,8 @@ func _ready():
 		type_armors[i]    = t.armor if "armor" in t else 0.0
 		type_nexus_dmg[i] = t.nexus_damage if "nexus_damage" in t else 1
 		type_gold[i]      = t.gold_yield if "gold_yield" in t else 5
+		type_is_boss[i]   = t.is_boss if "is_boss" in t else false
+		type_names[i]     = t.enemy_name if "enemy_name" in t else "Enemy"
 
 		# Build MultiMesh per type
 		var mmi = MultiMeshInstance2D.new()
@@ -142,6 +154,7 @@ func _ensure_capacity(required: int):
 	max_healths.resize(new_cap)
 	types.resize(new_cap)
 	gold_yields.resize(new_cap)
+	uses_dynamic_path.resize(new_cap)
 	grid_next.resize(new_cap)
 
 	for mmi in multimeshes:
@@ -162,6 +175,7 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	max_healths[active_count] = t.health
 	types[active_count]       = type_index
 	gold_yields[active_count] = type_gold[type_index]
+	uses_dynamic_path[active_count] = 1 if (randf() < dynamic_path_ratio) else 0
 	active_count += 1
 
 # ─────────────────────────────────────────────────────────────
@@ -203,8 +217,9 @@ func _cache_nexus():
 #  HELPER — flow field regen (expensive BFS, 3s timer)
 # ─────────────────────────────────────────────────────────────
 func _maybe_regen_flow_field(current_ms: int):
+	if not regenerate_flow_field_periodically: return
 	if active_count == 0: return  # No enemies = no need to regenerate
-	if current_ms - last_flow_field_update < 3000: return
+	if current_ms - last_flow_field_update < 1500: return
 	if not _nexus_valid: return
 	last_flow_field_update = current_ms
 	if flow_field.has_method("update_density"):
@@ -216,6 +231,7 @@ func _maybe_regen_flow_field(current_ms: int):
 # ─────────────────────────────────────────────────────────────
 func _cache_flow_field():
 	ff_grid       = flow_field.grid
+	ff_static_grid = flow_field.static_grid
 	ff_obstacle   = flow_field.obstacle_field
 	ff_grid_size  = flow_field.grid_size
 	ff_grid_offset = flow_field.grid_offset
@@ -236,7 +252,10 @@ func _tick_movement(delta: float):
 		var gx_ff    = int(floor(pos.x / ff_cell_size)) - ff_grid_offset.x
 		var gy_ff    = int(floor(pos.y / ff_cell_size)) - ff_grid_offset.y
 		if gx_ff >= 0 and gx_ff < ff_grid_size.x and gy_ff >= 0 and gy_ff < ff_grid_size.y:
-			t_dir = ff_grid[gx_ff][gy_ff]
+			if uses_dynamic_path[i] == 1:
+				t_dir = ff_grid[gx_ff][gy_ff]
+			else:
+				t_dir = ff_static_grid[gx_ff][gy_ff]
 
 		# --- U-turn prevention (dot product check, no sqrt needed) ---
 		var vel     = velocities[i]
@@ -296,29 +315,93 @@ func _tick_movement(delta: float):
 							positions[other_idx] = op
 					other_idx = grid_next[other_idx]
 
-		# --- Soft wall push + hard escape ---
+		# --- Hard wall push (circle-vs-AABB) ---
 		var tx = int(floor(pos.x / 32.0)) - ff_grid_offset.x
 		var ty = int(floor(pos.y / 32.0)) - ff_grid_offset.y
-		var margin = 6.0 * my_scale
-		var lx = pos.x - (tx + ff_grid_offset.x) * 32.0
-		var ly = pos.y - (ty + ff_grid_offset.y) * 32.0
+		var is_ref_valid = tx >= 0 and tx < ff_grid_size.x and ty >= 0 and ty < ff_grid_size.y
 
-		if lx < margin and tx > 0 and tx - 1 < ff_grid_size.x and ff_obstacle[tx - 1][ty]:
-			pos.x += (margin - lx) * 0.5
-		elif lx > 32.0 - margin and tx + 1 < ff_grid_size.x and ff_obstacle[tx + 1][ty]:
-			pos.x -= (lx - (32.0 - margin)) * 0.5
-		if ly < margin and ty > 0 and ty - 1 < ff_grid_size.y and ff_obstacle[tx][ty - 1]:
-			pos.y += (margin - ly) * 0.5
-		elif ly > 32.0 - margin and ty + 1 < ff_grid_size.y and ff_obstacle[tx][ty + 1]:
-			pos.y -= (ly - (32.0 - margin)) * 0.5
+		if is_ref_valid:
+			if ff_obstacle[tx][ty]:
+				# Dino is inside an obstacle cell! Find nearest open cell to push it out.
+				var found = false
+				var nearest_open = Vector2.ZERO
+				var best_escape_dsq = 1000000.0
+				for r in range(1, 6): # Search up to 5 cells away
+					for ox in range(-r, r + 1):
+						for oy in range(-r, r + 1):
+							if abs(ox) == r or abs(oy) == r:
+								var cx = tx + ox
+								var cy = ty + oy
+								if cx >= 0 and cx < ff_grid_size.x and cy >= 0 and cy < ff_grid_size.y:
+									if not ff_obstacle[cx][cy]:
+										var gc = Vector2((cx + ff_grid_offset.x) * 32.0 + 16.0, (cy + ff_grid_offset.y) * 32.0 + 16.0)
+										var dsq = pos.distance_squared_to(gc)
+										if dsq < best_escape_dsq:
+											best_escape_dsq = dsq
+											nearest_open = gc
+											found = true
+					if found:
+						break
+				if found:
+					pos = nearest_open
+					velocities[i] = Vector2.ZERO
+			else:
+				# Dino is in a walkable cell, push out of any 3x3 neighbor obstacles
+				var margin = 12.0 * my_scale
+				for ox in range(-1, 2):
+					for oy in range(-1, 2):
+						if ox == 0 and oy == 0: continue
+						var cx = tx + ox
+						var cy = ty + oy
+						if cx >= 0 and cx < ff_grid_size.x and cy >= 0 and cy < ff_grid_size.y:
+							if ff_obstacle[cx][cy]:
+								# Get AABB of obstacle cell
+								var min_x = (cx + ff_grid_offset.x) * 32.0
+								var min_y = (cy + ff_grid_offset.y) * 32.0
+								var max_x = min_x + 32.0
+								var max_y = min_y + 32.0
+								
+								# Closest point on AABB to pos
+								var closest_x = clampf(pos.x, min_x, max_x)
+								var closest_y = clampf(pos.y, min_y, max_y)
+								
+								var dx = pos.x - closest_x
+								var dy = pos.y - closest_y
+								var dsq = dx * dx + dy * dy
+								
+								if dsq < margin * margin:
+									if dsq < 0.0001:
+										var center_open_x = (tx + ff_grid_offset.x) * 32.0 + 16.0
+										var center_open_y = (ty + ff_grid_offset.y) * 32.0 + 16.0
+										dx = pos.x - center_open_x
+										dy = pos.y - center_open_y
+										dsq = dx * dx + dy * dy
+										if dsq < 0.0001:
+											dx = 1.0; dy = 0.0; dsq = 1.0
+											
+									var dist = sqrt(dsq)
+									var nx = dx / dist
+									var ny = dy / dist
+									var overlap = margin - dist
+									pos.x += nx * overlap
+									pos.y += ny * overlap
+									
+									# Slide response
+									var dot = velocities[i].x * nx + velocities[i].y * ny
+									if dot < 0.0:
+										velocities[i].x -= nx * dot
+										velocities[i].y -= ny * dot
 
-		if tx < 0 or tx >= ff_grid_size.x or ty < 0 or ty >= ff_grid_size.y or ff_obstacle[tx][ty]:
+		# --- Fallback Out-of-Bounds Check ---
+		var cur_tx = int(floor(pos.x / 32.0)) - ff_grid_offset.x
+		var cur_ty = int(floor(pos.y / 32.0)) - ff_grid_offset.y
+		if cur_tx < 0 or cur_tx >= ff_grid_size.x or cur_ty < 0 or cur_ty >= ff_grid_size.y or ff_obstacle[cur_tx][cur_ty]:
 			var best_dsq  = 1000000.0
 			var escape    = pos
-			for ox in range(-1, 2):
-				for oy in range(-1, 2):
-					var cx = tx + ox
-					var cy = ty + oy
+			for ox in range(-2, 3):
+				for oy in range(-2, 3):
+					var cx = cur_tx + ox
+					var cy = cur_ty + oy
 					if cx >= 0 and cx < ff_grid_size.x and cy >= 0 and cy < ff_grid_size.y:
 						if not ff_obstacle[cx][cy]:
 							var gc  = Vector2(cx + ff_grid_offset.x, cy + ff_grid_offset.y) * 32.0 + Vector2(16, 16)
@@ -327,7 +410,7 @@ func _tick_movement(delta: float):
 								best_dsq = dsq
 								escape   = gc
 			pos = escape
-			velocities[i] = velocities[i] * 0.8
+			velocities[i] = Vector2.ZERO
 
 		positions[i] = pos
 
@@ -335,25 +418,23 @@ func _tick_movement(delta: float):
 #  HELPER — update multimesh transforms
 # ─────────────────────────────────────────────────────────────
 func _tick_render():
-	var type_counters = []
-	type_counters.resize(enemy_types.size())
-	type_counters.fill(0)
+	_type_counters.fill(0)
 
 	for i in range(active_count):
-		var t        = types[i]
-		var type_def = enemy_types[t]
-		var s        = Vector2(type_def.scale, -type_def.scale)
+		var t         = types[i]
+		var scale_val = type_scales[t]
+		var s         = Vector2(scale_val, -scale_val)
 		if velocities[i].x < 0:
 			s.x = -s.x
 		var xform = Transform2D(0, positions[i])
 		xform.x *= s.x
 		xform.y *= s.y
-		var local_idx = type_counters[t]
+		var local_idx = _type_counters[t]
 		multimeshes[t].multimesh.set_instance_transform_2d(local_idx, xform)
-		type_counters[t] += 1
+		_type_counters[t] += 1
 
 	for t in range(enemy_types.size()):
-		multimeshes[t].multimesh.visible_instance_count = type_counters[t]
+		multimeshes[t].multimesh.visible_instance_count = _type_counters[t]
 
 # ─────────────────────────────────────────────────────────────
 #  HELPER — death + nexus hit detection
@@ -423,6 +504,15 @@ func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
 # ─────────────────────────────────────────────────────────────
 func _remove_enemy(index: int):
 	active_count -= 1
+	var old_last_idx = active_count
+	
+	var turrets = get_tree().get_nodes_in_group("turret")
+	for t in turrets:
+		if t.target_idx == index:
+			t.target_idx = -1
+		elif t.target_idx == old_last_idx:
+			t.target_idx = index
+
 	if index < active_count:
 		positions[index]   = positions[active_count]
 		velocities[index]  = velocities[active_count]
@@ -430,3 +520,4 @@ func _remove_enemy(index: int):
 		max_healths[index] = max_healths[active_count]
 		types[index]       = types[active_count]
 		gold_yields[index] = gold_yields[active_count]
+		uses_dynamic_path[index] = uses_dynamic_path[active_count]

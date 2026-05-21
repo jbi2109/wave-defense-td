@@ -14,6 +14,7 @@ func _ready():
 	await get_tree().process_frame
 	_setup_map_logic()
 	flow_field.generate_field_for_rect(nexus.global_position, nexus.extents)
+	flow_field.save_static_grid()
 
 	# Wire wave manager dependency
 	wave_manager.enemy_manager = enemy_manager
@@ -76,15 +77,33 @@ func _setup_map_logic():
 
 	for x in range(flow_field.grid_size.x):
 		for y in range(flow_field.grid_size.y):
-			var wp = Vector2(x + offset.x, y + offset.y) * cell_size + Vector2(cell_size * 0.5, cell_size * 0.5)
-			var in_grass = path_rect.has_point(wp) and Geometry2D.is_point_in_polygon(wp, path_poly)
-			var in_dirt  = false
-			if in_grass:
-				for i in range(obstacle_polys.size()):
-					if obs_rects[i].has_point(wp) and Geometry2D.is_point_in_polygon(wp, obstacle_polys[i]):
-						in_dirt = true
+			var cell_pos = Vector2(x + offset.x, y + offset.y) * cell_size
+			var wp = cell_pos + Vector2(cell_size * 0.5, cell_size * 0.5)
+			
+			var is_walkable = _is_point_walkable(wp, path_rect, path_poly, obs_rects, obstacle_polys)
+			if is_walkable:
+				# Check 4 corners inset by 8 pixels for conservative path margins
+				var offsets = [
+					Vector2(8.0, 8.0),
+					Vector2(24.0, 8.0),
+					Vector2(8.0, 24.0),
+					Vector2(24.0, 24.0)
+				]
+				for off in offsets:
+					if not _is_point_walkable(cell_pos + off, path_rect, path_poly, obs_rects, obstacle_polys):
+						is_walkable = false
 						break
-			flow_field.set_obstacle(Vector2i(x + offset.x, y + offset.y), not (in_grass and not in_dirt))
+						
+			flow_field.set_obstacle(Vector2i(x + offset.x, y + offset.y), not is_walkable)
+
+func _is_point_walkable(pt: Vector2, path_rect: Rect2, path_poly: PackedVector2Array, obs_rects: Array[Rect2], obstacle_polys: Array[PackedVector2Array]) -> bool:
+	var in_grass = path_rect.has_point(pt) and Geometry2D.is_point_in_polygon(pt, path_poly)
+	if not in_grass:
+		return false
+	for i in range(obstacle_polys.size()):
+		if obs_rects[i].has_point(pt) and Geometry2D.is_point_in_polygon(pt, obstacle_polys[i]):
+			return false
+	return true
 
 func _bounds(poly: PackedVector2Array) -> Rect2:
 	if poly.is_empty(): return Rect2()
