@@ -24,6 +24,7 @@ var max_healths = PackedFloat32Array()
 var types = PackedInt32Array()
 var gold_yields = PackedInt32Array()
 var speed_modifiers = PackedFloat32Array()
+var flash_amounts = PackedFloat32Array()
 
 # Per-type caching
 var type_scales = PackedFloat32Array()
@@ -136,7 +137,20 @@ func _ready():
 			mmi.multimesh.mesh.size = Vector2(frame_w, frame_h)
 			
 			var shader = Shader.new()
-			shader.code = "shader_type canvas_item;\nuniform int hframes = 24;\nvoid vertex() {\n\tfloat frame = mod(floor(INSTANCE_CUSTOM.x), float(hframes));\n\tUV.x = (UV.x + frame) / float(hframes);\n}\n"
+			shader.code = "shader_type canvas_item;
+uniform int hframes = 24;
+varying vec4 custom_data;
+void vertex() {
+	float frame = mod(floor(INSTANCE_CUSTOM.x), float(hframes));
+	UV.x = (UV.x + frame) / float(hframes);
+	custom_data = INSTANCE_CUSTOM;
+}
+void fragment() {
+	vec4 tex_color = texture(TEXTURE, UV);
+	vec3 flash_color = vec3(1.0, 0.0, 0.0);
+	COLOR = vec4(mix(tex_color.rgb, flash_color, custom_data.y), tex_color.a) * COLOR;
+}
+"
 			var mat = ShaderMaterial.new()
 			mat.shader = shader
 			mat.set_shader_parameter("hframes", t_hframes)
@@ -154,6 +168,8 @@ func _ready():
 	types.resize(MAX_AGENTS)
 	gold_yields.resize(MAX_AGENTS)
 	speed_modifiers.resize(MAX_AGENTS)
+	flash_amounts.resize(MAX_AGENTS)
+	flash_amounts.fill(0.0)
 
 	_init_gpu()
 
@@ -252,11 +268,13 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	
 	var idx = active_count
 	positions[idx] = pos
-	healths[idx] = type_armors[type_index]
-	max_healths[idx] = 100.0
+	var starting_hp = enemy_types[type_index].health
+	healths[idx] = starting_hp
+	max_healths[idx] = starting_hp
 	types[idx] = type_index
 	gold_yields[idx] = type_gold[type_index]
 	speed_modifiers[idx] = 1.0
+	flash_amounts[idx] = 0.0
 	
 	var bytes = PackedByteArray()
 	bytes.resize(AGENT_STRUCT_SIZE)
@@ -370,8 +388,9 @@ func _dispatch_compute(push_bytes: PackedByteArray):
 func _tick_cpu_logic(delta: float):
 	var to_remove = []
 	for i in range(active_count):
-		# Apply decay to speed modifiers
+		# Apply decay to speed modifiers and flash amounts
 		speed_modifiers[i] = move_toward(speed_modifiers[i], 1.0, delta * 0.4)
+		flash_amounts[i] = move_toward(flash_amounts[i], 0.0, delta * 8.0)
 		
 		var px = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 0)
 		var py = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 4)
@@ -459,12 +478,12 @@ func _tick_cpu_logic(delta: float):
 		arr[offset + 10] = 1.0
 		arr[offset + 11] = 1.0
 		
-		# Custom: frame_idx, 0, 0, 0
+		# Custom: frame_idx, flash_amount, 0, 0
 		var frame_idx = 0.0
 		if (vx*vx + vy*vy) > 10.0:
 			frame_idx = time_ms * 0.012 + float(i) * 3.0
 		arr[offset + 12] = frame_idx
-		arr[offset + 13] = 0.0
+		arr[offset + 13] = flash_amounts[i]
 		arr[offset + 14] = 0.0
 		arr[offset + 15] = 0.0
 
@@ -488,6 +507,7 @@ func damage_enemy(index: int, amount: float):
 		rd.buffer_update(agent_buffer_rid, index * AGENT_STRUCT_SIZE + 16, 4, bytes)
 		
 		if net_damage > 0.0:
+			flash_amounts[index] = 1.0
 			SoundManager.play_sfx("hit")
 			if DamageTextManager.instance:
 				DamageTextManager.instance.spawn_damage_text(positions[index], net_damage, false)
@@ -526,6 +546,7 @@ func _remove_enemy(index: int):
 		types[index] = types[active_count]
 		gold_yields[index] = gold_yields[active_count]
 		speed_modifiers[index] = speed_modifiers[active_count]
+		flash_amounts[index] = flash_amounts[active_count]
 		
 	var dead_bytes = PackedByteArray()
 	dead_bytes.resize(4)

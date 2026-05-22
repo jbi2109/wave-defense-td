@@ -167,6 +167,19 @@ void pass_binning(uint id) {
 		t_dir = f_val.xy * 2.0 - 1.0; 
 	}
 	
+	if (length(t_dir) > 0.01) {
+		t_dir = normalize(t_dir);
+		
+		// Apply minor curl noise (divergence-free perturbation) to break alignment
+		float freq = 0.006;
+		float t = params.time_msec * 0.001 * 0.4;
+		float px = ag.pos.x * freq + t;
+		float py = ag.pos.y * freq - t;
+		
+		vec2 curl = vec2(-sin(px) * sin(py), -cos(px) * cos(py));
+		t_dir = normalize(t_dir + 0.15 * curl);
+	}
+	
 	// Move
 	float current_speed = ag.max_speed * speed_modifiers[id];
 	vec2 vel = ag.vel;
@@ -264,12 +277,16 @@ void pass_separation(uint id) {
 								push_dir = d / dist;
 							}
 							
-							float overlap = sep - dist;
+							// Distance-based attenuation (quadratic decay to 0 at boundary)
+							float ratio = clamp(dist / sep, 0.0, 1.0);
+							float atten = 1.0 - ratio;
+							float smooth_factor = atten * atten;
+							
 							float mm = my_scale * my_scale;
 							float om = other.scale * other.scale;
 							float tm = mm + om;
 							
-							float push_mag = overlap * params.overlap_weight * 0.5;
+							float push_mag = sep * smooth_factor * params.overlap_weight * 0.5;
 							push += push_dir * push_mag * (om / tm);
 						}
 					}
