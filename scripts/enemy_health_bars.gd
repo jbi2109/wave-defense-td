@@ -41,8 +41,7 @@ func _draw():
 			
 		var ratio = hp / max_hp
 		var t = types[i]
-		var et = enemy_manager.enemy_types[t]
-		var is_boss_type = et.is_boss if "is_boss" in et else false
+		var is_boss_type = enemy_manager.type_is_boss[t]
 		
 		# Draw only if boss or below 10% health
 		if is_boss_type or ratio < 0.1:
@@ -66,7 +65,7 @@ func _draw():
 			draw_rect(Rect2(draw_pos, Vector2(size_w * ratio, size_h)), color)
 
 func _update_boss_hud():
-	if not enemy_manager or enemy_manager.active_count == 0:
+	if not enemy_manager or enemy_manager.active_count == 0 or enemy_manager.active_boss_count == 0:
 		_hide_boss_hud()
 		return
 		
@@ -82,11 +81,10 @@ func _update_boss_hud():
 	
 	for i in range(active_count):
 		var t = types[i]
-		var et = enemy_manager.enemy_types[t]
-		if et.is_boss if "is_boss" in et else false:
+		if enemy_manager.type_is_boss[t]:
 			total_boss_hp += healths[i]
 			total_boss_max_hp += max_healths[i]
-			last_boss_name = et.enemy_name
+			last_boss_name = enemy_manager.type_names[t]
 			boss_count += 1
 			
 	if boss_count > 0 and total_boss_max_hp > 0.0:

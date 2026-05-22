@@ -15,7 +15,10 @@ var upgrade_btn: Button
 var sell_btn: Button
 var target_mode_option: OptionButton
 
+const RangeIndicatorScript = preload("res://scripts/range_indicator.gd")
+
 var selected_turret: Turret = null
+var selection_indicator: Node2D = null
 
 func _ready():
 	_create_ui_nodes()
@@ -154,33 +157,60 @@ func _create_ui_nodes():
 	upgrade_panel.add_child(margin)
 	add_child(upgrade_panel)
 
+	# 3. Settings Button at top-left
+	var settings_btn = Button.new()
+	settings_btn.name = "SettingsButton"
+	settings_btn.text = "Settings"
+	settings_btn.custom_minimum_size = Vector2(100, 35)
+	settings_btn.offset_left = 10
+	settings_btn.offset_top = 50
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.2, 0.22, 0.28, 0.8)
+	btn_style.corner_radius_top_left = 4
+	btn_style.corner_radius_top_right = 4
+	btn_style.corner_radius_bottom_left = 4
+	btn_style.corner_radius_bottom_right = 4
+	settings_btn.add_theme_stylebox_override("normal", btn_style)
+	
+	add_child(settings_btn)
+	settings_btn.pressed.connect(func():
+		var existing = get_node_or_null("SettingsMenu")
+		if not existing:
+			var sm_scene = load("res://scenes/ui/settings_menu.tscn")
+			if sm_scene:
+				var sm = sm_scene.instantiate()
+				add_child(sm)
+	)
+
 func _populate_build_menu():
 	# Clear previous
 	for child in build_hbox.get_children():
 		child.queue_free()
 		
-	# Populate based on Data.turrets
-	for type in Data.turrets.keys():
-		var def = Data.turrets[type]
-		var cost = def.get("cost", 0)
-		var name_str = def.get("name", type.capitalize())
-		
-		var btn = Button.new()
-		btn.name = type
-		btn.text = "%s\n$%d" % [name_str, cost]
-		btn.custom_minimum_size = Vector2(100, 60)
-		btn.pressed.connect(func(): _on_build_btn_pressed(type))
-		
-		# Stylish hover and coloring
-		var btn_style = StyleBoxFlat.new()
-		btn_style.bg_color = Color(0.18, 0.22, 0.3, 0.9)
-		btn_style.corner_radius_top_left = 6
-		btn_style.corner_radius_top_right = 6
-		btn_style.corner_radius_bottom_left = 6
-		btn_style.corner_radius_bottom_right = 6
-		btn.add_theme_stylebox_override("normal", btn_style)
-		
-		build_hbox.add_child(btn)
+	# Populate based on TurretPlacementManager definitions
+	if placement_manager:
+		for type in placement_manager.definitions.keys():
+			var t_def = placement_manager.definitions[type]
+			var cost = t_def.cost
+			var name_str = t_def.turret_name
+			
+			var btn = Button.new()
+			btn.name = type
+			btn.text = "%s\n$%d" % [name_str, cost]
+			btn.custom_minimum_size = Vector2(100, 60)
+			btn.pressed.connect(func(): _on_build_btn_pressed(type))
+			
+			# Stylish hover and coloring
+			var btn_style = StyleBoxFlat.new()
+			btn_style.bg_color = Color(0.18, 0.22, 0.3, 0.9)
+			btn_style.corner_radius_top_left = 6
+			btn_style.corner_radius_top_right = 6
+			btn_style.corner_radius_bottom_left = 6
+			btn_style.corner_radius_bottom_right = 6
+			btn.add_theme_stylebox_override("normal", btn_style)
+			
+			build_hbox.add_child(btn)
 		
 	_update_build_buttons_state()
 
@@ -194,8 +224,11 @@ func _update_build_buttons_state():
 	
 	for btn in build_hbox.get_children():
 		var type = btn.name
-		if Data.turrets.has(type):
-			var cost = Data.turrets[type].get("cost", 0)
+		if placement_manager and placement_manager.definitions.has(type):
+			var t_def = placement_manager.definitions[type]
+			var cost = t_def.cost
+			var name_str = t_def.turret_name
+			btn.text = "%s\n$%d" % [name_str, cost]
 			# Disable if not enough gold or not in inter-wave phase
 			btn.disabled = (gold < cost) or not can_build
 
@@ -210,13 +243,29 @@ func _update_build_bar_visibility():
 	_update_build_buttons_state()
 
 func show_upgrade_panel(turret: Turret):
+	if selection_indicator:
+		selection_indicator.queue_free()
+		selection_indicator = null
+		
 	selected_turret = turret
 	upgrade_panel.visible = true
+	
+	selection_indicator = RangeIndicatorScript.new()
+	selection_indicator.radius = turret.attack_range
+	selection_indicator.global_position = turret.global_position
+	selection_indicator.fill_color = Color(0.2, 0.6, 1.0, 0.08)
+	selection_indicator.line_color = Color(0.2, 0.6, 1.0, 0.35)
+	selection_indicator.z_index = 8
+	get_node("/root/Main").add_child(selection_indicator)
+	
 	_update_upgrade_panel_content()
 
 func hide_upgrade_panel():
 	selected_turret = null
 	upgrade_panel.visible = false
+	if selection_indicator:
+		selection_indicator.queue_free()
+		selection_indicator = null
 
 func _update_upgrade_panel_content():
 	if not is_instance_valid(selected_turret):
@@ -224,7 +273,8 @@ func _update_upgrade_panel_content():
 		return
 		
 	var type = selected_turret.turret_type
-	var name_str = Data.turrets[type].get("name", type.capitalize())
+	var t_def = selected_turret.get_definition()
+	var name_str = t_def.turret_name if t_def else type.capitalize()
 	
 	upgrade_title.text = "%s (Lvl %d)" % [name_str, selected_turret.current_level]
 	
@@ -232,6 +282,10 @@ func _update_upgrade_panel_content():
 	var dmg_val = selected_turret.damage
 	var range_val = selected_turret.attack_range
 	var speed_val = 1.0 / selected_turret.fire_rate
+	
+	if selection_indicator:
+		selection_indicator.radius = range_val
+		selection_indicator.global_position = selected_turret.global_position
 	
 	var stats_text = "Damage: %.1f\nRange: %d\nSpeed: %.1f/s" % [dmg_val, range_val, speed_val]
 	upgrade_stats.text = stats_text
@@ -249,6 +303,8 @@ func _update_upgrade_panel_content():
 		
 	var sell_val = int(selected_turret.total_spent * 0.6)
 	sell_btn.text = "Sell (+$%d)" % sell_val
+
+
 
 func _on_upgrade_pressed():
 	if is_instance_valid(selected_turret):
@@ -278,6 +334,18 @@ func _on_wave_cleared(_wave_num: int):
 
 # Detect click on existing turrets
 func _unhandled_input(event):
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		var existing = get_node_or_null("SettingsMenu")
+		if existing:
+			existing._on_close_pressed()
+		else:
+			var sm_scene = load("res://scenes/ui/settings_menu.tscn")
+			if sm_scene:
+				var sm = sm_scene.instantiate()
+				add_child(sm)
+				get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var click_pos = get_global_mouse_position()
 		var clicked_turret: Turret = null

@@ -11,6 +11,25 @@ var is_game_over: bool = false
 #  READY
 # ─────────────────────────────────────────────────────────────
 func _ready():
+	var map_id = Globals.selected_map
+	if map_id == "":
+		map_id = "map1"
+		Globals.selected_map = "map1"
+		
+	var default_map = get_node_or_null("SmartShapeMap")
+	if default_map:
+		remove_child(default_map)
+		default_map.queue_free()
+		
+	var map_data = Data.maps.get(map_id)
+	if map_data:
+		var map_scene = load(map_data.scene)
+		if map_scene:
+			var map_inst = map_scene.instantiate()
+			map_inst.name = "SmartShapeMap"
+			add_child(map_inst)
+			Globals.currentMap = map_inst
+
 	await get_tree().process_frame
 	_setup_map_logic()
 	flow_field.generate_field_for_rect(nexus.global_position, nexus.extents)
@@ -23,20 +42,21 @@ func _ready():
 	GlobalEvents.nexus_destroyed.connect(_on_nexus_destroyed)
 	GlobalEvents.enemy_killed.connect(_on_enemy_killed)
 
-	# HUD buttons (nodes exist in scene, may be null if HUD redesigned later)
+	# HUD buttons
 	if has_node("HUD/Overlay/NextWaveButton"):
 		$HUD/Overlay/NextWaveButton.pressed.connect(_on_next_wave_pressed)
 		$HUD/Overlay/NextWaveButton.visible = true
 	if has_node("HUD/Overlay/GameOverContainer/RestartButton"):
 		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(
-			func(): get_tree().reload_current_scene())
+			func(): get_tree().change_scene_to_file("res://scenes/ui/level_selector.tscn"))
 	if has_node("HUD/Overlay/VictoryContainer/PlayAgainButton"):
 		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(
-			func(): get_tree().reload_current_scene())
+			func(): get_tree().change_scene_to_file("res://scenes/ui/level_selector.tscn"))
 
 	# Start with starting gold
 	Globals.reset_gold()
-
+	if Globals.auto_test_active:
+		_run_auto_test_gameplay()
 # ─────────────────────────────────────────────────────────────
 #  MAP OBSTACLE SETUP
 # ─────────────────────────────────────────────────────────────
@@ -81,20 +101,9 @@ func _setup_map_logic():
 			var wp = cell_pos + Vector2(cell_size * 0.5, cell_size * 0.5)
 			
 			var is_walkable = _is_point_walkable(wp, path_rect, path_poly, obs_rects, obstacle_polys)
-			if is_walkable:
-				# Check 4 corners inset by 8 pixels for conservative path margins
-				var offsets = [
-					Vector2(8.0, 8.0),
-					Vector2(24.0, 8.0),
-					Vector2(8.0, 24.0),
-					Vector2(24.0, 24.0)
-				]
-				for off in offsets:
-					if not _is_point_walkable(cell_pos + off, path_rect, path_poly, obs_rects, obstacle_polys):
-						is_walkable = false
-						break
-						
 			flow_field.set_obstacle(Vector2i(x + offset.x, y + offset.y), not is_walkable)
+			
+	flow_field.commit_obstacles()
 
 func _is_point_walkable(pt: Vector2, path_rect: Rect2, path_poly: PackedVector2Array, obs_rects: Array[Rect2], obstacle_polys: Array[PackedVector2Array]) -> bool:
 	var in_grass = path_rect.has_point(pt) and Geometry2D.is_point_in_polygon(pt, path_poly)
@@ -128,7 +137,7 @@ func _process(delta):
 		wave_manager.current_wave > 0 and 
 		enemy_manager.active_count == 0):
 		
-		if wave_manager.current_wave == 15:
+		if wave_manager.current_wave == wave_manager.max_waves:
 			_on_victory()
 		else:
 			wave_manager.start_inter_wave()
@@ -182,8 +191,8 @@ func _spawn_single_enemy():
 	enemy_manager.spawn_enemy(pos, type)
 
 func _determine_enemy_type_to_spawn(wave: int, spawned_index: int, _total_to_spawn: int) -> int:
-	# Wave 15 is Big Boss only
-	if wave == 15:
+	# Last wave is Big Boss only
+	if wave == wave_manager.max_waves:
 		return 5 # Big Boss
 		
 	# Wave 5: 1 Mini Boss (spawned first)
@@ -293,6 +302,7 @@ func _spawn_death_particles(pos: Vector2, type_idx: int):
 
 func _on_nexus_destroyed():
 	is_game_over = true
+	SaveManager.update_high_score(Globals.selected_map, wave_manager.current_wave - 1)
 	if has_node("HUD/Overlay/GameOverContainer"):
 		$HUD/Overlay/GameOverContainer.visible = true
 	if has_node("HUD/Overlay/NextWaveButton"):
@@ -300,6 +310,7 @@ func _on_nexus_destroyed():
 
 func _on_victory():
 	is_game_over = true
+	SaveManager.update_high_score(Globals.selected_map, 15)
 	if has_node("HUD/Overlay/VictoryContainer"):
 		$HUD/Overlay/VictoryContainer.visible = true
 	if has_node("HUD/Overlay/NextWaveButton"):
@@ -307,3 +318,11 @@ func _on_victory():
 	if has_node("HUD/Overlay/CountdownLabel"):
 		$HUD/Overlay/CountdownLabel.visible = false
 	print("--- VICTORY! GAME CLEARED ---")
+
+func _run_auto_test_gameplay():
+	print("[AUTO_TEST] Gameplay scene loaded. Map: ", Globals.selected_map)
+	await get_tree().create_timer(2.0).timeout
+	print("[AUTO_TEST] Starting wave...")
+	_on_next_wave_pressed()
+	await get_tree().create_timer(3.0).timeout
+	print("[AUTO_TEST] Automated test completed successfully!")

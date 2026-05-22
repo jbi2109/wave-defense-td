@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ci02encn0l282"
+path="res://.godot/imported/compute_physics.glsl-c36ede90e355eea325731886b900e7d5.res"
+
+[deps]
+
+source_file="res://scripts/compute_physics.glsl"
+dest_files=["res://.godot/imported/compute_physics.glsl-c36ede90e355eea325731886b900e7d5.res"]
+
+[params]
+

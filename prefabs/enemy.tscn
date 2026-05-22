@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://enemy12345"]
+[gd_scene format=3 uid="uid://c3b81yk0pkfrw"]
 
-[ext_resource type="Script" uid="uid://cfb026kk4jjwa" path="res://scripts/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
 [ext_resource type="Texture2D" uid="uid://bs4racyxdj48k" path="res://assets/enemies/dino1.png" id="2_yfjof"]
 
 [sub_resource type="Gradient" id="Gradient_shadow"]

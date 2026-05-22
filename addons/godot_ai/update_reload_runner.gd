@@ -1,7 +1,28 @@
 @tool
 extends Node
 
-## Runs the self-update after the visible plugin has handed off control.
+## EditorSetting key used to defer a self_update telemetry event across the
+## disable -> enable boundary. The runner runs while the plugin is disabled,
+## so it can't send WebSocket events directly; it writes the outcome here
+## and the re-enabled plugin's `_enter_tree` flushes it. See
+## `plugin.gd::_flush_pending_self_update_telemetry`.
+const PENDING_SELF_UPDATE_TELEMETRY_KEY := "godot_ai/pending_self_update_event"
+
+## Self-update runner. Owns the install-and-reload sequence from
+## `start(zip_path, temp_dir, detached_dock)` onward: extract files into
+## `addons/godot_ai/` with rollback bookkeeping, scan the filesystem,
+## re-enable the plugin, and clean up the detached dock.
+##
+## Single-phase install: writes the full `_new_file_paths +
+## _existing_file_paths` set before issuing exactly one
+## `EditorFileSystem.scan()`. Godot's scan-time reparse pass then sees one
+## consistent v(N+1) snapshot, so new files and existing files can resolve
+## each other's same-release API changes regardless of parse order.
+##
+## Not owned here: HTTP download (in `utils/update_manager.gd`), banner UI
+## (in `mcp_dock.gd`), or server stop prep (called by
+## `plugin.gd::install_downloaded_update` before this runner starts via
+## `_lifecycle.prepare_for_update_reload()`).
 ##
 ## This node is deliberately tiny and not parented under the EditorPlugin:
 ## it survives `set_plugin_enabled(false)`, extracts the downloaded release,
@@ -56,8 +77,8 @@ var _scan_timed_out := false
 ## and typed Variant storage is part of the hot-reload crash class.
 var _new_file_paths = []
 var _existing_file_paths = []
-## Per-file install records accumulated across batches so a failure in the
-## second batch can roll back files already replaced in the first batch.
+## Per-file install records accumulated during install so a later failure
+## can roll back files already replaced earlier in the same update.
 ## Each entry is an untyped Dictionary with target_path / backup_path /
 ## had_original keys. Cleared by `_finalize_install_success` on full success
 ## and by `_rollback_paths_written` on failure.
@@ -70,6 +91,16 @@ var _paths_written = []
 ## is missing or stale on disk. Surfaces FAILED_MIXED so the runner refuses
 ## to re-enable the plugin against a half-installed tree.
 var _restore_failed := false
+## Test-only opt-out for the scan-watchdog `push_warning` lines. The
+## watchdog unit tests in `test_update_reload_runner.gd` invoke
+## `_on_scan_watchdog_timeout()` and the post-timeout
+## `_start_filesystem_scan` bypass branch directly to pin their behavior
+## — but those code paths' `push_warning` calls then appear as yellow
+## console noise in every `test_run`, training reviewers to ignore the
+## runner's real production warnings. Tests set this true; production
+## leaves it false so genuine scan timeouts during a real self-update
+## still surface loudly. See issue #413.
+var _suppress_scan_warnings := false
 
 
 func start(zip_path: String, temp_dir: String, detached_dock) -> void:
@@ -116,19 +147,25 @@ func _extract_and_scan() -> void:
 		_wait_frames(POST_ENABLE_FREE_FRAMES, "_cleanup_and_finish")
 		return
 
-	var status := _install_zip_paths(_new_file_paths)
+	var install_paths := []
+	install_paths.append_array(_new_file_paths)
+	install_paths.append_array(_existing_file_paths)
+
+	var status := _install_zip_paths(install_paths)
 	if status != InstallStatus.OK:
 		_handle_install_failure(status)
 		return
 
-	if _new_file_paths.is_empty():
-		_install_existing_files_and_scan.call_deferred()
-	else:
-		## Register newly added class_name/base scripts while all old plugin
-		## files are still intact. Updating plugin.gd or handler preloads
-		## before this scan can make Godot parse a new dependency graph
-		## before its new global classes exist.
-		_start_filesystem_scan("_install_existing_files_and_scan")
+	_finalize_install_success()
+	_cleanup_update_temp()
+	## One scan covers both dependency directions: plugin.gd's preloads of
+	## new files resolve because those files are already present, and new
+	## files' references to new members or static-ness changes on existing
+	## load-surface scripts resolve because those existing files are also
+	## already at v(N+1). The goal is a consistent snapshot before scan, not
+	## a tree-atomic install; per-file writes still use `.tmp` + rename and
+	## rollback on failure.
+	_start_filesystem_scan("_enable_new_plugin")
 
 
 func _start_filesystem_scan(next_step: String = "_enable_new_plugin") -> void:
@@ -146,10 +183,11 @@ func _start_filesystem_scan(next_step: String = "_enable_new_plugin") -> void:
 	## actually completed. Skip the wait; Godot's normal background scan
 	## catches up after the plugin re-enables. See PR #381 review.
 	if _scan_timed_out:
-		push_warning(
-			"MCP | skipping filesystem_changed wait after previous timeout (next_step=%s)"
-			% deferred_step
-		)
+		if not _suppress_scan_warnings:
+			push_warning(
+				"MCP | skipping filesystem_changed wait after previous timeout (next_step=%s)"
+				% deferred_step
+			)
 		call_deferred(deferred_step)
 		return
 
@@ -189,10 +227,11 @@ func _on_scan_watchdog_timeout() -> void:
 	## `_waiting_for_scan == false`.
 	if not _waiting_for_scan:
 		return
-	push_warning(
-		"MCP | filesystem_changed didn't fire within %ds; proceeding without scan confirmation"
-		% int(SCAN_WATCHDOG_SECS)
-	)
+	if not _suppress_scan_warnings:
+		push_warning(
+			"MCP | filesystem_changed didn't fire within %ds; proceeding without scan confirmation"
+			% int(SCAN_WATCHDOG_SECS)
+		)
 	_scan_timed_out = true
 	var fs := EditorInterface.get_resource_filesystem()
 	if fs != null and fs.filesystem_changed.is_connected(_on_filesystem_changed):
@@ -250,18 +289,10 @@ func _read_update_manifest() -> bool:
 	return true
 
 
-func _install_existing_files_and_scan() -> void:
-	var status := _install_zip_paths(_existing_file_paths)
-	if status != InstallStatus.OK:
-		_handle_install_failure(status)
-		return
-
-	_finalize_install_success()
-	_cleanup_update_temp()
-	_start_filesystem_scan("_enable_new_plugin")
-
-
 func _handle_install_failure(status: int) -> void:
+	_record_pending_self_update({
+		"status": "failed_mixed" if status == InstallStatus.FAILED_MIXED else "failed_clean",
+	})
 	if status == InstallStatus.FAILED_MIXED:
 		## Half-installed addon tree on disk: re-enabling the plugin would
 		## load a mix of vN and vN+1 files. Print a load-bearing diagnostic
@@ -309,8 +340,8 @@ func _install_zip_paths(paths: Array) -> int:
 	var reader := ZIPReader.new()
 	if reader.open(zip_path) != OK:
 		print("MCP | update extract failed: could not reopen %s" % zip_path)
-		## Nothing in this batch was written, but a previous batch may have
-		## left files on disk; roll those back too.
+		## Nothing else can be written, but earlier files from this update
+		## may have landed on disk; roll those back too.
 		return _rollback_paths_written()
 
 	var install_base := ProjectSettings.globalize_path(INSTALL_BASE_PATH)
@@ -441,7 +472,7 @@ func _rollback_paths_written() -> int:
 	return InstallStatus.FAILED_CLEAN
 
 
-## Discard accumulated backups after both install batches succeed. Backups
+## Discard accumulated backups after the combined install succeeds. Backups
 ## are best-effort: a failure here doesn't compromise the new install, just
 ## leaves stray *.update_backup files for the user to clean up.
 func _finalize_install_success() -> void:
@@ -449,6 +480,17 @@ func _finalize_install_success() -> void:
 		if record.get("had_original", false):
 			DirAccess.remove_absolute(String(record.get("backup_path", "")))
 	_paths_written.clear()
+	_record_pending_self_update({"status": "success"})
+
+
+## Persist a self_update event description so the re-enabled plugin can
+## emit it once its WebSocket is connected. Survives the disable -> enable
+## window where the runner cannot send anything itself.
+func _record_pending_self_update(data: Dictionary) -> void:
+	var settings := EditorInterface.get_editor_settings()
+	if settings == null:
+		return
+	settings.set_setting(PENDING_SELF_UPDATE_TELEMETRY_KEY, JSON.stringify(data))
 
 
 func _cleanup_update_temp() -> void:

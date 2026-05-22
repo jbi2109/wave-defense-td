@@ -33,4 +33,7 @@ func _on_damaged(amount: int):
 	# Emit to HUD via Globals signal
 	Globals.baseHpChanged.emit(health, _max_health)
 	if health <= 0:
+		SoundManager.play_sfx("defeat")
 		GlobalEvents.nexus_destroyed.emit()
+	else:
+		SoundManager.play_sfx("hit")

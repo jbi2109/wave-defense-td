@@ -23,6 +23,13 @@ const PACKET_DRAIN_CAP_PER_TICK := 32
 const ClientConfigurator := preload("res://addons/godot_ai/client_configurator.gd")
 const ErrorCodes := preload("res://addons/godot_ai/utils/error_codes.gd")
 
+## Emitted whenever the underlying WebSocket open/closed state flips.
+## Subscribers (e.g. the plugin-side telemetry helper) use this to drain
+## events that were enqueued before the socket was ready. Emitted with
+## ``true`` on first OPEN per connect, ``false`` on transition to CLOSED
+## (including ``disconnect_from_server()``).
+signal connection_state_changed(is_open: bool)
+
 var _peer := WebSocketPeer.new()
 ## Set by plugin.gd after resolving the configured WebSocket port once for the
 ## server spawn. Reconnects reuse this cached value so they keep dialing the
@@ -90,6 +97,7 @@ func _process(delta: float) -> void:
 				_reconnect_attempt = 0
 				log_buffer.log("connected to server")
 				_send_handshake()
+				connection_state_changed.emit(true)
 
 			_drain_inbound_packets(_peer)
 
@@ -105,6 +113,7 @@ func _process(delta: float) -> void:
 				_clear_on_disconnect()
 				var code := _peer.get_close_code()
 				log_buffer.log("disconnected (code %d)" % code)
+				connection_state_changed.emit(false)
 			_reconnect_timer -= delta
 			if _reconnect_timer <= 0.0:
 				_attempt_reconnect()
@@ -156,6 +165,7 @@ func disconnect_from_server() -> void:
 	if _connected:
 		_peer.close(1000, "Plugin unloading")
 		_connected = false
+		connection_state_changed.emit(false)
 
 
 ## Reset per-connection state that was filled in by the previous server
@@ -292,6 +302,13 @@ func send_deferred_response(request_id: String, payload: Dictionary) -> void:
 	response["request_id"] = request_id
 	if not response.has("status"):
 		response["status"] = "ok" if payload.has("data") else "error"
+	## Symmetric with McpDispatcher::_dispatch — stamp live readiness on the
+	## deferred reply so the server's session cache self-heals from any
+	## response, not just the synchronous ones. Lets `project_stop` (the
+	## main deferred-response producer) stay correct even if its bespoke
+	## `readiness_after` payload field were ever dropped.
+	if not response.has("readiness"):
+		response["readiness"] = get_readiness()
 	if _send_json(response) and dispatcher != null:
 		dispatcher.complete_deferred_response(request_id)
 
@@ -419,6 +436,11 @@ static func _make_backpressure_error(
 		"request_id": request_id,
 		"status": "error",
 		"data": {},
+		## Stamp readiness on the backpressure error too — the server's
+		## per-response self-heal applies to every response shape the
+		## plugin emits, and the next legitimate reply may already be
+		## queued behind this one.
+		"readiness": get_readiness(),
 		"error": {
 			"code": ErrorCodes.INTERNAL_ERROR,
 			"message": (

@@ -8,10 +8,14 @@
 
 config_version=5
 
+[addons]
+
+ss2d/version="3.3.1"
+
 [application]
 
 config/name="Wave-defense-td"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/ui/level_selector.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,6 +25,8 @@ GlobalEvents="*res://scripts/global_events.gd"
 Globals="*res://scripts/Globals.gd"
 Data="*res://scripts/Data.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+SoundManager="*res://scripts/sound_manager.gd"
+SaveManager="*res://scripts/save_manager.gd"
 
 [display]
 
@@ -30,7 +36,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/TileMapDual/plugin.cfg", "res://addons/gamedev_ai/plugin.cfg", "res://addons/godot_ai/plugin.cfg")
+enabled=PackedStringArray("res://addons/gamedev_ai/plugin.cfg", "res://addons/godot_ai/plugin.cfg", "res://addons/rmsmartshape/plugin.cfg")
 
 [physics]
 

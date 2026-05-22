@@ -11,6 +11,7 @@ signal waveCleared(wait_time)
 signal enemyDestroyed(remain)
 
 var selected_map  := ""
+var auto_test_active: bool = true
 var mainNode      : Node2D
 var turretsNode   : Node2D
 var projectilesNode: Node2D

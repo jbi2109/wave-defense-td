@@ -15,32 +15,54 @@ var total_spent: int    = 0      ## Tracks gold spent (for sell value)
 
 var rotates: bool = true
 
-@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
+@onready var enemy_manager: EnemyManager = get_node("/root/Main/EnemyManager")
 var _fire_timer: float = 0.0
+var target_idx: int = -1
+
+@export_group("Inspector Overrides")
+@export var size_override: float = 0.0
+@export var damage_override: float = 0.0
+@export var fire_rate_override: float = 0.0
 
 # ─────────────────────────────────────────────────────────────
 #  INITIALISATION
 # ─────────────────────────────────────────────────────────────
 func _ready():
 	add_to_group("turret")
-	if turret_type != "" and Data.turrets.has(turret_type):
-		_load_stats_from_data()
+	_load_stats_from_data()
+	
+	if damage_override > 0.0:
+		damage = damage_override
+	if fire_rate_override > 0.0:
+		fire_rate = fire_rate_override
+	if size_override > 0.0:
+		scale = Vector2(size_override, size_override)
+
+func get_definition() -> Node:
+	var placement_manager = get_node_or_null("/root/Main/TurretPlacementManager")
+	if placement_manager and placement_manager.has_method("get_definition"):
+		return placement_manager.get_definition(turret_type)
+	return null
 
 func _load_stats_from_data():
-	var def = Data.turrets[turret_type]
-	damage       = def.stats.get("damage", damage)
-	attack_range = def.stats.get("attack_range", attack_range)
-	fire_rate    = 1.0 / def.stats.get("attack_speed", 1.0 / fire_rate)
-	total_spent  = def.get("cost", 0)
-	rotates      = def.get("rotates", true)
-	
-	var tex_path = def.sprite
-	if tex_path.begins_with("res://Assets"):
-		tex_path = tex_path.replace("res://Assets", "res://assets")
-	texture = load(tex_path)
-	
-	var s = def.get("scale", 1.0)
-	scale = Vector2(s, s)
+	var t_def = get_definition()
+	if t_def:
+		damage       = t_def.damage
+		attack_range = t_def.attack_range
+		fire_rate    = t_def.fire_rate
+		total_spent  = t_def.cost
+		var s        = t_def.scale
+		scale        = Vector2(s, s)
+		rotates      = t_def.rotates
+		
+		var tex_path = t_def.sprite_path
+		if tex_path.begins_with("res://Assets"):
+			tex_path = tex_path.replace("res://Assets", "res://assets")
+		if tex_path != "":
+			texture = load(tex_path)
+		if turret_type == "slow":
+			self_modulate = Color(0.2, 0.7, 1.0, 1.0)
+
 
 # ─────────────────────────────────────────────────────────────
 #  PROCESS
@@ -49,7 +71,17 @@ func _process(delta):
 	_fire_timer -= delta
 	if not enemy_manager: return
 
-	var target_idx = _find_target()
+	# Check if current cached target is still valid
+	var target_valid = false
+	if target_idx >= 0 and target_idx < enemy_manager.active_count:
+		if enemy_manager.healths[target_idx] > 0.0:
+			var target_pos = enemy_manager.positions[target_idx]
+			if global_position.distance_squared_to(target_pos) <= attack_range * attack_range:
+				target_valid = true
+
+	if not target_valid:
+		target_idx = _find_target()
+
 	if target_idx == -1: return
 
 	if rotates:
@@ -113,8 +145,16 @@ func _target_last(indices: Array[int]) -> int:
 # ─────────────────────────────────────────────────────────────
 #  FIRE
 # ─────────────────────────────────────────────────────────────
-func _fire(target_idx: int):
-	enemy_manager.damage_enemy(target_idx, damage)
+func _fire(p_target_idx: int):
+	SoundManager.play_sfx("shoot_" + turret_type)
+	if turret_type == "slow":
+		var targets = enemy_manager.get_nearby_enemies(global_position, attack_range)
+		for idx in targets:
+			if idx >= 0 and idx < enemy_manager.active_count:
+				enemy_manager.speed_modifiers[idx] = minf(enemy_manager.speed_modifiers[idx], 0.4)
+				enemy_manager.damage_enemy(idx, damage)
+	else:
+		enemy_manager.damage_enemy(p_target_idx, damage)
 	
 	# Spawn visual tracer
 	var tracer_scene = load("res://scripts/bullet_tracer.gd")
@@ -125,7 +165,7 @@ func _fire(target_idx: int):
 	if has_node("Muzzle"):
 		m_pos = $Muzzle.global_position
 		
-	var target_pos = enemy_manager.positions[target_idx]
+	var target_pos = enemy_manager.positions[p_target_idx]
 	
 	var col = Color(1.0, 0.9, 0.5, 0.9)
 	var w = 3.0
@@ -143,6 +183,9 @@ func _fire(target_idx: int):
 		"melee":
 			col = Color(0.9, 0.2, 0.1, 0.7) # Red explosive shockwave
 			w = 12.0
+		"slow":
+			col = Color(0.1, 0.7, 1.0, 0.9) # Ice cyan laser
+			w = 4.0
 			
 	# Add to main scene tree
 	get_parent().add_child(tracer)
@@ -153,11 +196,11 @@ func _fire(target_idx: int):
 #  UPGRADE
 # ─────────────────────────────────────────────────────────────
 func upgrade() -> bool:
-	if turret_type == "" or not Data.turrets.has(turret_type): return false
-	var def = Data.turrets[turret_type]
-	if current_level >= def.get("max_level", 1): return false
+	var t_def = get_definition()
+	if not t_def: return false
+	if current_level >= t_def.max_level: return false
 
-	var cost = def.get("upgrade_cost", 0)
+	var cost = t_def.upgrade_cost
 	if Globals.gold < cost: return false
 
 	Globals.gold -= cost
@@ -165,26 +208,26 @@ func upgrade() -> bool:
 	total_spent += cost
 	current_level += 1
 
-	# Apply upgrade bonuses from Data.turrets[type].upgrades
-	var upgrades = def.get("upgrades", {})
-	if upgrades.has("damage"):
-		var u = upgrades["damage"]
-		if u.get("multiplies", false):
-			damage *= u["amount"]
+	# Apply upgrade bonuses from t_def
+	if t_def.damage_upgrade > 0.0:
+		if t_def.damage_upgrade_multiplies:
+			damage *= t_def.damage_upgrade
 		else:
-			damage += u["amount"]
-	if upgrades.has("attack_speed"):
-		var u = upgrades["attack_speed"]
-		if u.get("multiplies", false):
-			fire_rate /= u["amount"]   # faster = lower interval
+			damage += t_def.damage_upgrade
+			
+	if t_def.speed_upgrade > 0.0:
+		if t_def.speed_upgrade_multiplies:
+			fire_rate /= t_def.speed_upgrade   # faster = lower interval
 		else:
-			fire_rate -= u["amount"]
+			fire_rate -= t_def.speed_upgrade
 	fire_rate = maxf(fire_rate, 0.03)  # Never faster than ~33 shots/s
 
 	GlobalEvents.turret_upgraded.emit(self)
+	SoundManager.play_sfx("build")
 	return true
 
 func sell() -> int:
+	SoundManager.play_sfx("sell")
 	var refund = int(total_spent * 0.6)
 	Globals.gold += refund
 	GlobalEvents.gold_changed.emit(Globals.gold)
@@ -193,9 +236,12 @@ func sell() -> int:
 	return refund
 
 func get_upgrade_cost() -> int:
-	if turret_type == "" or not Data.turrets.has(turret_type): return 0
-	return Data.turrets[turret_type].get("upgrade_cost", 0)
+	var t_def = get_definition()
+	if not t_def: return 0
+	return t_def.upgrade_cost
 
 func is_max_level() -> bool:
-	if turret_type == "" or not Data.turrets.has(turret_type): return true
-	return current_level >= Data.turrets[turret_type].get("max_level", 1)
+	var t_def = get_definition()
+	if not t_def: return true
+	return current_level >= t_def.max_level
+

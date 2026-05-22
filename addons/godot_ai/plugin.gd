@@ -19,10 +19,9 @@ const MANAGED_SERVER_VERSION_SETTING := "godot_ai/managed_server_version"
 const MANAGED_SERVER_WS_PORT_SETTING := "godot_ai/managed_server_ws_port"
 const UPDATE_RELOAD_RUNNER_SCRIPT := preload("res://addons/godot_ai/update_reload_runner.gd")
 
-## Preloaded so `_stop_server` / `force_restart_server` can reference the
-## sweep without depending on the editor's `class_name` scan running first.
-## See utils/uv_cache_cleanup.gd for what this does and why it lives next
-## to the server-stop hot path.
+## Preloaded so `_stop_server` / `force_restart_server` have a local script
+## dependency for the cleanup helper. See utils/uv_cache_cleanup.gd for what
+## this does and why it lives next to the server-stop hot path.
 const UvCacheCleanup := preload("res://addons/godot_ai/utils/uv_cache_cleanup.gd")
 
 ## Server lifecycle + port discovery extracted from this file (#297 PR 5).
@@ -35,15 +34,14 @@ const PortResolver := preload("res://addons/godot_ai/utils/port_resolver.gd")
 const ServerStateScript := preload("res://addons/godot_ai/utils/mcp_server_state.gd")
 const StartupPathScript := preload("res://addons/godot_ai/utils/mcp_startup_path.gd")
 
-## Plugin-class scripts — preloaded so `plugin.gd`'s parse and instantiation
-## sites resolve via the script path, not via the global `class_name`
-## registry. See the self-update parse-hazard policy near the field
-## declarations below for why every `Mcp*` plugin-class reference in this
-## file goes through one of these consts. Naming follows the existing
-## `UvCacheCleanup := preload(...)` convention (script-local const aliasing
-## a class whose registered `class_name` is `Mcp*`).
+## Plugin-class scripts used by this file. The script-local preload aliases
+## are ordinary dependency shorthand and keep construction sites compact.
+## They are not the self-update safety boundary; #398 was stale Script-object
+## content from a mixed old/new snapshot, fixed by the runner's single-phase
+## write-before-scan model.
 const Connection := preload("res://addons/godot_ai/connection.gd")
 const Dispatcher := preload("res://addons/godot_ai/dispatcher.gd")
+const Telemetry := preload("res://addons/godot_ai/telemetry.gd")
 const LogBuffer := preload("res://addons/godot_ai/utils/log_buffer.gd")
 const GameLogBuffer := preload("res://addons/godot_ai/utils/game_log_buffer.gd")
 const EditorLogBuffer := preload("res://addons/godot_ai/utils/editor_log_buffer.gd")
@@ -116,34 +114,31 @@ const STARTUP_TRACE_COUNTER_NAMES := [
 ## Untyped on purpose — see policy below. Type fences move to handler `_init`
 ## sites that take typed parameters.
 ##
-## Self-update parse-hazard policy: plugin entry-load code MUST NOT
-## reference any plugin-defined `class_name` (`Mcp*`) by name — neither
-## as a type annotation (`var x: McpFoo`), nor as a constructor
-## (`McpFoo.new()`), nor as any other member access (`McpFoo.CONST`,
-## `McpFoo.static_method()`). Every form resolves through Godot's global
-## class_name registry at parse time. During an in-place self-update,
-## `set_plugin_enabled(false)` re-parses `plugin.gd` against the freshly-
-## extracted addon tree before the registry has scanned the new files; a
-## reference to a class whose inheritance or class_name siblings changed
-## in the new release fails to resolve, the plugin enters a degraded
-## state, and the follow-up `_exit_tree` cascade crashes (see #242,
-## #244). Static-var initializers are the most dangerous form because
-## they execute at script-load: `static var _x := McpFoo.BAR` aborts the
-## parse before `_enter_tree` runs.
+## Self-update field and load-surface policy: plugin entry-load fields that
+## survive reload stay untyped. Typed fields against plugin-defined classes
+## were the #242 / #244 crash class: Godot can reparse a long-lived script
+## while its old field storage and the new type shape disagree. Static-var
+## initializers are the most dangerous form because they execute at
+## script-load; a top-level typed Dictionary/Array storage change can fail
+## before `_enter_tree` runs.
 ##
 ## The mitigation is two-part:
 ##   (1) Field declarations are untyped (this block).
-##   (2) Every other reference site uses script-local
-##       `const X := preload("res://...")` aliases declared at the top of
-##       the file (e.g. `Connection`, `Dispatcher`, `LogBuffer`,
-##       `ClientConfigurator`, `WindowsPortReservation`, …) — for
-##       constructors, constants, and static methods alike. `preload(...)`
-##       resolves the script by path at script-load, never consulting the
-##       global registry, so the parse stays clean across releases
-##       regardless of how the referenced class's `extends` chain or
-##       sibling class_names change.
+##   (2) Construction and static access use local names declared at the top
+##       of the file (e.g. `Connection`, `Dispatcher`, `LogBuffer`,
+##       `ClientConfigurator`, `WindowsPortReservation`, ...), which keeps
+##       this entry script's load surface explicit and reviewable.
 ##
-## `tests/unit/test_plugin_self_update_safety.py` locks these forms in.
+## Constructors, constants, and static methods on `Mcp*` classes are not the
+## self-update safety metric under the single-phase runner. The old syntactic
+## lint counted bare `Mcp*.MEMBER` references, but #398 was caused by the
+## runner scanning a mixed old/new snapshot and reusing stale Script-object
+## content. Bare names and preload aliases can both be parsed against stale
+## content under an old two-phase runner; from the fixed runner onward the
+## full v(N+1) snapshot is written before the scan. In short: preload aliases
+## are not the self-update safety metric.
+##
+## `tests/unit/test_plugin_self_update_safety.py` locks this wording in.
 ##
 ## `_editor_logger` was already untyped because its script extends Godot
 ## 4.5+'s Logger class and is loaded via `load()` so the plugin still parses
@@ -151,6 +146,7 @@ const STARTUP_TRACE_COUNTER_NAMES := [
 ## "attached" state IS exactly "non-null".
 var _connection
 var _dispatcher
+var _telemetry
 var _log_buffer
 var _game_log_buffer
 var _editor_log_buffer
@@ -222,6 +218,8 @@ func _enter_tree() -> void:
 	):
 		_arm_server_version_check()
 
+	_telemetry = Telemetry.new(_connection)
+
 	_debugger_plugin = DebuggerPlugin.new(_log_buffer, _game_log_buffer)
 	add_debugger_plugin(_debugger_plugin)
 	_ensure_game_helper_autoload()
@@ -281,6 +279,7 @@ func _enter_tree() -> void:
 	_dispatcher.register("get_performance_monitors", editor_handler.get_performance_monitors)
 	_dispatcher.register("reload_plugin", editor_handler.reload_plugin)
 	_dispatcher.register("quit_editor", editor_handler.quit_editor)
+	_dispatcher.register("game_eval", editor_handler.game_eval)
 	_dispatcher.register("get_project_setting", project_handler.get_project_setting)
 	_dispatcher.register("set_project_setting", project_handler.set_project_setting)
 	_dispatcher.register("run_project", project_handler.run_project)
@@ -391,8 +390,41 @@ func _enter_tree() -> void:
 	_startup_trace_phase("dock_attached")
 
 	_log_buffer.log("plugin loaded")
+	if _telemetry != null:
+		_telemetry.record_dock_startup()
+		_flush_pending_self_update_telemetry()
+		_telemetry.flush_pending_plugin_reload()
 	var startup_path: String = str(_lifecycle.get_startup_path())
 	_startup_trace_finish(startup_path if not startup_path.is_empty() else "loaded")
+
+
+## Public wrapper around the dev-server-toggle telemetry emit. Lets the
+## dock (or any other caller) record without reaching into ``_telemetry``
+## directly — keeps the plugin's internal field encapsulated. The dev
+## server is a Python subprocess unrelated to the plugin's own
+## lifecycle, so emission can be synchronous (no EditorSettings persist
+## dance like ``plugin_reload`` / ``self_update``).
+func record_dev_server_toggle(action: String) -> void:
+	if _telemetry == null:
+		return
+	_telemetry.record_dev_server_toggle(action)
+
+
+## Drain any self_update event written by `update_reload_runner` during the
+## previous disable -> enable window.
+func _flush_pending_self_update_telemetry() -> void:
+	var key := UPDATE_RELOAD_RUNNER_SCRIPT.PENDING_SELF_UPDATE_TELEMETRY_KEY
+	var parsed = Telemetry._drain_editor_setting_dict(key)
+	if parsed == null:
+		return
+	var status := str(parsed.get("status", "unknown"))
+	var error := str(parsed.get("error", ""))
+	## Positional args: GDScript doesn't support keyword args in calls
+	## (unlike Python). from_version + to_version are empty strings here
+	## — only ``status`` and ``error`` are known at flush time.
+	_telemetry.record_self_update(status, "", "", error)
+
+
 
 
 func _exit_tree() -> void:
@@ -502,7 +534,7 @@ static func _mcp_disabled_for_headless_launch() -> bool:
 
 
 static func _mcp_disabled_for_headless(args: PackedStringArray, display_name: String, allow_value: String) -> bool:
-	if _env_truthy(allow_value):
+	if McpSettings.truthy(allow_value):
 		return false
 	return _args_request_headless(args) or display_name.to_lower() == "headless"
 
@@ -519,12 +551,6 @@ static func _args_request_headless(args: PackedStringArray) -> bool:
 	return false
 
 
-static func _env_truthy(value: String) -> bool:
-	match value.strip_edges().to_lower():
-		"1", "true", "yes", "on":
-			return true
-		_:
-			return false
 
 
 func _disable_plugin() -> void:
@@ -714,6 +740,10 @@ static func _probe_live_server_status(port: int, timeout_ms: int = SERVER_STATUS
 	result["name"] = str(parsed.get("name", ""))
 	result["version"] = _extract_server_version(parsed)
 	result["ws_port"] = int(parsed.get("ws_port", 0))
+	## `package_path` was added in v2.4.4 (#416) so the dock's
+	## "Incompatible server" banner can name the source of a version
+	## skew. Older servers omit it; treat the missing field as "".
+	result["package_path"] = str(parsed.get("package_path", ""))
 	return result
 
 
@@ -769,12 +799,12 @@ func _set_spawn_state(state: int) -> void:
 ## diagnostic.
 ##
 ## We intentionally poll `_connection.is_connected` from `_process`
-## instead of wiring a new signal on McpConnection — signals would be
-## cleaner, but `class_name McpConnection` is cached by the editor across
-## plugin disable/enable, and a self-update that added a new signal
-## crashes `_enter_tree` with "invalid access to property" until the
-## user restarts Godot. Polling only reads `is_connected` (present on
-## every shipped McpConnection), so upgrades stay hot-reloadable.
+## instead of wiring a new signal on McpConnection. A signal added in the
+## same release as a new consumer would be another shape-coupled update:
+## old two-phase runners can parse the consumer while the McpConnection
+## Script object still reflects v(N). Polling only reads `is_connected`
+## (present on every shipped McpConnection), so old-runner upgrade windows
+## do not depend on a same-release signal addition.
 ##
 ## The watch self-disarms after SPAWN_GRACE_MS so per-frame cost drops
 ## back to zero if it is ever armed by a legacy adoption path.
@@ -1502,7 +1532,10 @@ func start_dev_server() -> void:
 			var new_pp := worktree_src if prev_pythonpath.is_empty() else worktree_src + sep + prev_pythonpath
 			OS.set_environment("PYTHONPATH", new_pp)
 
+		var injected_telemetry: bool = _lifecycle._inject_telemetry_env()
 		var pid := OS.create_process(cmd, inner_args)
+		if injected_telemetry:
+			OS.unset_environment("GODOT_AI_DISABLE_TELEMETRY")
 
 		## Restore PYTHONPATH immediately — the spawned child has already
 		## copied the env, so the editor's own process state returns to
@@ -1515,7 +1548,10 @@ func start_dev_server() -> void:
 				OS.set_environment("PYTHONPATH", prev_pythonpath)
 
 		if pid > 0:
-			var suffix := " (PYTHONPATH=%s)" % worktree_src if not worktree_src.is_empty() else ""
+			## Match `server_lifecycle.gd::start_server`'s log wording —
+			## "prefix" since we prepended to any pre-existing PYTHONPATH,
+			## not replaced it. See #429 review.
+			var suffix := " (PYTHONPATH prefix=%s)" % worktree_src if not worktree_src.is_empty() else ""
 			print("MCP | started dev server with --reload (PID %d): %s %s%s" % [pid, cmd, " ".join(inner_args), suffix])
 		else:
 			push_warning("MCP | failed to start dev server")

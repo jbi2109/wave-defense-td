@@ -8,6 +8,7 @@ class_name WaveManager
 @export var wave_scaler: float           = 1.1
 @export var spawn_rate: float            = 0.001   ## Seconds between individual spawns
 @export var inter_wave_duration: float   = 30.0    ## Seconds between waves
+@export var max_waves: int               = 15
 
 # ─────────────────────────────────────────────────────────────
 #  State
@@ -27,10 +28,34 @@ var _inter_wave_timer: float = 0.0
 var enemy_manager: EnemyManager = null
 
 # ─────────────────────────────────────────────────────────────
+#  Ready
+# ─────────────────────────────────────────────────────────────
+func _ready():
+	var map_id = Globals.selected_map
+	if map_id == "":
+		map_id = "map1" # default to map1
+	
+	var config = get_node_or_null(map_id) as MapWaveConfig
+	if config:
+		base_enemies_per_wave = config.base_enemies_per_wave
+		wave_scaler = config.wave_scaler
+		spawn_rate = config.spawn_rate
+		inter_wave_duration = config.inter_wave_duration
+		max_waves = config.max_waves
+		print("WaveManager: Loaded custom wave config for map ", map_id, 
+			" | base_enemies_per_wave=", base_enemies_per_wave,
+			" | wave_scaler=", wave_scaler,
+			" | spawn_rate=", spawn_rate,
+			" | inter_wave_duration=", inter_wave_duration,
+			" | max_waves=", max_waves)
+	else:
+		print("WaveManager: No custom wave config found for map ", map_id, ", using default settings.")
+
+# ─────────────────────────────────────────────────────────────
 #  Public API
 # ─────────────────────────────────────────────────────────────
 func enemies_for_wave(wave: int) -> int:
-	if wave == 15:
+	if wave == max_waves:
 		return 1 # Big Boss only!
 	return int(base_enemies_per_wave * pow(wave_scaler, wave - 1))
 
@@ -43,6 +68,7 @@ func start_wave():
 	is_inter_wave    = false
 	_spawn_timer     = 0.0
 	GlobalEvents.wave_started.emit(current_wave, enemies_to_spawn)
+	SoundManager.play_sfx("wave_start")
 	print("--- WAVE %d STARTED | Spawning %d enemies ---" % [current_wave, enemies_to_spawn])
 
 func start_inter_wave():
@@ -50,6 +76,7 @@ func start_inter_wave():
 	is_inter_wave      = true
 	_inter_wave_timer  = inter_wave_duration
 	GlobalEvents.wave_cleared.emit(current_wave)
+	SoundManager.play_sfx("wave_clear")
 
 ## Called externally (e.g. HUD "Start Early" button)
 func skip_inter_wave():
@@ -62,14 +89,10 @@ func skip_inter_wave():
 func tick(delta: float, spawn_callback: Callable):
 	if is_spawning:
 		_spawn_timer -= delta
-		if _spawn_timer <= 0.0:
-			_spawn_timer = spawn_rate
-			while _spawn_timer <= 0.0 and enemies_spawned < enemies_to_spawn:
-				spawn_callback.call()
-				_spawn_timer += spawn_rate
+		while _spawn_timer <= 0.0 and enemies_spawned < enemies_to_spawn:
 			spawn_callback.call()
 			enemies_spawned += 1
-
+			_spawn_timer += spawn_rate
 		if enemies_spawned >= enemies_to_spawn:
 			is_spawning = false
 
