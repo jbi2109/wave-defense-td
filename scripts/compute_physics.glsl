@@ -295,6 +295,14 @@ void pass_separation(uint id) {
 		}
 	}
 	
+	if (length(push) > 0.0) {
+		// Cap the maximum separation push per frame to prevent the swarm from exploding into walls
+		// when density gets very high. This fixes the hollow center pathing issue.
+		float max_push = ag.max_speed * params.delta * 1.5;
+		if (length(push) > max_push) {
+			push = normalize(push) * max_push;
+		}
+	}
 	pos += push;
 	float radius = my_scale * 10.0;
 	

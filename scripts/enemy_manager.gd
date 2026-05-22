@@ -289,6 +289,10 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	
 	rd.buffer_update(agent_buffer_rid, idx * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, bytes)
 	
+	# Instantly sync CPU shadow buffer so next frame's _tick_cpu_logic doesn't read garbage/0.0
+	for i in range(AGENT_STRUCT_SIZE):
+		agent_data_byte_array[idx * AGENT_STRUCT_SIZE + i] = bytes[i]
+	
 	if type_is_boss[type_index]:
 		active_boss_count += 1
 	
@@ -538,8 +542,14 @@ func _remove_enemy(index: int):
 		active_boss_count -= 1
 			
 	if index < active_count:
-		var last_bytes = rd.buffer_get_data(agent_buffer_rid, active_count * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE)
-		rd.buffer_update(agent_buffer_rid, index * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, last_bytes)
+		var start_byte = active_count * AGENT_STRUCT_SIZE
+		var dest_byte = index * AGENT_STRUCT_SIZE
+		var last_bytes = agent_data_byte_array.slice(start_byte, start_byte + AGENT_STRUCT_SIZE)
+		
+		for i in range(AGENT_STRUCT_SIZE):
+			agent_data_byte_array[dest_byte + i] = last_bytes[i]
+			
+		rd.buffer_update(agent_buffer_rid, dest_byte, AGENT_STRUCT_SIZE, last_bytes)
 		
 		positions[index] = positions[active_count]
 		healths[index] = healths[active_count]
