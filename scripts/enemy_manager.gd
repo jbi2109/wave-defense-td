@@ -290,6 +290,8 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	rd.buffer_update(agent_buffer_rid, idx * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, bytes)
 	
 	# Instantly sync CPU shadow buffer so next frame's _tick_cpu_logic doesn't read garbage/0.0
+	if agent_data_byte_array.size() < (idx + 1) * AGENT_STRUCT_SIZE:
+		agent_data_byte_array.resize((idx + 1) * AGENT_STRUCT_SIZE)
 	for i in range(AGENT_STRUCT_SIZE):
 		agent_data_byte_array[idx * AGENT_STRUCT_SIZE + i] = bytes[i]
 	
