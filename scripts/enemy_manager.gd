@@ -144,8 +144,11 @@ func _ready():
 uniform int hframes = 24;
 varying vec4 custom_data;
 void vertex() {
-	float frame = mod(floor(INSTANCE_CUSTOM.x), float(hframes));
-	UV.x = (UV.x + frame) / float(hframes);
+	int frame = int(floor(INSTANCE_CUSTOM.x)) % hframes;
+	if (frame < 0) {
+		frame += hframes;
+	}
+	UV.x = (UV.x + float(frame)) / float(hframes);
 	custom_data = INSTANCE_CUSTOM;
 }
 void fragment() {
@@ -430,6 +433,12 @@ func _tick_cpu_logic(delta: float):
 		var py = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 4)
 		var hp = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 16)
 		
+		if is_nan(px) or is_inf(px) or is_nan(py) or is_inf(py):
+			px = 0.0
+			py = 0.0
+		if is_nan(hp) or is_inf(hp):
+			hp = 0.0
+		
 		positions[i] = Vector2(px, py)
 		healths[i] = hp
 		
@@ -476,6 +485,9 @@ func _tick_cpu_logic(delta: float):
 		
 		var vx = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 8)
 		var vy = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 12)
+		if is_nan(vx) or is_inf(vx) or is_nan(vy) or is_inf(vy):
+			vx = 0.0
+			vy = 0.0
 		var base_scale = type_scales[types[i]]
 		var type = types[i]
 		
