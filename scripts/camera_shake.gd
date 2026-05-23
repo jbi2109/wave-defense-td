@@ -27,4 +27,4 @@ func _process(delta):
 			)
 
 func _on_nexus_damaged(_current_hp: int):
-	shake(0.3, 12.0)
+	pass # Disabled screen shake on nexus damage as requested
