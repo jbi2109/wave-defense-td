@@ -555,6 +555,7 @@ func _remove_enemy(index: int):
 		
 		positions[index] = positions[active_count]
 		healths[index] = healths[active_count]
+		max_healths[index] = max_healths[active_count]
 		types[index] = types[active_count]
 		gold_yields[index] = gold_yields[active_count]
 		speed_modifiers[index] = speed_modifiers[active_count]
