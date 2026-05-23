@@ -35,14 +35,17 @@ func _draw():
 	
 	for i in range(active_count):
 		var hp = healths[i]
-		if hp <= 0.0:
+		if is_nan(hp) or hp <= 0.0:
 			continue
 			
 		var max_hp = max_healths[i]
-		if max_hp <= 0.0:
+		if is_nan(max_hp) or max_hp <= 0.0:
 			continue
 			
-		var ratio = hp / max_hp
+		var ratio = clampf(hp / max_hp, 0.0, 1.0)
+		if is_nan(ratio) or is_inf(ratio):
+			continue
+			
 		var t = types[i]
 		var is_boss_type = enemy_manager.type_is_boss[t]
 		

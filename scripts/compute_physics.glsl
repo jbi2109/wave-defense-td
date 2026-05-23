@@ -142,6 +142,9 @@ void pass_binning(uint id) {
 	if (id >= params.active_count) return;
 	
 	Agent ag = agents[id];
+	if (isnan(ag.health) || isinf(ag.health)) {
+		ag.health = 0.0;
+	}
 	if (ag.health <= 0.0) return; // Dead
 	
 	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
@@ -226,6 +229,9 @@ void pass_separation(uint id) {
 	}
 	
 	Agent ag = agents[id];
+	if (isnan(ag.health) || isinf(ag.health)) {
+		ag.health = 0.0;
+	}
 	if (ag.health <= 0.0) {
 		return;
 	}
@@ -334,6 +340,9 @@ void pass_separation(uint id) {
 void pass_damage(uint id) {
 	if (id >= params.active_count) return;
 	Agent ag = agents[id];
+	if (isnan(ag.health) || isinf(ag.health)) {
+		ag.health = 0.0;
+	}
 	if (ag.health <= 0.0) return;
 	
 	vec2 d = ag.pos - params.explosion_pos;
