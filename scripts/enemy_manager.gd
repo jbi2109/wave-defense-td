@@ -69,6 +69,8 @@ var _nexus_rect: Rect2 = Rect2()
 var last_flow_field_update: int = -99999
 
 var agent_data_byte_array: PackedByteArray
+var readback_mutex: Mutex = Mutex.new()
+var gpu_readback_data: PackedByteArray = PackedByteArray()
 
 # To handle damage events
 var pending_damages: Array[Dictionary] = []
@@ -127,6 +129,7 @@ func _ready():
 		mmi.multimesh.instance_count = 0
 		mmi.multimesh.visible_instance_count = 0
 		mmi.multimesh.mesh = QuadMesh.new()
+		mmi.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 		var raw_tex = load(t.texture_path)
 		if raw_tex:
@@ -310,6 +313,24 @@ func _physics_process(delta):
 	
 	if active_count == 0: return
 
+	# 1. Thread-safe readback copy from the render thread's previous frame execution
+	readback_mutex.lock()
+	var temp_data = gpu_readback_data
+	readback_mutex.unlock()
+	
+	var target_size = active_count * AGENT_STRUCT_SIZE
+	if temp_data.size() >= target_size:
+		agent_data_byte_array = temp_data.slice(0, target_size)
+	elif temp_data.size() > 0:
+		var spawns_data = agent_data_byte_array.slice(temp_data.size(), target_size)
+		agent_data_byte_array = temp_data + spawns_data
+	
+	# 2. Run CPU logic (detect deaths, move, update arrays)
+	_tick_cpu_logic(delta)
+	
+	if active_count == 0: return
+
+	# 3. Setup push constants for compute shader
 	var push_bytes = PackedByteArray()
 	push_bytes.resize(80) # Match GLSL std430 struct exactly (80 bytes total for push constant)
 	push_bytes.fill(0)
@@ -338,13 +359,10 @@ func _physics_process(delta):
 	push_bytes.encode_float(48, separation_radius_multiplier)
 	push_bytes.encode_float(52, overlap_weight)
 	
-	RenderingServer.call_on_render_thread(self._dispatch_compute.bind(push_bytes))
-	
-	agent_data_byte_array = rd.buffer_get_data(agent_buffer_rid, 0, active_count * AGENT_STRUCT_SIZE)
-	
-	_tick_cpu_logic(delta)
+	# 4. Dispatch compute shader on the render thread and bind active_count for safe readback
+	RenderingServer.call_on_render_thread(self._dispatch_compute.bind(push_bytes, active_count))
 
-func _dispatch_compute(push_bytes: PackedByteArray):
+func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	if not flow_field.ff_texture or not flow_field.ff_texture.get_rid().is_valid(): return
 	
 	_update_bindings()
@@ -354,7 +372,7 @@ func _dispatch_compute(push_bytes: PackedByteArray):
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
 	
-	var groups = max(1, int(ceil(float(active_count) / 256.0)))
+	var groups = max(1, int(ceil(float(current_active_count) / 256.0)))
 	var grid_groups = max(1, int(ceil(float(HASH_CELLS) / 256.0)))
 	
 	# Pass 0: Clear Grid
@@ -390,6 +408,13 @@ func _dispatch_compute(push_bytes: PackedByteArray):
 	pending_damages.clear()
 	
 	rd.compute_list_end()
+
+	# Safe readback on the render thread, synced via mutex
+	if current_active_count > 0:
+		var fetched_data = rd.buffer_get_data(agent_buffer_rid, 0, current_active_count * AGENT_STRUCT_SIZE)
+		readback_mutex.lock()
+		gpu_readback_data = fetched_data
+		readback_mutex.unlock()
 	
 func _tick_cpu_logic(delta: float):
 	var to_remove = []
