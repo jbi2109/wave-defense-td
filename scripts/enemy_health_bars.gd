@@ -35,6 +35,9 @@ func _draw():
 	
 	for i in range(active_count):
 		var hp = healths[i]
+		if hp <= 0.0:
+			continue
+			
 		var max_hp = max_healths[i]
 		if max_hp <= 0.0:
 			continue

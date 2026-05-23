@@ -147,7 +147,7 @@ void vertex() {
 }
 void fragment() {
 	vec4 tex_color = texture(TEXTURE, UV);
-	vec3 flash_color = vec3(1.0, 0.0, 0.0);
+	vec3 flash_color = vec3(1.0, 1.0, 1.0);
 	COLOR = vec4(mix(tex_color.rgb, flash_color, custom_data.y), tex_color.a) * COLOR;
 }
 "
