@@ -46,8 +46,8 @@ func _draw():
 		var t = types[i]
 		var is_boss_type = enemy_manager.type_is_boss[t]
 		
-		# Draw only if boss or below 10% health
-		if is_boss_type or ratio < 0.1:
+		# Draw only if boss or damaged
+		if is_boss_type or ratio < 1.0:
 			var scale_val = type_scales[t]
 			var size_w = 32.0 * scale_val
 			var size_h = 4.0

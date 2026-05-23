@@ -148,7 +148,7 @@ void vertex() {
 void fragment() {
 	vec4 tex_color = texture(TEXTURE, UV);
 	vec3 flash_color = vec3(1.0, 1.0, 1.0);
-	COLOR = vec4(mix(tex_color.rgb, flash_color, custom_data.y), tex_color.a) * COLOR;
+	COLOR = vec4(mix(tex_color.rgb, flash_color, custom_data.y * 0.6), tex_color.a) * COLOR;
 }
 "
 			var mat = ShaderMaterial.new()
@@ -396,7 +396,10 @@ func _tick_cpu_logic(delta: float):
 	for i in range(active_count):
 		# Apply decay to speed modifiers and flash amounts
 		speed_modifiers[i] = move_toward(speed_modifiers[i], 1.0, delta * 0.4)
-		flash_amounts[i] = move_toward(flash_amounts[i], 0.0, delta * 8.0)
+		if flash_amounts[i] > 0.0:
+			flash_amounts[i] -= delta * 16.0
+			if flash_amounts[i] < 0.0:
+				flash_amounts[i] = 0.0
 		
 		var px = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 0)
 		var py = agent_data_byte_array.decode_float(i * AGENT_STRUCT_SIZE + 4)
