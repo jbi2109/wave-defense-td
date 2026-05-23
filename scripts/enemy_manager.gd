@@ -527,14 +527,19 @@ func _tick_cpu_logic(delta: float):
 		# Custom: frame_idx, flash_amount, 0, 0
 		var frame_idx = 0.0
 		var speed_sq = vx*vx + vy*vy
-		if speed_sq > 22500.0: # speed > 150.0 (e.g. Runners)
-			# Sprint/Dash animation: frames 10 to 14 (5 frames total)
-			var cycle_time = time_ms * 0.015 + float(i) * 3.0
-			frame_idx = 10.0 + fmod(cycle_time, 5.0)
-		elif speed_sq > 100.0: # speed > 10.0
-			# Walk animation: frames 4 to 9 (6 frames total)
-			var cycle_time = time_ms * 0.012 + float(i) * 3.0
-			frame_idx = 4.0 + fmod(cycle_time, 6.0)
+		var base_speed = type_speeds[type]
+		var is_fast_enemy = base_speed >= 120.0
+		var is_slowed = speed_modifiers[i] < 0.7
+		
+		if speed_sq > 100.0: # If moving
+			if is_fast_enemy and not is_slowed:
+				# Sprint/Dash animation: frames 10 to 14 (5 frames total)
+				var cycle_time = time_ms * 0.015 + float(i) * 3.0
+				frame_idx = 10.0 + fmod(cycle_time, 5.0)
+			else:
+				# Walk animation: frames 4 to 9 (6 frames total)
+				var cycle_time = time_ms * 0.012 + float(i) * 3.0
+				frame_idx = 4.0 + fmod(cycle_time, 6.0)
 		else:
 			# Idle animation: frames 0 to 3 (4 frames total)
 			var cycle_time = time_ms * 0.006 + float(i) * 2.0
