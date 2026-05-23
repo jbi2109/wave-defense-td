@@ -93,34 +93,56 @@ void resolve_circle_vs_obstacles(inout vec2 pos, inout vec2 vel, float radius) {
 						vec2 cell_min = (vec2(cell) + params.grid_offset) * params.cell_size;
 						vec2 cell_max = cell_min + vec2(params.cell_size);
 						
-						vec2 closest = clamp(pos, cell_min, cell_max);
-						vec2 diff = pos - closest;
-						float dsq = dot(diff, diff);
-						
-						if (dsq < radius * radius) {
-							float dist = sqrt(dsq);
-							vec2 normal;
-							float penetration;
+						if (pos.x >= cell_min.x && pos.x <= cell_max.x && pos.y >= cell_min.y && pos.y <= cell_max.y) {
+							// Center is inside the obstacle cell! Push it out to the nearest edge.
+							float dl = pos.x - cell_min.x;
+							float dr = cell_max.x - pos.x;
+							float dt = pos.y - cell_min.y;
+							float db = cell_max.y - pos.y;
 							
-							if (dist < 0.0001) {
-								vec2 cell_center = cell_min + vec2(params.cell_size * 0.5);
-								vec2 to_pos = pos - cell_center;
-								if (dot(to_pos, to_pos) < 0.0001) {
-									normal = vec2(0.0, -1.0);
-								} else {
-									normal = normalize(to_pos);
-								}
-								penetration = radius;
+							float min_d = min(min(dl, dr), min(dt, db));
+							vec2 normal;
+							if (min_d == dl) {
+								normal = vec2(-1.0, 0.0);
+							} else if (min_d == dr) {
+								normal = vec2(1.0, 0.0);
+							} else if (min_d == dt) {
+								normal = vec2(0.0, -1.0);
 							} else {
-								normal = diff / dist;
-								penetration = radius - dist;
+								normal = vec2(0.0, 1.0);
 							}
-							pos += normal * penetration;
+							
+							pos += normal * (min_d + radius);
 							
 							// Project velocity along collision normal (sliding)
 							float v_dot_n = dot(vel, normal);
 							if (v_dot_n < 0.0) {
 								vel = vel - normal * v_dot_n;
+							}
+						} else {
+							vec2 closest = clamp(pos, cell_min, cell_max);
+							vec2 diff = pos - closest;
+							float dsq = dot(diff, diff);
+							
+							if (dsq < radius * radius) {
+								float dist = sqrt(dsq);
+								vec2 normal;
+								float penetration;
+								
+								if (dist < 0.0001) {
+									normal = vec2(0.0, -1.0);
+									penetration = radius;
+								} else {
+									normal = diff / dist;
+									penetration = radius - dist;
+								}
+								pos += normal * penetration;
+								
+								// Project velocity along collision normal (sliding)
+								float v_dot_n = dot(vel, normal);
+								if (v_dot_n < 0.0) {
+									vel = vel - normal * v_dot_n;
+								}
 							}
 						}
 					}
