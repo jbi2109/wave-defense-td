@@ -527,7 +527,13 @@ func _tick_cpu_logic(delta: float):
 		# Custom: frame_idx, flash_amount, 0, 0
 		var frame_idx = 0.0
 		if (vx*vx + vy*vy) > 10.0:
-			frame_idx = time_ms * 0.012 + float(i) * 3.0
+			# Walk animation: frames 4 to 9 (6 frames total)
+			var cycle_time = time_ms * 0.012 + float(i) * 3.0
+			frame_idx = 4.0 + fmod(cycle_time, 6.0)
+		else:
+			# Idle animation: frames 0 to 3 (4 frames total)
+			var cycle_time = time_ms * 0.006 + float(i) * 2.0
+			frame_idx = fmod(cycle_time, 4.0)
 		arr[offset + 12] = frame_idx
 		arr[offset + 13] = flash_amounts[i]
 		arr[offset + 14] = 0.0
