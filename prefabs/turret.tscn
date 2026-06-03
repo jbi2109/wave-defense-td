@@ -1,11 +1,14 @@
-[gd_scene format=3 uid="uid://c867r5v5frnt0"]
+[gd_scene load_steps=3 format=3 uid="uid://c867r5v5frnt0"]
 
-[ext_resource type="Texture2D" uid="uid://b3vpsexjflrid" path="res://assets/turrets/technoturret.png" id="1_2pe4l"]
-[ext_resource type="Script" uid="uid://cjetgayae1flq" path="res://scripts/turret.gd" id="2_f7yh5"]
+[ext_resource type="Texture2D" uid="uid://b3vpsexjflrid" path="res://assets/turrets/base.png" id="1_base"]
+[ext_resource type="Script" path="res://scripts/turret.gd" id="2_f7yh5"]
 
-[node name="Turret" type="Sprite2D" unique_id=1106922920]
-texture = ExtResource("1_2pe4l")
+[node name="Turret" type="Sprite2D"]
+texture = ExtResource("1_base")
 script = ExtResource("2_f7yh5")
 
-[node name="Muzzle" type="Marker2D" parent="." unique_id=624250801]
+[node name="GunSprite" type="Sprite2D" parent="."]
+z_index = 1
+
+[node name="Muzzle" type="Marker2D" parent="GunSprite"]
 position = Vector2(40, 0)
