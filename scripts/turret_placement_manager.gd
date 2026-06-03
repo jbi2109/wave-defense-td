@@ -2,11 +2,17 @@ extends Node2D
 class_name TurretPlacementManager
 
 const TURRET_PREFAB = preload("res://prefabs/turret.tscn")
-const RangeIndicatorScript = preload("res://scripts/range_indicator.gd")
 
 var selected_type: String = ""
-var ghost_instance: Sprite2D = null
-var range_indicator: Node2D = null
+var ghost_instance: Node2D = null
+
+enum PlacementState { NONE, PLACING_BASE, SETTING_CONE }
+var current_state: PlacementState = PlacementState.NONE
+var base_placement_pos: Vector2 = Vector2.ZERO
+var current_cone_center: float = 0.0
+var current_cone_width: float = TAU
+
+var _left_mouse_was_down := false
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
@@ -31,8 +37,6 @@ func get_turret_cost(type: String) -> int:
 func _exit_tree():
 	if ghost_instance:
 		ghost_instance.queue_free()
-	if range_indicator:
-		range_indicator.queue_free()
 
 func start_placement(type: String):
 	if not _can_place():
@@ -40,6 +44,7 @@ func start_placement(type: String):
 	cancel_placement()
 	
 	selected_type = type
+	current_state = PlacementState.PLACING_BASE
 	var t_def = get_definition(type)
 	if not t_def:
 		return
@@ -49,37 +54,35 @@ func start_placement(type: String):
 	if tex_path == "":
 		return
 		
-	ghost_instance = Sprite2D.new()
+	ghost_instance = Node2D.new()
 	ghost_instance.z_index = 10
 	
-	# Load sprite
+	var base_sprite = Sprite2D.new()
+	base_sprite.texture = load("res://assets/turrets/base.png")
+	base_sprite.scale = Vector2(s, s)
+	if type == "slow":
+		pass
+	elif type == "generator":
+		base_sprite.self_modulate = Color(1.0, 0.8, 0.2, 1.0)
+	
+	var gun_sprite = Sprite2D.new()
 	if tex_path.begins_with("res://Assets"):
 		tex_path = tex_path.replace("res://Assets", "res://assets")
-	ghost_instance.texture = load(tex_path)
+	gun_sprite.texture = load(tex_path)
+	gun_sprite.scale = Vector2(s, s)
 	
-	ghost_instance.scale = Vector2(s, s)
-	if type == "slow":
-		ghost_instance.self_modulate = Color(0.2, 0.7, 1.0, 1.0)
+	ghost_instance.add_child(base_sprite)
+	ghost_instance.add_child(gun_sprite)
 	
-	# Add to main scene
 	get_parent().add_child(ghost_instance)
-	
-	# Create range indicator
-	range_indicator = RangeIndicatorScript.new()
-	range_indicator.radius = t_def.attack_range
-	range_indicator.fill_color = Color(0.2, 0.8, 0.2, 0.12)
-	range_indicator.line_color = Color(0.2, 0.8, 0.2, 0.45)
-	range_indicator.z_index = 9
-	get_parent().add_child(range_indicator)
 
 func cancel_placement():
 	selected_type = ""
+	current_state = PlacementState.NONE
 	if ghost_instance:
 		ghost_instance.queue_free()
 		ghost_instance = null
-	if range_indicator:
-		range_indicator.queue_free()
-		range_indicator = null
+	queue_redraw()
 
 func _can_place() -> bool:
 	if not wave_manager:
@@ -87,62 +90,106 @@ func _can_place() -> bool:
 	return wave_manager.current_wave == 0 or wave_manager.is_inter_wave
 
 func _process(_delta):
-	if selected_type == "":
+	if selected_type == "" or current_state == PlacementState.NONE:
 		return
 		
 	if not _can_place():
 		cancel_placement()
 		return
 		
-	# Follow mouse snapped to grid
 	var mouse_pos = get_global_mouse_position()
-	var cell_size = 32.0
-	var grid_x = floor(mouse_pos.x / cell_size)
-	var grid_y = floor(mouse_pos.y / cell_size)
-	var snap_pos = Vector2(grid_x, grid_y) * cell_size + Vector2(16.0, 16.0)
 	
-	if ghost_instance:
-		ghost_instance.global_position = snap_pos
+	var left_mouse_down = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	var left_mouse_just_pressed = left_mouse_down and not _left_mouse_was_down
+	_left_mouse_was_down = left_mouse_down
+	
+	queue_redraw()
+	
+	if current_state == PlacementState.PLACING_BASE:
+		var cell_size = 32.0
+		var grid_x = floor(mouse_pos.x / cell_size)
+		var grid_y = floor(mouse_pos.y / cell_size)
+		var snap_pos = Vector2(grid_x, grid_y) * cell_size + Vector2(16.0, 16.0)
 		
-		# Validation
-		var valid = _is_position_valid(snap_pos)
-		if valid:
-			ghost_instance.modulate = Color(0.3, 1.0, 0.3, 0.6) # Translucent green
-		else:
-			ghost_instance.modulate = Color(1.0, 0.3, 0.3, 0.6) # Translucent red
+		if ghost_instance:
+			ghost_instance.global_position = snap_pos
+			ghost_instance.get_child(1).rotation = 0.0
 			
-		if range_indicator:
-			range_indicator.global_position = snap_pos
+			var valid = _is_position_valid(snap_pos)
 			if valid:
-				range_indicator.fill_color = Color(0.2, 0.8, 0.2, 0.12)
-				range_indicator.line_color = Color(0.2, 0.8, 0.2, 0.45)
+				ghost_instance.modulate = Color(0.3, 1.0, 0.3, 0.6)
 			else:
-				range_indicator.fill_color = Color(1.0, 0.2, 0.2, 0.12)
-				range_indicator.line_color = Color(1.0, 0.2, 0.2, 0.45)
+				ghost_instance.modulate = Color(1.0, 0.3, 0.3, 0.6)
+				
+			if left_mouse_just_pressed or Input.is_action_just_pressed("ui_accept"):
+				if mouse_pos.y < 900:
+					if valid:
+						var cost = get_turret_cost(selected_type)
+						if Globals.gold >= cost:
+							base_placement_pos = snap_pos
+							current_state = PlacementState.SETTING_CONE
+							ghost_instance.modulate = Color(1.0, 1.0, 1.0, 0.8)
+						else:
+							print("Not enough gold!")
+							
+	elif current_state == PlacementState.SETTING_CONE:
+		var dist = base_placement_pos.distance_to(mouse_pos)
+		current_cone_center = (mouse_pos - base_placement_pos).angle()
+		
+		var max_width = PI 
+		var min_width = PI / 8.0
+		var dist_clamped = clamp(dist, 32.0, 300.0)
+		var t = (dist_clamped - 32.0) / (300.0 - 32.0)
+		current_cone_width = lerp(max_width, min_width, t)
+		
+		if ghost_instance:
+			ghost_instance.global_position = base_placement_pos
+			ghost_instance.get_child(1).rotation = current_cone_center
 			
-		# Input handle
-		if Input.is_action_just_pressed("ui_accept") or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			# Prevent clicking HUD buttons from triggering build
-			# (Simple check: mouse y should be above the build bar)
+		if left_mouse_just_pressed or Input.is_action_just_pressed("ui_accept"):
 			if mouse_pos.y < 900:
-				if valid:
-					var cost = get_turret_cost(selected_type)
-					if Globals.spend_gold(cost):
-						_place_turret(snap_pos)
-						cancel_placement()
-					else:
-						print("Not enough gold!")
-						
-		if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-			if selected_type != "":
-				SoundManager.play_sfx("sell")
-			cancel_placement()
+				var cost = get_turret_cost(selected_type)
+				if Globals.spend_gold(cost):
+					_place_turret(base_placement_pos, current_cone_center, current_cone_width)
+					cancel_placement()
+				else:
+					cancel_placement()
+					
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		if selected_type != "":
+			SoundManager.play_sfx("sell")
+		cancel_placement()
+
+func _draw():
+	if current_state == PlacementState.SETTING_CONE:
+		var t_def = get_definition(selected_type)
+		if t_def:
+			var r = t_def.attack_range
+			var p1 = base_placement_pos + Vector2.RIGHT.rotated(current_cone_center - current_cone_width / 2.0) * r
+			var p2 = base_placement_pos + Vector2.RIGHT.rotated(current_cone_center + current_cone_width / 2.0) * r
+			
+			var local_base = to_local(base_placement_pos)
+			var local_p1 = to_local(p1)
+			var local_p2 = to_local(p2)
+			
+			draw_line(local_base, local_p1, Color(0.0, 1.0, 1.0, 0.5), 2.0)
+			draw_line(local_base, local_p2, Color(0.0, 1.0, 1.0, 0.5), 2.0)
+			
+			var points = PackedVector2Array()
+			var segments = 32
+			for i in range(segments + 1):
+				var a = (current_cone_center - current_cone_width / 2.0) + current_cone_width * float(i) / float(segments)
+				points.append(to_local(base_placement_pos + Vector2.RIGHT.rotated(a) * r))
+			for i in range(segments):
+				draw_line(points[i], points[i+1], Color(0.0, 1.0, 1.0, 0.5), 2.0)
+				
+			var local_mouse = to_local(get_global_mouse_position())
+			draw_line(local_base, local_mouse, Color(0.0, 1.0, 1.0, 0.2), 1.0)
 
 func _is_position_valid(pos: Vector2) -> bool:
 	if not flow_field:
 		return false
 		
-	# Grid bounds
 	var cell_size = float(flow_field.cell_size)
 	var offset = flow_field.grid_offset
 	var tx = int(floor(pos.x / cell_size)) - offset.x
@@ -151,11 +198,9 @@ func _is_position_valid(pos: Vector2) -> bool:
 	if tx < 0 or tx >= flow_field.grid_size.x or ty < 0 or ty >= flow_field.grid_size.y:
 		return false
 		
-	# Must be an obstacle (i.e. dirt/unwalkable background, not path)
 	if not flow_field.obstacle_field[tx][ty]:
 		return false
 		
-	# Must not overlap existing turret
 	var turrets = get_tree().get_nodes_in_group("turret")
 	for t in turrets:
 		if is_instance_valid(t) and t != ghost_instance:
@@ -164,10 +209,12 @@ func _is_position_valid(pos: Vector2) -> bool:
 				
 	return true
 
-func _place_turret(pos: Vector2):
+func _place_turret(pos: Vector2, cone_center: float, cone_width: float):
 	var turret = TURRET_PREFAB.instantiate()
 	turret.global_position = pos
 	turret.turret_type = selected_type
+	turret.cone_center = cone_center
+	turret.cone_width = cone_width
 	get_parent().add_child(turret)
 	GlobalEvents.turret_placed.emit(selected_type, pos)
 	SoundManager.play_sfx("build")
