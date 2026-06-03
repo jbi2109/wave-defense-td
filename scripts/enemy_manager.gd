@@ -55,7 +55,9 @@ var dummy_obs_rid: RID
 var dummy_ff_tex: ImageTexture
 var dummy_obs_tex: ImageTexture
 var bindings: Array[RDUniform] = []
-var uniform_set: RID\nvar uniform_set_b: RID\nvar agent_buffer_rid_2: RID
+var uniform_set: RID
+var uniform_set_b: RID
+var agent_buffer_rid_2: RID
 var texture_rd_rid: RID
 var agent_data_tex: Texture2DRD
 var flash_amounts_rid: RID
@@ -86,6 +88,7 @@ var agent_data_byte_array: PackedByteArray
 
 var turrets_buffer_rid: RID
 var turrets_byte_array: PackedByteArray
+var swap_buffer_rid: RID
 
 var turret_fire_events_buffer: GPUHelpers.ReadbackBuffer
 
@@ -242,6 +245,10 @@ func _init_gpu():
 	turrets_byte_array.resize(48 * 1024) # Up to 1024 turrets (48 bytes each for alignment)
 	turrets_byte_array.fill(0)
 	turrets_buffer_rid = rd.storage_buffer_create(turrets_byte_array.size(), turrets_byte_array)
+	
+	var swap_bytes = PackedByteArray()
+	swap_bytes.resize(AGENT_STRUCT_SIZE)
+	swap_buffer_rid = rd.storage_buffer_create(swap_bytes.size(), swap_bytes)
 
 	
 	var grid_counts_bytes = PackedByteArray()
@@ -269,7 +276,7 @@ func _init_gpu():
 	dummy_ff_tf.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 	dummy_ff_rid = rd.texture_create(dummy_ff_tf, RDTextureView.new(), [dummy_ff_img.get_data()])
 	
-	var dummy_obs_img = Image.create(1, 1, false, Image.FORMAT_R8_UNORM)
+	var dummy_obs_img = Image.create(1, 1, false, Image.FORMAT_L8)
 	var dummy_obs_tf = RDTextureFormat.new()
 	dummy_obs_tf.format = RenderingDevice.DATA_FORMAT_R8_UNORM
 	dummy_obs_tf.width = 1
@@ -543,7 +550,25 @@ func _process(delta):
 	else:
 		dmg_bytes.resize(4)
 		dmg_bytes.encode_u32(0, 0)
+	var turret_rotations = PackedFloat32Array()
+	turret_rotations.resize(turrets.size())
+	for i in range(turrets.size()):
+		var t = turrets[i]
+		var rot_val = 0.0
+		if is_instance_valid(t):
+			if t.has_node("GunSprite"):
+				rot_val = t.get_node("GunSprite").rotation
+			else:
+				rot_val = t.rotation
+		turret_rotations[i] = rot_val
+
 	RenderingServer.call_on_render_thread(func():
+		if turrets_buffer_rid.is_valid():
+			for i in range(turret_rotations.size()):
+				var angle_offset = 16 + i * 48 + 36 # offset of padding0 in bytes
+				var angle_bytes = PackedFloat32Array([turret_rotations[i]]).to_byte_array()
+				rd.buffer_update(turrets_buffer_rid, angle_offset, 4, angle_bytes)
+
 		if damage_events_buffer_rid.is_valid():
 			rd.buffer_update(damage_events_buffer_rid, 0, dmg_bytes.size(), dmg_bytes)
 		_dispatch_compute(push_bytes, active_count)
@@ -572,7 +597,7 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	var groups = max(1, int(ceil(float(current_active_count) / 256.0)))
 	var grid_groups = max(1, int(ceil(float(HASH_CELLS) / 256.0)))
 	
-		var current_set = uniform_set
+	var current_set = uniform_set
 	
 	# Pass 0: Clear Grid
 	push_bytes.encode_u32(0, 0)
@@ -632,7 +657,8 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	push_bytes.encode_u32(0, 6)
 	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
 	var turret_groups = max(1, int(ceil(float(turrets.size()) / 256.0)))
-	rd.compute_list_dispatch(compute_list, turret_groups, 1, 1)\n	rd.compute_list_end()
+	rd.compute_list_dispatch(compute_list, turret_groups, 1, 1)
+	rd.compute_list_end()
 
 	dead_enemies_buffer.increment_write()
 	turret_fire_events_buffer.increment_write()
@@ -787,10 +813,17 @@ func _remove_enemy(index: int):
 		
 		RenderingServer.call_on_render_thread(func():
 			if agent_buffer_rid.is_valid():
-				rd.buffer_copy(agent_buffer_rid, agent_buffer_rid, start_byte, dest_byte, AGENT_STRUCT_SIZE)
-				rd.buffer_copy(agent_buffer_rid_2, agent_buffer_rid_2, start_byte, dest_byte, AGENT_STRUCT_SIZE)
-				rd.buffer_copy(speed_modifier_rid, speed_modifier_rid, active_count * 4, index * 4, 4)
-				rd.buffer_copy(flash_amounts_rid, flash_amounts_rid, active_count * 4, index * 4, 4)
+				rd.buffer_copy(agent_buffer_rid, swap_buffer_rid, start_byte, 0, AGENT_STRUCT_SIZE)
+				rd.buffer_copy(swap_buffer_rid, agent_buffer_rid, 0, dest_byte, AGENT_STRUCT_SIZE)
+				
+				rd.buffer_copy(agent_buffer_rid_2, swap_buffer_rid, start_byte, 0, AGENT_STRUCT_SIZE)
+				rd.buffer_copy(swap_buffer_rid, agent_buffer_rid_2, 0, dest_byte, AGENT_STRUCT_SIZE)
+				
+				rd.buffer_copy(speed_modifier_rid, swap_buffer_rid, active_count * 4, 0, 4)
+				rd.buffer_copy(swap_buffer_rid, speed_modifier_rid, 0, index * 4, 4)
+				
+				rd.buffer_copy(flash_amounts_rid, swap_buffer_rid, active_count * 4, 0, 4)
+				rd.buffer_copy(swap_buffer_rid, flash_amounts_rid, 0, index * 4, 4)
 		)
 		
 		positions[index] = positions[active_count]
@@ -843,4 +876,3 @@ func _notification(what):
 			for r in rids:
 				if r and r.is_valid():
 					rd.free_rid(r)
-

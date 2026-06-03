@@ -553,32 +553,38 @@ void pass_turret_targeting(uint t_id) {
 						if (a_id < params.active_count) {
 							Agent a = agents_in[a_id];
 							if (a.health > 0) {
-								vec2 d = t.pos - a.pos;
-								float dsq = dot(d, d);
+								vec2 to_enemy = a.pos - t.pos;
+								float dsq = dot(to_enemy, to_enemy);
 								if (dsq <= t.range * t.range) {
-									if (t.turret_type == 1 || t.turret_type == 2) {
-										atomicAdd(agents_in[a_id].health, -int(t.damage * 100.0));
-										atomicMax(flash_amounts[a_id], 1000);
-										if (t.turret_type == 2) {
-											atomicMin(speed_modifiers[a_id], 400);
+									// Check 15-degree total cone targeting (7.5 degrees half-angle)
+									float sweep_angle = uintBitsToFloat(t.padding0);
+									vec2 sweep_dir = vec2(cos(sweep_angle), sin(sweep_angle));
+									float dot_prod = dot(to_enemy, sweep_dir);
+									if (dot_prod > 0.0 && (dot_prod * dot_prod) >= 0.9829629 * dsq) {
+										if (t.turret_type == 1 || t.turret_type == 2) {
+											atomicAdd(agents_in[a_id].health, -int(t.damage * 100.0));
+											atomicMax(flash_amounts[a_id], 1000);
+											if (t.turret_type == 2) {
+												atomicMin(speed_modifiers[a_id], 400);
+											}
 										}
-									}
-									
-									float score = 0.0;
-									if (t.target_mode == 3) { // CLOSEST
-										score = -dsq; 
-									} else if (t.target_mode == 2) { // STRONGEST
-										score = float(a.health) / 100.0;
-									} else if (t.target_mode == 0) { // FIRST (lowest health left proxy)
-										score = float(-a.health) / 100.0; 
-									} else { // LAST
-										score = float(a.health) / 100.0;
-									}
-									
-									if (score > best_score) {
-										best_score = score;
-										best_target = a_id;
-										best_pos = a.pos;
+										
+										float score = 0.0;
+										if (t.target_mode == 3) { // CLOSEST
+											score = -dsq; 
+										} else if (t.target_mode == 2) { // STRONGEST
+											score = float(a.health) / 100.0;
+										} else if (t.target_mode == 0) { // FIRST
+											score = float(-a.health) / 100.0; 
+										} else { // LAST
+											score = float(a.health) / 100.0;
+										}
+										
+										if (score > best_score) {
+											best_score = score;
+											best_target = a_id;
+											best_pos = a.pos;
+										}
 									}
 								}
 							}
