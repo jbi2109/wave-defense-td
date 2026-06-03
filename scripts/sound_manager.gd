@@ -47,6 +47,7 @@ func play_sfx(key: String):
 	
 	var player = _find_idle_player()
 	player.stream = _sfx_cache[key]
+	player.pitch_scale = randf_range(0.9, 1.1)
 	player.play()
 
 func _find_idle_player() -> AudioStreamPlayer:

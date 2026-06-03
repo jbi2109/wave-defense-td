@@ -14,6 +14,7 @@ var enemy_types: Array[Node] = []
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var nexus: Node2D = get_node("../Nexus")
+@onready var wave_manager: WaveManager = get_node("../WaveManager")
 
 # CPU Buffers for UI & Targeting (Synced from GPU)
 var active_count: int = 0
@@ -453,7 +454,28 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	
 	var idx = active_count
 	positions[idx] = pos
-	var starting_hp = enemy_types[type_index].health
+	
+	# Dynamic size/scale using power-law random factor matching Studio Game
+	var rf = randf()
+	var scale_mult = 1.0 + 1.0 * pow(rf, 10.0)
+	var dynamic_scale = type_scales[type_index] * scale_mult
+	
+	# Relative wave spawning progress
+	var relative_time = 0.0
+	if is_instance_valid(wave_manager):
+		relative_time = float(wave_manager.enemies_spawned) / float(max(1, wave_manager.enemies_to_spawn))
+		
+	# Exponential level difficulty scaling
+	var level_idx = 1
+	if Globals.selected_map == "map2":
+		level_idx = 2
+	var level_factor = pow(2.5, level_idx - 1)
+	
+	# Health scales quadratically with scale factor, linearly with wave progress, exponentially with level
+	var size_factor = scale_mult * scale_mult
+	var time_factor = 1.0 + relative_time * 1.0
+	var starting_hp = enemy_types[type_index].health * size_factor * time_factor * level_factor
+	
 	healths[idx] = starting_hp
 	max_healths[idx] = starting_hp
 	types[idx] = type_index
@@ -467,9 +489,9 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	bytes.encode_float(4, pos.y)
 	bytes.encode_float(8, 0.0) # vel.x
 	bytes.encode_float(12, 0.0) # vel.y
-	bytes.encode_s32(16, int(enemy_types[type_index].health * 100.0)) # health
+	bytes.encode_s32(16, int(starting_hp * 100.0)) # health
 	bytes.encode_float(20, type_speeds[type_index]) # max_speed
-	bytes.encode_float(24, type_scales[type_index]) # scale
+	bytes.encode_float(24, dynamic_scale) # scale
 	bytes.encode_u32(28, type_index) # type
 	var speed_bytes = PackedByteArray()
 	speed_bytes.resize(4)

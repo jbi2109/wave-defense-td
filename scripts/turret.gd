@@ -35,12 +35,20 @@ var _was_overdriven: bool = false
 @export var damage_override: float = 0.0
 @export var fire_rate_override: float = 0.0
 
+var _target_sprite: Sprite2D = null
+
 # ─────────────────────────────────────────────────────────────
 #  INITIALISATION
 # ─────────────────────────────────────────────────────────────
 func _ready():
 	add_to_group("turret")
 	_load_stats_from_data()
+	
+	_target_sprite = Sprite2D.new()
+	_target_sprite.texture = load("res://assets/turrets/target.png")
+	_target_sprite.z_index = 5
+	_target_sprite.top_level = true
+	add_child(_target_sprite)
 	
 	if damage_override > 0.0:
 		damage = damage_override
@@ -90,6 +98,13 @@ func _load_stats_from_data():
 #  PROCESS
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
+	if is_instance_valid(_target_sprite):
+		var wave_manager = get_node_or_null("/root/Main/WaveManager")
+		var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
+		_target_sprite.visible = is_build_phase
+		if is_build_phase:
+			_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * attack_range
+
 	if overdrive_timer > 0.0:
 		overdrive_timer -= delta
 		if not _was_overdriven:

@@ -13,6 +13,7 @@ var current_cone_center: float = 0.0
 var current_cone_width: float = TAU
 
 var _left_mouse_was_down := false
+var _editing_existing_turret: Turret = null
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
@@ -77,6 +78,9 @@ func start_placement(type: String):
 	get_parent().add_child(ghost_instance)
 
 func cancel_placement():
+	if _editing_existing_turret:
+		_editing_existing_turret = null
+		ghost_instance = null
 	selected_type = ""
 	current_state = PlacementState.NONE
 	if ghost_instance:
@@ -90,19 +94,31 @@ func _can_place() -> bool:
 	return wave_manager.current_wave == 0 or wave_manager.is_inter_wave
 
 func _process(_delta):
-	if selected_type == "" or current_state == PlacementState.NONE:
-		return
-		
-	if not _can_place():
-		cancel_placement()
-		return
-		
 	var mouse_pos = get_global_mouse_position()
 	
 	var left_mouse_down = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	var left_mouse_just_pressed = left_mouse_down and not _left_mouse_was_down
 	_left_mouse_was_down = left_mouse_down
 	
+	if selected_type == "" or current_state == PlacementState.NONE:
+		if left_mouse_just_pressed and _can_place() and mouse_pos.y < 900:
+			var turrets = get_tree().get_nodes_in_group("turret")
+			for t in turrets:
+				if is_instance_valid(t) and t.global_position.distance_squared_to(mouse_pos) < 28.0 * 28.0:
+					selected_type = t.turret_type
+					current_state = PlacementState.SETTING_CONE
+					base_placement_pos = t.global_position
+					current_cone_center = t.cone_center
+					current_cone_width = t.cone_width
+					ghost_instance = t
+					_editing_existing_turret = t
+					break
+		return
+		
+	if not _can_place():
+		cancel_placement()
+		return
+		
 	queue_redraw()
 	
 	if current_state == PlacementState.PLACING_BASE:
@@ -144,16 +160,30 @@ func _process(_delta):
 		
 		if ghost_instance:
 			ghost_instance.global_position = base_placement_pos
-			ghost_instance.get_child(1).rotation = current_cone_center
+			if ghost_instance.has_node("GunSprite"):
+				ghost_instance.get_node("GunSprite").rotation = current_cone_center
+			else:
+				ghost_instance.rotation = current_cone_center
 			
 		if left_mouse_just_pressed or Input.is_action_just_pressed("ui_accept"):
 			if mouse_pos.y < 900:
-				var cost = get_turret_cost(selected_type)
-				if Globals.spend_gold(cost):
-					_place_turret(base_placement_pos, current_cone_center, current_cone_width)
-					cancel_placement()
+				if _editing_existing_turret:
+					_editing_existing_turret.cone_center = current_cone_center
+					_editing_existing_turret.cone_width = current_cone_width
+					if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
+						enemy_manager.update_turret(_editing_existing_turret)
+					
+					_editing_existing_turret = null
+					ghost_instance = null
+					selected_type = ""
+					current_state = PlacementState.NONE
 				else:
-					cancel_placement()
+					var cost = get_turret_cost(selected_type)
+					if Globals.spend_gold(cost):
+						_place_turret(base_placement_pos, current_cone_center, current_cone_width)
+						cancel_placement()
+					else:
+						cancel_placement()
 					
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		if selected_type != "":
