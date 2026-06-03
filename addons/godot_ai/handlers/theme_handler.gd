@@ -86,12 +86,17 @@ func set_color(params: Dictionary) -> Dictionary:
 		func(v): return _parse_color(v))
 
 
+# constant / font_size parsers validate before coercing: int("abc")/int({})/int([])
+# all return 0 in GDScript (never null), so a bare `int(v)` would silently store
+# garbage as 0 and report success. Returning null for non-numeric input lets
+# _set_scalar's null guard surface a VALUE_OUT_OF_RANGE error, matching the
+# color path's contract.
 func set_constant(params: Dictionary) -> Dictionary:
 	return _set_scalar(params, "constant", func(theme, name, cls): return theme.get_constant(name, cls),
 		func(theme, name, cls, val): theme.set_constant(name, cls, int(val)),
 		func(theme, name, cls): theme.clear_constant(name, cls),
 		func(theme, name, cls): return theme.has_constant(name, cls),
-		func(v): return int(v))
+		func(v): return int(v) if (v is int or v is float or (v is String and v.is_valid_int())) else null)
 
 
 func set_font_size(params: Dictionary) -> Dictionary:
@@ -99,7 +104,7 @@ func set_font_size(params: Dictionary) -> Dictionary:
 		func(theme, name, cls, val): theme.set_font_size(name, cls, int(val)),
 		func(theme, name, cls): theme.clear_font_size(name, cls),
 		func(theme, name, cls): return theme.has_font_size(name, cls),
-		func(v): return int(v))
+		func(v): return int(v) if (v is int or v is float or (v is String and v.is_valid_int())) else null)
 
 
 # Shared implementation for scalar Theme slots (color, constant, font_size).
@@ -139,8 +144,10 @@ func _set_scalar(
 		)
 	var parsed = parser.call(raw_value)
 	if parsed == null:
+		## color slots want a color hint; constant/font_size are integer slots.
+		var hint := _COLOR_HINT if kind == "color" else "expected an integer"
 		return ErrorCodes.make(ErrorCodes.VALUE_OUT_OF_RANGE,
-			"Invalid %s value: %s (%s)" % [kind, raw_value, _COLOR_HINT])
+			"Invalid %s value: %s (%s)" % [kind, raw_value, hint])
 
 	var had_before: bool = has_fn.call(theme, name, class_name_param)
 	var before_value = getter.call(theme, name, class_name_param) if had_before else null
@@ -394,7 +401,7 @@ func apply_theme(params: Dictionary) -> Dictionary:
 	if _resolved.has("error"):
 		return _resolved
 	var node: Node = _resolved.node
-	var scene_root: Node = _resolved.scene_root
+	var _scene_root: Node = _resolved.scene_root
 	if not node is Control and not node is Window:
 		return ErrorCodes.make(
 			ErrorCodes.WRONG_TYPE,

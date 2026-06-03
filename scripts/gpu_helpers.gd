@@ -49,7 +49,7 @@ class ReadbackBuffer:
 				if valid_element_count > 0:
 					var data_start := buffer_start + GPUHelpers.align_to(element_byte_size, element_byte_alignment)
 					var data_byte_size := valid_element_count * GPUHelpers.align_to(element_byte_size, element_byte_alignment)
-					callable.call(valid_element_count, data.slice(data_start, data_start + data_byte_size))
+					callable.call_deferred(valid_element_count, data.slice(data_start, data_start + data_byte_size))
 				
 				last_read = (last_read + 1) % buffer_count
 		)
@@ -89,7 +89,7 @@ class ReadbackBufferInt32:
 				value += data.decode_s32(4 + last_read * 4)
 				last_read = (last_read + 1) % buffer_count
 			if value > 0:
-				callable.call(value)
+				callable.call_deferred(value)
 		)
 
 	func increment_write() -> void:

@@ -24,9 +24,9 @@ config/icon="res://icon.svg"
 GlobalEvents="*res://scripts/global_events.gd"
 Globals="*res://scripts/Globals.gd"
 Data="*res://scripts/Data.gd"
-_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 SoundManager="*res://scripts/sound_manager.gd"
 SaveManager="*res://scripts/save_manager.gd"
+_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 

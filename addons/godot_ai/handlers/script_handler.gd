@@ -50,8 +50,16 @@ func create_script(params: Dictionary) -> Dictionary:
 	file.store_string(content)
 	file.close()
 
-	# Trigger reimport so the editor recognises the new file
-	EditorInterface.get_resource_filesystem().scan()
+	# Register just this file with the editor instead of a full recursive
+	# scan(). A scan() per write stacks `update_scripts_classes` /
+	# `update_script_paths_documentation` WorkerThreadPool tasks under concurrent
+	# script creation ("Task ... already exists" / "!tasks.has(p_task)"), which
+	# races the global-class registry and can SIGABRT in
+	# ScriptServer::remove_global_class_by_path (see dsarno/godot#6).
+	# update_file() is the single-file path the rest of the plugin already uses.
+	var efs := EditorInterface.get_resource_filesystem()
+	if efs != null:
+		efs.update_file(path)
 
 	var data := {
 		"path": path,
@@ -206,7 +214,10 @@ func patch_script(params: Dictionary) -> Dictionary:
 	write.store_string(new_content)
 	write.close()
 
-	EditorInterface.get_resource_filesystem().scan()
+	# Single-file register, not a full scan() — see create_script (dsarno/godot#6).
+	var efs := EditorInterface.get_resource_filesystem()
+	if efs != null:
+		efs.update_file(path)
 
 	return {
 		"data": {
@@ -234,7 +245,7 @@ func attach_script(params: Dictionary) -> Dictionary:
 	if _resolved.has("error"):
 		return _resolved
 	var node: Node = _resolved.node
-	var scene_root: Node = _resolved.scene_root
+	var _scene_root: Node = _resolved.scene_root
 
 	if not ResourceLoader.exists(script_path):
 		return ErrorCodes.make(ErrorCodes.RESOURCE_NOT_FOUND, "Script not found: %s" % script_path)
@@ -270,7 +281,7 @@ func detach_script(params: Dictionary) -> Dictionary:
 	if _resolved.has("error"):
 		return _resolved
 	var node: Node = _resolved.node
-	var scene_root: Node = _resolved.scene_root
+	var _scene_root: Node = _resolved.scene_root
 
 	var old_script: Script = node.get_script()
 	if old_script == null:
@@ -335,9 +346,10 @@ func find_symbols(params: Dictionary) -> Dictionary:
 			else:
 				signals_list.append(sig_text)
 
-		# func
-		if line.begins_with("func "):
-			var func_text := line.substr(5).strip_edges()
+		# func (including `static func` — strip the leading `static ` first)
+		var func_line := line.substr(7).strip_edges() if line.begins_with("static func ") else line
+		if func_line.begins_with("func "):
+			var func_text := func_line.substr(5).strip_edges()
 			var paren_idx := func_text.find("(")
 			if paren_idx >= 0:
 				functions.append({

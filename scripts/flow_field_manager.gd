@@ -106,13 +106,16 @@ func _init_gpu_resources():
 	ff_texture = trd
 
 func _update_gpu_bindings():
+	var obs_rd = RenderingServer.texture_get_rd_texture(obs_texture.get_rid())
+	var density_rd = RenderingServer.texture_get_rd_texture(density_texture.get_rid())
+	if not obs_rd.is_valid() or not density_rd.is_valid():
+		_bindings_dirty = true
+		return
+
 	if uniform_set_sdf_ping.is_valid(): rd.free_rid(uniform_set_sdf_ping)
 	if uniform_set_sdf_pong.is_valid(): rd.free_rid(uniform_set_sdf_pong)
 	if uniform_set_flow_ping.is_valid(): rd.free_rid(uniform_set_flow_ping)
 	if uniform_set_flow_pong.is_valid(): rd.free_rid(uniform_set_flow_pong)
-		
-	var obs_rd = RenderingServer.texture_get_rd_texture(obs_texture.get_rid())
-	var density_rd = RenderingServer.texture_get_rd_texture(density_texture.get_rid())
 	
 	var make_sdf = func(sdf1, sdf2):
 		var b = []
@@ -341,6 +344,8 @@ func generate_field_gpu(target_pos: Vector2):
 			
 		if _bindings_dirty:
 			_update_gpu_bindings()
+		if not uniform_set_sdf_ping.is_valid() or not uniform_set_flow_ping.is_valid():
+			return
 			
 		var push = PackedByteArray()
 		push.resize(64) # Increased to 64 for alignment and new properties
@@ -362,6 +367,7 @@ func generate_field_gpu(target_pos: Vector2):
 		
 		# Pass 0: Seed SDF
 		rd.compute_list_bind_uniform_set(cl, uniform_set_sdf_ping, 0)
+		rd.compute_list_bind_uniform_set(cl, uniform_set_flow_ping, 1)
 		push.encode_u32(0, 0)
 		rd.compute_list_set_push_constant(cl, push, 64)
 		rd.compute_list_dispatch(cl, groups_x, groups_y, 1)
@@ -412,6 +418,12 @@ func generate_field_gpu(target_pos: Vector2):
 		
 		rd.compute_list_end()
 	)
+
+func are_textures_ready() -> bool:
+	if not obs_texture or not density_texture: return false
+	var obs_rd = RenderingServer.texture_get_rd_texture(obs_texture.get_rid())
+	var density_rd = RenderingServer.texture_get_rd_texture(density_texture.get_rid())
+	return obs_rd.is_valid() and density_rd.is_valid()
 
 
 func update_density(positions: PackedVector2Array, active_count: int):

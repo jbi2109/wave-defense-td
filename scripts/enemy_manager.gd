@@ -152,6 +152,15 @@ func _ready():
 		mmi.multimesh.use_colors = false
 		mmi.multimesh.use_custom_data = false
 		mmi.multimesh.instance_count = MAX_AGENTS
+		
+		var init_transforms = PackedFloat32Array()
+		init_transforms.resize(MAX_AGENTS * 8)
+		for idx in range(MAX_AGENTS):
+			var base = idx * 8
+			init_transforms[base + 0] = 1.0
+			init_transforms[base + 5] = 1.0
+		mmi.multimesh.buffer = init_transforms
+		
 		mmi.multimesh.visible_instance_count = 0
 		mmi.multimesh.mesh = QuadMesh.new()
 		mmi.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -180,14 +189,19 @@ void vertex() {
 	float scale = data.z;
 	float type_and_frame = data.w;
 	
-	int type = int(floor(type_and_frame));
-	float remainder = fract(type_and_frame) * 100.0;
-	int frame = int(floor(remainder));
-	float flash = fract(remainder) * 100.0;
+	float val = type_and_frame + 0.00001;
+	int type = int(floor(val));
+	float remainder = (val - float(type)) * 100.0;
+	int frame = int(floor(remainder + 0.001));
+	float flash = (remainder - float(frame)) * 100.0;
+	if (flash < 0.15) {
+		flash = 0.0;
+	}
 	
 	if (type != target_type) {
 		VERTEX = vec2(0.0, 0.0);
 	} else {
+		VERTEX.y = -VERTEX.y;
 		VERTEX = VERTEX * abs(scale);
 		if (scale < 0.0) {
 			VERTEX.x = -VERTEX.x;
@@ -215,6 +229,7 @@ void fragment() {
 			mmi.multimesh.mesh.size = Vector2(24, 24)
 
 		add_child(mmi)
+		RenderingServer.canvas_item_set_custom_rect(mmi.get_canvas_item(), true, Rect2(-10000, -10000, 20000, 20000))
 		multimeshes.append(mmi)
 
 
@@ -303,7 +318,7 @@ func _init_gpu():
 	tf.depth = 1
 	tf.array_layers = 1
 	tf.mipmaps = 1
-	tf.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
+	tf.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	
 	texture_rd_rid = rd.texture_create(tf, RDTextureView.new(), [])
 	agent_data_tex = Texture2DRD.new()
@@ -351,8 +366,8 @@ func _update_bindings():
 	u_ff.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
 	u_ff.binding = 3
 	u_ff.add_id(linear_sampler_rid) # Sampler first
-	if flow_field.ff_texture and flow_field.ff_texture.get_rid().is_valid():
-		u_ff.add_id(RenderingServer.texture_get_rd_texture(flow_field.ff_texture.get_rid())) # Texture second
+	if flow_field.flow_result_tex.is_valid():
+		u_ff.add_id(flow_field.flow_result_tex) # Texture second
 	else:
 		u_ff.add_id(dummy_ff_rid)
 	bindings.append(u_ff)
@@ -485,9 +500,9 @@ func _process(delta):
 	_cache_nexus()
 	_ensure_flow_field_initialized()
 	
-	if flow_field.ff_texture and flow_field.ff_texture.get_rid() != _last_ff_rid:
+	if flow_field.flow_result_tex.is_valid() and flow_field.flow_result_tex != _last_ff_rid:
 		_bindings_dirty = true
-		_last_ff_rid = flow_field.ff_texture.get_rid()
+		_last_ff_rid = flow_field.flow_result_tex
 	
 	if active_count == 0: return
 	
@@ -587,7 +602,7 @@ func _update_agent_data(data: PackedByteArray, dispatched_count: int):
 		var offset = i * AGENT_STRUCT_SIZE
 		var px = data.decode_float(offset + 0)
 		var py = data.decode_float(offset + 4)
-		var hp = data.decode_s32(offset + 16) / 100
+		var hp = data.decode_s32(offset + 16) / 100.0
 		positions[i] = Vector2(px, py)
 		healths[i] = hp
 		
@@ -646,7 +661,7 @@ func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
 	return results
 
 func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
-	if not flow_field.ff_texture or not flow_field.ff_texture.get_rid().is_valid(): return
+	if not flow_field.flow_result_tex.is_valid(): return
 	
 	if current_active_count > 0:
 		rd.buffer_get_data_async(agent_buffer_rid, func(data: PackedByteArray):
@@ -727,7 +742,6 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	var turret_groups = max(1, int(ceil(float(turrets.size()) / 256.0)))
 	rd.compute_list_dispatch(compute_list, turret_groups, 1, 1)
 	rd.compute_list_end()
-
 	dead_enemies_buffer.increment_write()
 	turret_fire_events_buffer.increment_write()
 	nexus_damage_buffer.increment_write()
@@ -936,8 +950,9 @@ var _flow_field_initialized: bool = false
 func _ensure_flow_field_initialized():
 	if _flow_field_initialized: return
 	if not _nexus_valid: return
-	_flow_field_initialized = true
+	if not flow_field.are_textures_ready(): return
 	
+	_flow_field_initialized = true
 	flow_field.generate_field_for_rect(nexus.global_position, nexus.extents)
 
 func _notification(what):

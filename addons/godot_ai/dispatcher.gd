@@ -18,6 +18,7 @@ const DEFERRED_TIMEOUT_MS_BY_COMMAND := {
 	"stop_project": 4500,
 	"take_screenshot": 30000,
 	"game_eval": 15000,
+	"game_command": 15000,
 }
 const ErrorCodes := preload("res://addons/godot_ai/utils/error_codes.gd")
 
@@ -267,8 +268,12 @@ func _collect_deferred_timeouts() -> Array[Dictionary]:
 
 
 static func _capture_compact_backtrace(max_frames: int = 8) -> String:
+	# Use Engine.call() instead of a direct Engine.capture_script_backtraces()
+	# reference: the method is Godot 4.4+, and 4.3's GDScript parser type-checks
+	# the static call against GDScriptNativeClass at parse time and rejects the
+	# whole script even when guarded by has_method() at runtime.
 	if Engine.has_method("capture_script_backtraces"):
-		var traces: Array = Engine.capture_script_backtraces(false)
+		var traces: Array = Engine.call("capture_script_backtraces", false)
 		for bt in traces:
 			if bt != null and not bt.is_empty():
 				return _trim_backtrace_string(bt.format(0, 2), max_frames)

@@ -1,0 +1,37 @@
+Starting manual UI build debug
+Loop for Orbital Strike
+Style set
+Checkbox done
+Name label done
+Stats label done
+Desc label done
+Item added to container
+Loop for Frost Nova
+Style set
+Checkbox done
+Name label done
+Stats label done
+Desc label done
+Item added to container
+Loop for Chain Lightning
+Style set
+Checkbox done
+Name label done
+Stats label done
+Desc label done
+Item added to container
+Loop for Overdrive
+Style set
+Checkbox done
+Name label done
+Stats label done
+Desc label done
+Item added to container
+Loop for Acid Pool
+Style set
+Checkbox done
+Name label done
+Stats label done
+Desc label done
+Item added to container
+All loops finished!

@@ -1,0 +1,1312 @@
+{
+  "F:\\GodotGames\\wave-defense-td\\scripts\\ability_loadout.gd": {
+    "mtime": 1779656205.350963,
+    "ast_hash": "50c7e6b24744969751773b34fa172610",
+    "semantic_hash": "50c7e6b24744969751773b34fa172610"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\ability_manager.gd": {
+    "mtime": 1779656224.486889,
+    "ast_hash": "3954003156ee231a81e4e1e924234fdb",
+    "semantic_hash": "3954003156ee231a81e4e1e924234fdb"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\acid_pool_effect.gd": {
+    "mtime": 1779653751.6813426,
+    "ast_hash": "9f47ee61a69a293ee571bf733ede1d75",
+    "semantic_hash": "9f47ee61a69a293ee571bf733ede1d75"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\bullet_tracer.gd": {
+    "mtime": 1779314379.302855,
+    "ast_hash": "c4b32b2b265677422b3d5c2fb086e3c7",
+    "semantic_hash": "c4b32b2b265677422b3d5c2fb086e3c7"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\camera_shake.gd": {
+    "mtime": 1779555192.7023604,
+    "ast_hash": "cf27f1ca236f4940a04d3cb8334074bc",
+    "semantic_hash": "cf27f1ca236f4940a04d3cb8334074bc"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\chain_lightning_effect.gd": {
+    "mtime": 1779653165.1838613,
+    "ast_hash": "670e845cc66d7d0ae7813e4cc5efe05c",
+    "semantic_hash": "670e845cc66d7d0ae7813e4cc5efe05c"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\damage_text_manager.gd": {
+    "mtime": 1779403794.4018948,
+    "ast_hash": "812153997493cc64d78078e6a0da4a6a",
+    "semantic_hash": "812153997493cc64d78078e6a0da4a6a"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\Data.gd": {
+    "mtime": 1779404265.8570611,
+    "ast_hash": "42c718bad22c0b18813eb24218d3efb5",
+    "semantic_hash": "42c718bad22c0b18813eb24218d3efb5"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\death_effect.gd": {
+    "mtime": 1779314371.051238,
+    "ast_hash": "28c8c708aa4b3ff1a19a0a7da0ed4259",
+    "semantic_hash": "28c8c708aa4b3ff1a19a0a7da0ed4259"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\enemy_definition.gd": {
+    "mtime": 1779402493.14434,
+    "ast_hash": "bc773c837423d014d7efecf83dabe7b2",
+    "semantic_hash": "bc773c837423d014d7efecf83dabe7b2"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\enemy_health_bars.gd": {
+    "mtime": 1779554184.4228277,
+    "ast_hash": "31ef81856e4f8dce70239401c48dcf66",
+    "semantic_hash": "31ef81856e4f8dce70239401c48dcf66"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\enemy_manager.gd": {
+    "mtime": 1779653157.797304,
+    "ast_hash": "e10a6a9c43bb6940ceeac820c558ddc8",
+    "semantic_hash": "e10a6a9c43bb6940ceeac820c558ddc8"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\flow_field_manager.gd": {
+    "mtime": 1779480474.9638824,
+    "ast_hash": "41e46edefe138441df8621748f86f563",
+    "semantic_hash": "41e46edefe138441df8621748f86f563"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\frost_nova_effect.gd": {
+    "mtime": 1779653736.2940896,
+    "ast_hash": "d70f8c9211bd2a6583b4a05d4c4d2fbb",
+    "semantic_hash": "d70f8c9211bd2a6583b4a05d4c4d2fbb"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\Globals.gd": {
+    "mtime": 1779653054.0782354,
+    "ast_hash": "9d0afe4275ba39506b84b3bb5c6d6277",
+    "semantic_hash": "9d0afe4275ba39506b84b3bb5c6d6277"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\global_events.gd": {
+    "mtime": 1779651445.6888669,
+    "ast_hash": "a20eaf2e05920f46d7fb59817bfb5eee",
+    "semantic_hash": "a20eaf2e05920f46d7fb59817bfb5eee"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\hud_build_menu.gd": {
+    "mtime": 1779403823.0527873,
+    "ast_hash": "c47ff5a50642d0fe13514518ff46cf44",
+    "semantic_hash": "c47ff5a50642d0fe13514518ff46cf44"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\level_selector.gd": {
+    "mtime": 1779653203.4176016,
+    "ast_hash": "844b49c446080ef2aefd55bc74621dc0",
+    "semantic_hash": "844b49c446080ef2aefd55bc74621dc0"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\main.gd": {
+    "mtime": 1779653983.089542,
+    "ast_hash": "a5fc06e329436d4f6f0bee8cdc2c2b5e",
+    "semantic_hash": "a5fc06e329436d4f6f0bee8cdc2c2b5e"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\map_wave_config.gd": {
+    "mtime": 1779405569.3028069,
+    "ast_hash": "8151fe10b630d94247ed1bc698ad1289",
+    "semantic_hash": "8151fe10b630d94247ed1bc698ad1289"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\nexus.gd": {
+    "mtime": 1779402780.9124177,
+    "ast_hash": "c56c552757c6b3b76638100f12651f3c",
+    "semantic_hash": "c56c552757c6b3b76638100f12651f3c"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\orbital_beam_effect.gd": {
+    "mtime": 1779653726.883038,
+    "ast_hash": "bb621ffaf5e7a660ee70926dd40c64a8",
+    "semantic_hash": "bb621ffaf5e7a660ee70926dd40c64a8"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\overdrive_effect.gd": {
+    "mtime": 1779653744.182535,
+    "ast_hash": "c25f5014ab6bdbbbb50b8a7df0df9a2e",
+    "semantic_hash": "c25f5014ab6bdbbbb50b8a7df0df9a2e"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\polygon_duck_type.gd": {
+    "mtime": 1779404754.805466,
+    "ast_hash": "d586b9ccfa14803afbce6b8130930a23",
+    "semantic_hash": "d586b9ccfa14803afbce6b8130930a23"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\range_indicator.gd": {
+    "mtime": 1779402321.657119,
+    "ast_hash": "663e812e25d5db78cfe7f54909c04636",
+    "semantic_hash": "663e812e25d5db78cfe7f54909c04636"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\save_manager.gd": {
+    "mtime": 1779653194.2491307,
+    "ast_hash": "cd6d94cd8b6bc76073ff5ac6c35f45e0",
+    "semantic_hash": "cd6d94cd8b6bc76073ff5ac6c35f45e0"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\settings_menu.gd": {
+    "mtime": 1779403816.5274837,
+    "ast_hash": "658c49262b1109af6995d6c6cca2f260",
+    "semantic_hash": "658c49262b1109af6995d6c6cca2f260"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\slow_turret.gd": {
+    "mtime": 1779477059.3411913,
+    "ast_hash": "4e98b6e605f742a03273bc12eb611118",
+    "semantic_hash": "4e98b6e605f742a03273bc12eb611118"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\sound_manager.gd": {
+    "mtime": 1779403784.7537374,
+    "ast_hash": "a0c0efc7235f785118e651065d49fa2b",
+    "semantic_hash": "a0c0efc7235f785118e651065d49fa2b"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\spawner.gd": {
+    "mtime": 1778695991.3874261,
+    "ast_hash": "356cbad015f53fbeeb8bee26afde0252",
+    "semantic_hash": "356cbad015f53fbeeb8bee26afde0252"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\test_mm.gd": {
+    "mtime": 1779545331.4742663,
+    "ast_hash": "942045bcecd21cb1655d31cfaadb62c0",
+    "semantic_hash": "942045bcecd21cb1655d31cfaadb62c0"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\turret.gd": {
+    "mtime": 1779656220.9677548,
+    "ast_hash": "3ead04897c8fd26f281cb4847d427228",
+    "semantic_hash": "3ead04897c8fd26f281cb4847d427228"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\turret_definition.gd": {
+    "mtime": 1779651250.6518106,
+    "ast_hash": "4a912b2b316820908eeeba946d101bf2",
+    "semantic_hash": "4a912b2b316820908eeeba946d101bf2"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\turret_placement_manager.gd": {
+    "mtime": 1779403455.2378118,
+    "ast_hash": "8bc19fea93d66f842f007a2b974dcd0c",
+    "semantic_hash": "8bc19fea93d66f842f007a2b974dcd0c"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\wave_announcement.gd": {
+    "mtime": 1779314362.6441138,
+    "ast_hash": "6b2a3688171747312a27250c30831458",
+    "semantic_hash": "6b2a3688171747312a27250c30831458"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scripts\\wave_manager.gd": {
+    "mtime": 1779556559.610644,
+    "ast_hash": "2f11eca601e6b18f3f4f019ea08034e1",
+    "semantic_hash": "2f11eca601e6b18f3f4f019ea08034e1"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\main.tscn": {
+    "mtime": 1779652074.9821157,
+    "ast_hash": "426214f7f623da757d19e91dfd4d9fbe",
+    "semantic_hash": "426214f7f623da757d19e91dfd4d9fbe"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\map_selector.tscn": {
+    "mtime": 1779404051.091368,
+    "ast_hash": "12f42e51e4dd3cd498be7a8ecca1cedc",
+    "semantic_hash": "12f42e51e4dd3cd498be7a8ecca1cedc"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\ability_loadout.tscn": {
+    "mtime": 1779653211.6917903,
+    "ast_hash": "96ceca347f2e5bae5db8935e3904d4aa",
+    "semantic_hash": "96ceca347f2e5bae5db8935e3904d4aa"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\level_selector.tscn": {
+    "mtime": 1779653198.7782996,
+    "ast_hash": "3f6e0e82fd156e25e8af2265f36c4cf7",
+    "semantic_hash": "3f6e0e82fd156e25e8af2265f36c4cf7"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\settings_menu.tscn": {
+    "mtime": 1779403811.6654203,
+    "ast_hash": "103472306e3b87840f3e55136276a6ba",
+    "semantic_hash": "103472306e3b87840f3e55136276a6ba"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\gameOver\\game_over_panel.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "434204f4f6da6b875455e81ddd81e87f",
+    "semantic_hash": "434204f4f6da6b875455e81ddd81e87f"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\mainMenu\\mainMenu.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "86c52b88714e001cddb0eea078d05fc6",
+    "semantic_hash": "86c52b88714e001cddb0eea078d05fc6"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\mainMenu\\map_container.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "9991c3a8b0b768e42354243bface808a",
+    "semantic_hash": "9991c3a8b0b768e42354243bface808a"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\mainMenu\\select_map_container.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "f79f893cf857edb3b31407fee1b91864",
+    "semantic_hash": "f79f893cf857edb3b31407fee1b91864"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\mapCompleted\\mapCompleted.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "bd467bcf0ef2ee064e48916ad5b53465",
+    "semantic_hash": "bd467bcf0ef2ee064e48916ad5b53465"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\turretUI\\stat_label.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "2be7d35998bdac4cde2a67a33a6d3d80",
+    "semantic_hash": "2be7d35998bdac4cde2a67a33a6d3d80"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\turretUI\\turret_buy_container.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "9da4de3b27c8638ea6c141a93647b0b2",
+    "semantic_hash": "9da4de3b27c8638ea6c141a93647b0b2"
+  },
+  "F:\\GodotGames\\wave-defense-td\\scenes\\ui\\turretUI\\turret_details.tscn": {
+    "mtime": 1724677007.0,
+    "ast_hash": "7c99f86cd119dab399d4f013283121e5",
+    "semantic_hash": "7c99f86cd119dab399d4f013283121e5"
+  },
+  "F:\\GodotGames\\wave-defense-td\\CLAUDE.md": {
+    "mtime": 1779649649.2890823,
+    "ast_hash": "9b231068cbeec72130161f6c191b73bc",
+    "semantic_hash": "9b231068cbeec72130161f6c191b73bc"
+  },
+  "F:\\GodotGames\\wave-defense-td\\README.md": {
+    "mtime": 1778112647.9557276,
+    "ast_hash": "5a65fcf6ba1ad92cb3c2b09578bc764d",
+    "semantic_hash": "5a65fcf6ba1ad92cb3c2b09578bc764d"
+  },
+  "C:\\Users\\jbijo\\.gemini\\antigravity\\brain\\b6490d31-bb78-4086-8308-78eb2028aa47\\implementation_plan.md": {
+    "mtime": 1779652900.1859088,
+    "ast_hash": "4b735431b7e6356c877bc527692d55f6",
+    "semantic_hash": "4b735431b7e6356c877bc527692d55f6"
+  },
+  "C:\\Users\\jbijo\\.gemini\\antigravity\\brain\\b6490d31-bb78-4086-8308-78eb2028aa47\\task.md": {
+    "mtime": 1779654101.7710624,
+    "ast_hash": "decbdd51ad2ed5b8fe45c195220fc349",
+    "semantic_hash": "decbdd51ad2ed5b8fe45c195220fc349"
+  },
+  "C:\\Users\\jbijo\\.gemini\\antigravity\\brain\\b6490d31-bb78-4086-8308-78eb2028aa47\\walkthrough.md": {
+    "mtime": 1779654106.4496813,
+    "ast_hash": "ed03a7e2915eb81a6ad6dc816f908b38",
+    "semantic_hash": "ed03a7e2915eb81a6ad6dc816f908b38"
+  },
+  "F:\\GodotGames\\wave-defense-td\\check_colors.py": {
+    "mtime": 1779750823.6930952,
+    "ast_hash": "c9ca36490b833f2f362ec3910caa4d20",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\check_sheets.py": {
+    "mtime": 1779922363.3175273,
+    "ast_hash": "8ea99b851751a1a10e3c06769e76b39c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\clean_base.py": {
+    "mtime": 1779751540.1073613,
+    "ast_hash": "61d9e29e0a7847e155a5f7aa50f7c0b5",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\convert_bg.py": {
+    "mtime": 1779750405.640917,
+    "ast_hash": "5dea7a54f7faa1372aed2abb051c8517",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\crop_base.py": {
+    "mtime": 1779751650.7714362,
+    "ast_hash": "27bd8dd2538adcfd136ecbb7b6ef8947",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\install_graphify.ps1": {
+    "mtime": 1779903633.179007,
+    "ast_hash": "2be223263fe1ba5b6c76096d9128727b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\process_all_enemies.py": {
+    "mtime": 1779922435.388368,
+    "ast_hash": "375cfabc9a916970df7cbb7b538e72f5",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\process_clean_enemies.py": {
+    "mtime": 1779922613.3250115,
+    "ast_hash": "4f9175daf79f46f008c924e9134a06f1",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\process_new_turrets.py": {
+    "mtime": 1779751226.9717178,
+    "ast_hash": "89ec216c04c37a170c2d5efabede9850",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\remove_checkerboard.py": {
+    "mtime": 1779750843.2869525,
+    "ast_hash": "2b274c459e2229574e7ba854a1ea5843",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\.gemini\\settings.json": {
+    "mtime": 1778369024.5734313,
+    "ast_hash": "c3e2ffac9a38facc655671dce78ea18e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\append_node_tools.py": {
+    "mtime": 1778113043.827613,
+    "ast_hash": "6256b07fb28216592b69f6deab75a3c1",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\patch_handlers.py": {
+    "mtime": 1778113043.9807878,
+    "ast_hash": "1b438aeb7c6dcb796ac2b9440adf2fa9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\refactor.py": {
+    "mtime": 1778113043.9940915,
+    "ast_hash": "46e82f1db54e5d01f90617eabc82cd4e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\restore_actions.py": {
+    "mtime": 1778113044.000619,
+    "ast_hash": "49f2defea44353a3cbdcffcfc0b7048c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\CONTRIBUTING.md": {
+    "mtime": 1778112647.949634,
+    "ast_hash": "5533805cac868862a3cb9ac24cf9fa95",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\debug_ready.txt": {
+    "mtime": 1779653508.5351734,
+    "ast_hash": "264983ffbf0c758546dd8af77dd60c9e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\ai_and_pathfinding.md": {
+    "mtime": 1778113044.0076807,
+    "ast_hash": "f18018def619abcfd8849ccde914bfc9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\animation_and_cutscenes.md": {
+    "mtime": 1778113044.0137277,
+    "ast_hash": "b64cecf2e222a5e7f0016a61c5689195",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\audio_management_best_practices.md": {
+    "mtime": 1778113044.021305,
+    "ast_hash": "1b991206bec2148be18497c54e67f658",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\common_architectures.md": {
+    "mtime": 1778113044.0276952,
+    "ast_hash": "b13f4005a48f917920a81e3cf057341c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\data_management_and_crafting.md": {
+    "mtime": 1778113044.0359933,
+    "ast_hash": "54ad017fd54f57b4e391cdaef59724e3",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\gdscript_deprecated.md": {
+    "mtime": 1778113044.0415206,
+    "ast_hash": "99108d47db1d1db199588f9625b51faa",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\gdscript_modern_features.md": {
+    "mtime": 1778113044.048622,
+    "ast_hash": "a77375bbe9b951d26a2221e9da6a85df",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\gdscript_recipes_and_patterns.md": {
+    "mtime": 1778113044.0561552,
+    "ast_hash": "4a00661fd1620e6d002b355c17a07cec",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\gdscript_signals_and_tweens.md": {
+    "mtime": 1778113044.063183,
+    "ast_hash": "36c1c0605dec6ab048fa6602acb48da4",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\gdscript_style_guide.md": {
+    "mtime": 1778113044.0697632,
+    "ast_hash": "f78af6860a8d3c054149994ed17ea790",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\input_handling_and_remapping.md": {
+    "mtime": 1778113044.0773182,
+    "ast_hash": "b7cf5b4832c3ae3f2d319f059b3aa3fe",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\inventory_and_item_systems.md": {
+    "mtime": 1778113044.0833447,
+    "ast_hash": "95a8b7869a3341e90a0b94fed2cf67d2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\level_generation_and_pcg.md": {
+    "mtime": 1778113044.090417,
+    "ast_hash": "93f6694a0d5abf24947ecdf3c03ebb21",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\localization_and_i18n.md": {
+    "mtime": 1778113044.097454,
+    "ast_hash": "973308081f850eb39a6ea45591fd597b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\mobile_and_resolution_scaling.md": {
+    "mtime": 1778113044.1035812,
+    "ast_hash": "e46dfa5a9ee94ccf333371caec72d906",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\multiplayer_and_networking_api.md": {
+    "mtime": 1778113044.111145,
+    "ast_hash": "770ecbde26afeea5bd3fb7fa3f284434",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\performance_optimization.md": {
+    "mtime": 1778113044.1172664,
+    "ast_hash": "309dba2dbf223a297c2cb3cf8b3858df",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\physics_and_collision_handling.md": {
+    "mtime": 1778113044.124302,
+    "ast_hash": "1e525719593c5b9342629e16c60604df",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\post_processing_and_environment.md": {
+    "mtime": 1778113044.1316414,
+    "ast_hash": "0448cee241523a918aedc90cdb293865",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\project_structure_guidelines.md": {
+    "mtime": 1778113044.1391788,
+    "ast_hash": "96e95954505a6b925c11217387716abe",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\quest_and_dialogue_systems.md": {
+    "mtime": 1778113044.1462681,
+    "ast_hash": "4b5208acb08766952beb1c172621959c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\save_system_and_persistence.md": {
+    "mtime": 1778113044.1523166,
+    "ast_hash": "721039fb62180e24c1b9645ff51e1b7d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\shaders_and_vfx.md": {
+    "mtime": 1778113044.1598547,
+    "ast_hash": "e9ab5a1d38345b6b7ee548200aff5c6a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\state_machine_implementation.md": {
+    "mtime": 1778113044.1673892,
+    "ast_hash": "a72a96ee0d00f7ffe5af4799211a71f2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\skills\\ui_ux_patterns.md": {
+    "mtime": 1778113044.173416,
+    "ast_hash": "aba8c1e59857b9b9a37f95130bac632f",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\godot_ai\\README.md": {
+    "mtime": 1779278300.4504554,
+    "ast_hash": "888aa1419fe53693d1535d36afd2251f",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\kaykit_halloween_bits\\Assets\\LICENSE.txt": {
+    "mtime": 1778114605.5130985,
+    "ast_hash": "83befa3730c2bdd8277ad961f4e09ae9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Controls.md": {
+    "mtime": 1778596060.4892595,
+    "ast_hash": "7a6b03a9e83f2dc0fc3bee4866716ba2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\FAQ.md": {
+    "mtime": 1778596060.4962964,
+    "ast_hash": "8ee48712491e8a46089de8f36b3e2e21",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Godot4.md": {
+    "mtime": 1778596060.5023274,
+    "ast_hash": "4fde2f487553787faa24cd59f7558cf6",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Install.md": {
+    "mtime": 1778596060.5094001,
+    "ast_hash": "e0dbae8c8d5dc3597fe9046b070cd437",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Normals.md": {
+    "mtime": 1778596060.5164557,
+    "ast_hash": "f53517f4b39d9ea13592382835d084c1",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Quickstart.md": {
+    "mtime": 1778596060.523507,
+    "ast_hash": "c2420532739c253c3e0b7547582f62e9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Resources.md": {
+    "mtime": 1778596060.5305755,
+    "ast_hash": "b9a093a4a55b6c20a6d54ee481d7da75",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Shapes.md": {
+    "mtime": 1778596060.5366106,
+    "ast_hash": "2e98adbd5db6b70536cc3be1283af8e2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\Toolbar.md": {
+    "mtime": 1778596060.5436847,
+    "ast_hash": "6285655315a9f161a3d3a2f92007c967",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\VersionHistory.md": {
+    "mtime": 1778596060.550737,
+    "ast_hash": "1d73ebd29aedfffc54d3ffc28c0b15fe",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\GodotManuals\\buildacomplete2dplatformerwithgodot.pdf": {
+    "mtime": 1779745157.539506,
+    "ast_hash": "541b3b3cafcadb4148dc2e260681545e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\GodotManuals\\buildaroguelikeingodot.pdf": {
+    "mtime": 1779745170.5253587,
+    "ast_hash": "066f9bebd996942f6ab1072154a1982d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\GodotManuals\\createacompletebullethellingodot.pdf": {
+    "mtime": 1779745182.8372025,
+    "ast_hash": "faa1c8ff2356c2c115c007e7b194e432",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\GodotManuals\\developa3dplatformerwithgodot.pdf": {
+    "mtime": 1779745294.971188,
+    "ast_hash": "9cbe6a60770c3748ede8b442885a80ad",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\GodotManuals\\mobilegamedevelopmentwithgodot.pdf": {
+    "mtime": 1779745302.6030805,
+    "ast_hash": "d5596cbeb1641a3583c6ae4b1fd5cfee",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\icon.svg": {
+    "mtime": 1778090065.2242439,
+    "ast_hash": "a16f2eed1b4496c4abf03d329708ba09",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\ai_icon.png": {
+    "mtime": 1778113043.8361838,
+    "ast_hash": "76d9f6be255c7d0cddb8c8c0f84b5f2b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\user_icon.svg": {
+    "mtime": 1778113043.8976119,
+    "ast_hash": "f16ee30678c9acf389e941cdfc09752f",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\attach.svg": {
+    "mtime": 1778113043.841736,
+    "ast_hash": "274e30cd922fdbbb21075fb7ddcaa166",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\history.svg": {
+    "mtime": 1778113043.8492863,
+    "ast_hash": "c70491e3bde511b63bac73d220368759",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\magic.svg": {
+    "mtime": 1778113043.8554258,
+    "ast_hash": "45a3d5a1fa53fbe681d0cdae4ba90c82",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\plus.svg": {
+    "mtime": 1778113043.863047,
+    "ast_hash": "0adff69bef42b21137decf171c922f7a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\save.svg": {
+    "mtime": 1778113043.869081,
+    "ast_hash": "cd4a626d64d2c294d52a39a831bb13af",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\send.svg": {
+    "mtime": 1778113043.8764453,
+    "ast_hash": "7e24554d7bba957bf8a450db8fcfa598",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\settings.svg": {
+    "mtime": 1778113043.8840432,
+    "ast_hash": "56916a5f070d1bf9a586dd491dd272cc",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\assets\\icons\\stop.svg": {
+    "mtime": 1778113043.890075,
+    "ast_hash": "4801f2ec2c2fe29a8e19406a340d72c1",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\gamedev_ai\\icons\\close.svg": {
+    "mtime": 1778113043.9461234,
+    "ast_hash": "885fe8c10d79ca2062243e15cad92e29",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\kaykit_halloween_bits\\Assets\\gltf\\halloweenbits_texture.png": {
+    "mtime": 1778114605.934226,
+    "ast_hash": "2a93315dd052c609e071d5d627bed1b2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\kaykit_halloween_bits\\Assets\\obj\\halloweenbits_texture.png": {
+    "mtime": 1778114606.8791144,
+    "ast_hash": "2a93315dd052c609e071d5d627bed1b2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\kaykit_halloween_bits\\Assets\\textures\\halloweenbits_texture.png": {
+    "mtime": 1778114607.368963,
+    "ast_hash": "2a93315dd052c609e071d5d627bed1b2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\asset_library_icon-new.png": {
+    "mtime": 1778596060.0617268,
+    "ast_hash": "a946b627a9c7f49bac115696b4b2ec36",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\asset_library_icon.png": {
+    "mtime": 1778596060.075348,
+    "ast_hash": "9f27db6a2e5a7d5ae2f847b630fc2d65",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\Anchor.svg": {
+    "mtime": 1778596060.088618,
+    "ast_hash": "ad1b52fc360626b82b84f3565635ad6a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\CenterView.svg": {
+    "mtime": 1778596060.103244,
+    "ast_hash": "31c0510682c927d67495257863aef0a0",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\closed_shape.png": {
+    "mtime": 1778596060.1445992,
+    "ast_hash": "3da5e699ee52175fdd7cc1d80183c830",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\freehand.png": {
+    "mtime": 1778596060.158691,
+    "ast_hash": "f8f0541fcd23370390dc0c9c982b9c26",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon.png": {
+    "mtime": 1778596060.179174,
+    "ast_hash": "151cc86b09328d9e651bbfbbdbab0717",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_collision_polygon_2d.svg": {
+    "mtime": 1778596060.1918862,
+    "ast_hash": "29e567e83c4ad693826ce3463dd45b84",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_curve_create.svg": {
+    "mtime": 1778596060.2065206,
+    "ast_hash": "ae024078901d4ec981a085fc7ef81061",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_curve_delete.svg": {
+    "mtime": 1778596060.22066,
+    "ast_hash": "bdbade9d22a3d6fbfcf3d56b533aa81d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_curve_edit.svg": {
+    "mtime": 1778596060.2332635,
+    "ast_hash": "6a2adfc18f2727b7e5e263def46ff124",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_freehand.svg": {
+    "mtime": 1778596060.2473848,
+    "ast_hash": "540d51ab8057d6eba3f947d6bc8b89b3",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_handle.svg": {
+    "mtime": 1778596060.2609954,
+    "ast_hash": "a582289cef831d822fac10438d2ec6ae",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_handle_add.svg": {
+    "mtime": 1778596060.276201,
+    "ast_hash": "cf3a41fb7d1f7b00c911b96a0bb6169c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_handle_bezier.svg": {
+    "mtime": 1778596060.2893038,
+    "ast_hash": "04f599cdaff401dba333e51de0d720d7",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_handle_control.svg": {
+    "mtime": 1778596060.302897,
+    "ast_hash": "cdb83ab0ae793493fcd0c0806ec39d74",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_handle_selected.svg": {
+    "mtime": 1778596060.3164911,
+    "ast_hash": "3d0694b5af1c92d5820918898eaef38f",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_position.svg": {
+    "mtime": 1778596060.33063,
+    "ast_hash": "f4500877924e786b7a6897e72811e09a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\icon_editor_snap.svg": {
+    "mtime": 1778596060.3453069,
+    "ast_hash": "a6f9ff2af7f71f5b3f8a1d5eb5abaab2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\InterpLinear.svg": {
+    "mtime": 1778596060.1168418,
+    "ast_hash": "6eee975845f2f11fdf81ce910f209d5b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\light1-1.png": {
+    "mtime": 1778596060.3991468,
+    "ast_hash": "d47e151d8c2c93626147b8e94605c1fb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\meta_shape.png": {
+    "mtime": 1778596060.4134345,
+    "ast_hash": "ab59a14ac2018733695d12b308fa8f2a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\assets\\open_shape.png": {
+    "mtime": 1778596060.4265735,
+    "ast_hash": "1710b3af085ecef5c67d0ea30eea3f76",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\AngleExplaination.png": {
+    "mtime": 1778596060.557816,
+    "ast_hash": "50a2d06b6eae6aba5e750ee7557496e1",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\canvas-item-repeat.png": {
+    "mtime": 1778596060.705274,
+    "ast_hash": "2b7804f2fcb0e7079966f6cae5822a09",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\EdgeEdit-MaterialOverride.png": {
+    "mtime": 1778596060.5653489,
+    "ast_hash": "ba34829706e4504796a8aa59bbb6bb8a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\EdgeEdit-NoRender.png": {
+    "mtime": 1778596060.5714254,
+    "ast_hash": "64d20b6d1d3a6b8bf54b73f9d2f46075",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\faq-texture-repeat-import.png": {
+    "mtime": 1778596060.7118578,
+    "ast_hash": "b4b190b630ca1ec7f135626d8fe27a68",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\faq-texture-repeat.png": {
+    "mtime": 1778596060.7194202,
+    "ast_hash": "c54ac692aa0c86a546386ac18da161cb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\godot4-assign-normal-tex.png": {
+    "mtime": 1778596060.7264762,
+    "ast_hash": "febc13c2a8def1c3d8aa37b9da775c80",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\godot4-create-texture-res.png": {
+    "mtime": 1778596060.7335265,
+    "ast_hash": "272c41422f70ae91719e468e1a068b96",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\godot4-make-points-unique.png": {
+    "mtime": 1778596060.7406209,
+    "ast_hash": "e22bd2746e011844c2d6aec49140e975",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\grass-corner-inner.png": {
+    "mtime": 1778596060.7466686,
+    "ast_hash": "debd68f49727f4ee0de9d13c5ef8f9eb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\grass-corner-outer.png": {
+    "mtime": 1778596060.7537105,
+    "ast_hash": "b2af3628fc7ac49f4f5ffa8ce589a934",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\grass-taper-left.png": {
+    "mtime": 1778596060.7607796,
+    "ast_hash": "bb61c2b4a53b9fed71379f313faf1146",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\grass-taper-right.png": {
+    "mtime": 1778596060.7678251,
+    "ast_hash": "ea87e2b63b02e990b1db3c893933f1bc",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\grass.png": {
+    "mtime": 1778596060.7748682,
+    "ast_hash": "c49bc81d036f3fe6bbdf5d8cd04163be",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\icon_edge.png": {
+    "mtime": 1778596060.7814345,
+    "ast_hash": "d8cd617360e48ff03afe8dc096d130bc",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\Inpsector-EdgeMaterial.png": {
+    "mtime": 1778596060.5794737,
+    "ast_hash": "d8c6ae854a7a186a54e2092fd3d88f3e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\Inpsector-EdgeMaterialCornerOuter.png": {
+    "mtime": 1778596060.5865264,
+    "ast_hash": "af5347ba97dbf059026e01580218e364",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\Inpsector-EdgeMaterials2.png": {
+    "mtime": 1778596060.5915916,
+    "ast_hash": "007d7ba8b68cc8d1e6329c31d04413da",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\Inpsector-EdgeMaterialsNormalRange.png": {
+    "mtime": 1778596060.6006389,
+    "ast_hash": "0fa91ba707f623009d2a9fc9da3ba517",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\NewNode-SS2D_Nodes.png": {
+    "mtime": 1778596060.6066754,
+    "ast_hash": "f36a32dda22d805c2a60467581c288d2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\NormalColors.png": {
+    "mtime": 1778596060.613727,
+    "ast_hash": "4bbcf9a6ea0f19e40546157c8dffe6db",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\NormalCorrect.png": {
+    "mtime": 1778596060.6207798,
+    "ast_hash": "53904eb884f269d15a6b2e63ba82f88e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\NormalWrong.png": {
+    "mtime": 1778596060.626809,
+    "ast_hash": "6a6a167bf18c66c66967aaf01e513012",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\PluginActivate.png": {
+    "mtime": 1778596060.634901,
+    "ast_hash": "01c2782bb7d22fabc472a503704eaa8c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\sample.gif": {
+    "mtime": 1778596060.803598,
+    "ast_hash": "a3ace950543de447c8b86f0bac09a7e2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\sample.png": {
+    "mtime": 1778596060.8051114,
+    "ast_hash": "f81bf6fd7655bc5b5abed627977091fe",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\ShapeClosed-FillTextured.png": {
+    "mtime": 1778596060.691645,
+    "ast_hash": "1cd03237f79ef16e4f24a30b0cba595d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\ShapeClosed-Untextured.png": {
+    "mtime": 1778596060.6936572,
+    "ast_hash": "52049401cfcf697560780917fc11e056",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\smartshape_textures_breakdown.png": {
+    "mtime": 1778596060.8106766,
+    "ast_hash": "50387b0335aaffb70b697ba83ccadb5b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\documentation\\imgs\\Toolbar-PointEdit.png": {
+    "mtime": 1778596060.699235,
+    "ast_hash": "884ad988621a21dcdde73c7c57cf8934",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\editors\\NormalRangeEditor\\over_texture.png": {
+    "mtime": 1778596060.8535,
+    "ast_hash": "530b2adb19c53a2ec67825bdf9944582",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\editors\\NormalRangeEditor\\progress_texture.png": {
+    "mtime": 1778596060.8661833,
+    "ast_hash": "996791fb4802a23c461c3912fe694be2",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\rmsmartshape\\editors\\NormalRangeEditor\\under_texture.png": {
+    "mtime": 1778596060.8807774,
+    "ast_hash": "b2d43df16da4897613b5ec54ced40895",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\TileMapDual\\cursor_dual.svg": {
+    "mtime": 1778112647.9890893,
+    "ast_hash": "952c7847131bd497057ef5b34e571143",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\addons\\TileMapDual\\tile_map_dual.svg": {
+    "mtime": 1778112648.1561148,
+    "ast_hash": "cffbf33be62d65757d71132a541f7096",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\acid_pool.jpg": {
+    "mtime": 1779653081.291191,
+    "ast_hash": "cbbcc4bbd0d687972c9abe5650955970",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\acid_pool.png": {
+    "mtime": 1779742680.8413346,
+    "ast_hash": "d69f4cae8804dc5db5ea543796fe4e40",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\chain_lightning.jpg": {
+    "mtime": 1779653096.2134485,
+    "ast_hash": "d7d2907c2cb55e7ba840f98401ca488d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\frost_nova.jpg": {
+    "mtime": 1779653068.481465,
+    "ast_hash": "c45ea5503a7f30cf72281f59782c3f6d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\frost_nova.png": {
+    "mtime": 1779742681.1335905,
+    "ast_hash": "9f50a238e75fb89d22405d0ba9e48ab4",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\orbital_beam.jpg": {
+    "mtime": 1779652332.0772574,
+    "ast_hash": "16f4c2b1493c39431fdc03a80209f0d3",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\orbital_beam.png": {
+    "mtime": 1779742681.4294863,
+    "ast_hash": "3473568ec8a643ab77f39d564a99edae",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\overdrive.jpg": {
+    "mtime": 1779653111.9427032,
+    "ast_hash": "3b671f3a9ff88ff3939c4da4fc3d85a0",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\bullets\\bullet1.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "4f92fd6000dc62bfef9caef5b8dc31f3",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\bullets\\bullet2.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "a0645a4e4019954f5b3b28a9a25fca0d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\bullets\\Pixel.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "0f706b64bd06b281d4284dd8efba8743",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\abomination.png": {
+    "mtime": 1779922618.0741687,
+    "ast_hash": "835c7fa3e89c8b695aa8a29e31762349",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\banshee.png": {
+    "mtime": 1779922618.6555204,
+    "ast_hash": "c309440bbd895cd52d7e6930cdbde37a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\Dino.png": {
+    "mtime": 1778114831.1934986,
+    "ast_hash": "f6b5bd2779d8811d9cd8d251c32472ea",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\dino1.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "20a8b62bdc420673355f186711baf695",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\dino2.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "0c1b2d3b5e6afe7c1cf54d6c5a26d9fd",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\dino3.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "b35f4dbe1513c61146da143674613790",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\dino4.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "7bc90bde13fe619cc63799e64275ea75",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\draugr.png": {
+    "mtime": 1779922618.3222919,
+    "ast_hash": "62380454da3ecc00e4d9ae8945a53deb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\dullahan.png": {
+    "mtime": 1779922618.53967,
+    "ast_hash": "61adb259d3627e77dac7245fa9f4b8e9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\ghoul.png": {
+    "mtime": 1779922617.8843446,
+    "ast_hash": "82f8a3c36c67f63ecf0374b9ca2340dc",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\hound.png": {
+    "mtime": 1779922618.1161568,
+    "ast_hash": "33aa074ad51faa7662160209f71d0e08",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\lich.png": {
+    "mtime": 1779922618.608491,
+    "ast_hash": "db3a23324dcb9972a7ec9f18dab93256",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\enemies\\sludge.png": {
+    "mtime": 1779922618.8527946,
+    "ast_hash": "725a1e7d74e6663e8e35c3615b109d8a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\shader\\Dirt_Edge_texture.png": {
+    "mtime": 1778622157.391049,
+    "ast_hash": "a9f81dfa37cceff37150a656279d4529",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\shader\\Dirt_texture.png": {
+    "mtime": 1779909272.2965739,
+    "ast_hash": "a3d7a44a084087af43ecd01656b3fefb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\shader\\shader-texture_2.png": {
+    "mtime": 1778112648.3628604,
+    "ast_hash": "7e6340e6a754875011db0f271123fc86",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Brick Dual Hori Flat - 64x48.png": {
+    "mtime": 1778112648.2103956,
+    "ast_hash": "00f511bde200ba6bfc1ff6cb61b38e06",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Brick Dual Vert Flat - 48x64.png": {
+    "mtime": 1778112648.2243638,
+    "ast_hash": "5b2b50fe67f47af6b36c745d949eca62",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\cursor.svg": {
+    "mtime": 1778112648.3202908,
+    "ast_hash": "9ef92349a5f3193eb0ce86d702dda2a8",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Dual Hori Flat - 64x48tri 64x64hex.png": {
+    "mtime": 1778112648.2374277,
+    "ast_hash": "4eecf2b465840f7d86246e9a1414c43b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Dual Vert Flat - 48x64tri 64x64hex.png": {
+    "mtime": 1778112648.25172,
+    "ast_hash": "97044876fbb96c4d77723a1e7d8bd9eb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Dual Vert Tall Standard - 96x128tri 128x110hex.png": {
+    "mtime": 1778112648.2653239,
+    "ast_hash": "0d5e94096b85f6574bba166641aee873",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Dual Vert Tall Wing - 96x128tri 128x110hex.png": {
+    "mtime": 1778112648.2794268,
+    "ast_hash": "faa90d562e3cce82e35d3ea8dcae3ee9",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Full Tiles Logo.png": {
+    "mtime": 1778112648.2930653,
+    "ast_hash": "a0d6dc0c47a05befe53d9fda62d1d630",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\Hex Full Tiles Only.png": {
+    "mtime": 1778112648.3082173,
+    "ast_hash": "e629ee84e8c216c35a65784beea5395c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\map_layout.png": {
+    "mtime": 1778428041.8379207,
+    "ast_hash": "9c41d07e12eeda96ca83bd027fbe0060",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\stone_texture.jpg": {
+    "mtime": 1778269430.5440738,
+    "ast_hash": "4f5a1a4dd0d5d5c7cc48dd0adae5406f",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\stone_texture.png": {
+    "mtime": 1778269698.804945,
+    "ast_hash": "3be7b8b182ccd96e48989b4e57311193",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_grass.png": {
+    "mtime": 1778112648.4736454,
+    "ast_hash": "4b753ffe07844f35694bfd781d004b71",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_grass_random.png": {
+    "mtime": 1778112648.4857297,
+    "ast_hash": "e85b440a0b1a1bbf813c22b12e48ffb7",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_iso.png": {
+    "mtime": 1778112648.5013845,
+    "ast_hash": "b860dc291261db100197fedbe3f7c706",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_jess.png": {
+    "mtime": 1778112648.5140636,
+    "ast_hash": "f6c08fe6b5c302d798a277a3e05c6f0b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_sand.png": {
+    "mtime": 1778112648.52818,
+    "ast_hash": "c5c212e5ff10961f60cbccdcf556f655",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\tileset_standard.png": {
+    "mtime": 1778112648.5412447,
+    "ast_hash": "aaaf5a8f112fc0215797e4225ffc55f7",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\tileset\\zoshua-colah-2OrRgXvxMOI-unsplash.jpg": {
+    "mtime": 1778269990.3421464,
+    "ast_hash": "2b498ffbbb554c1865188428b5cd1158",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\base.png": {
+    "mtime": 1779751887.009508,
+    "ast_hash": "f62d4fd55d229bd77ebfb961f4f4e1af",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\dynamite-pack.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "cefd165a805cfc7d0ef0df1642a4310a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\dynamite.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "73ca4f621bf5ee6f7b92294ebc6026eb",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\flamethrower.png": {
+    "mtime": 1779751233.0051477,
+    "ast_hash": "a5c073756ecaf72abf193daf17ba9b60",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\frost_turret.png": {
+    "mtime": 1779753498.2751987,
+    "ast_hash": "9b6af579e421b1737ec8581f11c7e29b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\laserturret.png": {
+    "mtime": 1724677007.0,
+    "ast_hash": "5f6b4bdb6dc9ee7bc2b6e0b23fe1cf12",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\reallaser.png": {
+    "mtime": 1779753498.345552,
+    "ast_hash": "2e650877d1ae4b042546d49e9c982274",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\assets\\turrets\\technoturret.png": {
+    "mtime": 1779751232.800928,
+    "ast_hash": "158cb651e134111f6069199aa9fa1a02",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_iso.gif": {
+    "mtime": 1778112648.577562,
+    "ast_hash": "7e644f1ed0664af14d27c32dbf418260",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_jess.gif": {
+    "mtime": 1778112648.5906508,
+    "ast_hash": "b2b5374569a0c371a19a16ad6622a14a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_layers.png": {
+    "mtime": 1778112648.6042452,
+    "ast_hash": "51fe6580966451c484828b6247a7a544",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\display_material.png": {
+    "mtime": 1778112648.625851,
+    "ast_hash": "9e915adb31a3c0936722e2e5a0feb3c5",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\icon.png": {
+    "mtime": 1778112648.6388338,
+    "ast_hash": "141180167afaaed8fd80865d238f55fc",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\icon.svg": {
+    "mtime": 1778112648.653378,
+    "ast_hash": "874f5febf8c41b6e93c85085cab3b06a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\reference_dual.jpeg": {
+    "mtime": 1778112648.686986,
+    "ast_hash": "8bbeaf6cf12631a7000899e6be3d770e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\reference_tilecropper.png": {
+    "mtime": 1778112648.7005818,
+    "ast_hash": "39d8cead8b82b0938d22daec03f5239d",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\reference_tileset_isometric.svg": {
+    "mtime": 1778112648.7136939,
+    "ast_hash": "b76c2e78d3ff80bdf2a92faa82062e9b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\reference_tileset_standard.png": {
+    "mtime": 1778112648.7288518,
+    "ast_hash": "93d68f98b87f594b76aa571da98b407a",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\v5_structure.png": {
+    "mtime": 1778112648.7566276,
+    "ast_hash": "8cfb47b850cc963ab2092ba63ea2c07e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\all_shapes_and_common_mistakes.mp4": {
+    "mtime": 1778112648.56231,
+    "ast_hash": "e3a3396cfc36d1e8bc1f04a098d84d18",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\change_tilesets.mp4": {
+    "mtime": 1778112648.5669086,
+    "ast_hash": "916c2533d52cfa131552ce82e88b9b11",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\custom_drawing_sprites.mp4": {
+    "mtime": 1778112648.5730314,
+    "ast_hash": "404b187129e8fec4325356e3f8a671c0",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_iso.mp4": {
+    "mtime": 1778112648.583611,
+    "ast_hash": "8ab59df0e8d1be947314c22a6c6bf739",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_jess.mp4": {
+    "mtime": 1778112648.5982137,
+    "ast_hash": "6be19e218c5cf137e34b4df71a081226",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\demo_shaders.mp4": {
+    "mtime": 1778112648.618315,
+    "ast_hash": "18e8c175c59829bcf8904dd81a416b58",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\manual_hexagonal_terrain_setup.mp4": {
+    "mtime": 1778112648.668837,
+    "ast_hash": "d4c56ccd2fccd913fce7c1c93ccd44b3",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\multiple_atlases_conflict.mp4": {
+    "mtime": 1778112648.6738696,
+    "ast_hash": "606e7c09b554ff5a6612b480805d182b",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\multiple_layers.mp4": {
+    "mtime": 1778112648.6814444,
+    "ast_hash": "9f450c40dd56d2d08b3a9cc24611b08c",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\setup.mp4": {
+    "mtime": 1778112648.7434735,
+    "ast_hash": "943da2a52f6fb542d6164dcee568b60e",
+    "semantic_hash": ""
+  },
+  "F:\\GodotGames\\wave-defense-td\\docs\\terrain_setup_live_feedback.mp4": {
+    "mtime": 1778112648.7495286,
+    "ast_hash": "6bcfaf50c34cfcb7cbb4b8c0da334818",
+    "semantic_hash": ""
+  }
+}

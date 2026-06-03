@@ -11,6 +11,8 @@ signal nexus_destroyed
 signal enemy_killed(type_idx: int, position: Vector2, gold_yield: int)
 @warning_ignore("unused_signal")
 signal gold_changed(new_amount: int)
+@warning_ignore("unused_signal")
+signal mana_changed(current_mana: float, max_mana: float)
 
 # Waves
 @warning_ignore("unused_signal")

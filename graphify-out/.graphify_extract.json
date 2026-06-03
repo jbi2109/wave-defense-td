@@ -1,0 +1,2034 @@
+{
+  "nodes": [
+    {
+      "id": "check_colors_py",
+      "label": "check_colors.py",
+      "file_type": "code",
+      "source_file": "check_colors.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "clean_base_py",
+      "label": "clean_base.py",
+      "file_type": "code",
+      "source_file": "clean_base.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "convert_bg_py",
+      "label": "convert_bg.py",
+      "file_type": "code",
+      "source_file": "convert_bg.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "wave_defense_td_convert_bg_remove_background",
+      "label": "remove_background()",
+      "file_type": "code",
+      "source_file": "convert_bg.py",
+      "source_location": "L3"
+    },
+    {
+      "id": "crop_base_py",
+      "label": "crop_base.py",
+      "file_type": "code",
+      "source_file": "crop_base.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "install_graphify_ps1",
+      "label": "install_graphify.ps1",
+      "file_type": "code",
+      "source_file": "install_graphify.ps1",
+      "source_location": "L1"
+    },
+    {
+      "id": "wave_defense_td_install_graphify_find_graphifypython",
+      "label": "Find-GraphifyPython()",
+      "file_type": "code",
+      "source_file": "install_graphify.ps1",
+      "source_location": "L5"
+    },
+    {
+      "id": "process_new_turrets_py",
+      "label": "process_new_turrets.py",
+      "file_type": "code",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "wave_defense_td_process_new_turrets_process_image",
+      "label": "process_image()",
+      "file_type": "code",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L5"
+    },
+    {
+      "id": "remove_checkerboard_py",
+      "label": "remove_checkerboard.py",
+      "file_type": "code",
+      "source_file": "remove_checkerboard.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "wave_defense_td_remove_checkerboard_is_bg",
+      "label": "is_bg()",
+      "file_type": "code",
+      "source_file": "remove_checkerboard.py",
+      "source_location": "L29"
+    },
+    {
+      "id": "gemini_settings_json",
+      "label": "settings.json",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "gemini_settings_experimental",
+      "label": "experimental",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "gemini_settings_experimental_contextmanagement",
+      "label": "contextManagement",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "gemini_settings_experimental_generalistprofile",
+      "label": "generalistProfile",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "gemini_settings_experimental_automemory",
+      "label": "autoMemory",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "gemini_settings_experimental_useosc52copy",
+      "label": "useOSC52Copy",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "gemini_settings_experimental_useosc52paste",
+      "label": "useOSC52Paste",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "gemini_settings_experimental_worktrees",
+      "label": "worktrees",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "gemini_settings_experimental_gemma",
+      "label": "gemma",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "gemini_settings_mcpservers",
+      "label": "mcpServers",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "gemini_settings_mcpservers_github",
+      "label": "github",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "gemini_settings_github_command",
+      "label": "command",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "gemini_settings_github_args",
+      "label": "args",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "gemini_settings_github_env",
+      "label": "env",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L22"
+    },
+    {
+      "id": "gemini_settings_env_github_personal_access_token",
+      "label": "GITHUB_PERSONAL_ACCESS_TOKEN",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "gemini_settings_model",
+      "label": "model",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "gemini_settings_model_name",
+      "label": "name",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L28"
+    },
+    {
+      "id": "gemini_settings_ide",
+      "label": "ide",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L30"
+    },
+    {
+      "id": "gemini_settings_ide_enabled",
+      "label": "enabled",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L31"
+    },
+    {
+      "id": "gemini_settings_ui",
+      "label": "ui",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "gemini_settings_ui_terminalbuffer",
+      "label": "terminalBuffer",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L34"
+    },
+    {
+      "id": "gemini_settings_ui_showmodelinfoinchat",
+      "label": "showModelInfoInChat",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "gemini_settings_ui_showmemoryusage",
+      "label": "showMemoryUsage",
+      "file_type": "code",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L36"
+    },
+    {
+      "id": "addons_gamedev_ai_append_node_tools_py",
+      "label": "append_node_tools.py",
+      "file_type": "code",
+      "source_file": "addons\\gamedev_ai\\append_node_tools.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "addons_gamedev_ai_patch_handlers_py",
+      "label": "patch_handlers.py",
+      "file_type": "code",
+      "source_file": "addons\\gamedev_ai\\patch_handlers.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "addons_gamedev_ai_refactor_py",
+      "label": "refactor.py",
+      "file_type": "code",
+      "source_file": "addons\\gamedev_ai\\refactor.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "addons_gamedev_ai_restore_actions_py",
+      "label": "restore_actions.py",
+      "file_type": "code",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "gamedev_ai_restore_actions_replace_self_with_executor",
+      "label": "replace_self_with_executor()",
+      "file_type": "code",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L42"
+    },
+    {
+      "id": "claude_performance_rules",
+      "label": "Performance Rules",
+      "file_type": "rationale",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_dual_grid_system",
+      "label": "Dual-Grid System",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "settings_json",
+      "label": "settings.json",
+      "file_type": "document",
+      "source_file": ".gemini/settings.json",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "append_node_tools_py",
+      "label": "append_node_tools.py",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/append_node_tools.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "patch_handlers_py",
+      "label": "patch_handlers.py",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/patch_handlers.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "refactor_py",
+      "label": "refactor.py",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/refactor.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "restore_actions_py",
+      "label": "restore_actions.py",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/restore_actions.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "contributing_md",
+      "label": "CONTRIBUTING.md",
+      "file_type": "document",
+      "source_file": "CONTRIBUTING.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug_ready_txt",
+      "label": "debug_ready.txt",
+      "file_type": "document",
+      "source_file": "debug_ready.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ai_and_pathfinding_md",
+      "label": "ai_and_pathfinding.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/ai_and_pathfinding.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "animation_and_cutscenes_md",
+      "label": "animation_and_cutscenes.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/animation_and_cutscenes.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "audio_management_best_practices_md",
+      "label": "audio_management_best_practices.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/audio_management_best_practices.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "image_processing_concept",
+      "label": "Image Sprite Processing",
+      "file_type": "rationale",
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ai_agent_code_modification",
+      "label": "AI Code Modifiers",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/refactor.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gamedev_ai_skills_concept",
+      "label": "GameDev AI Skills",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/ai_and_pathfinding.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "common_architectures",
+      "label": "common_architectures.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "composition_over_inheritance",
+      "label": "Composition over Inheritance",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "health_component",
+      "label": "HealthComponent",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "finite_state_machine",
+      "label": "Finite State Machine",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_machine",
+      "label": "StateMachine",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state",
+      "label": "State",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "event_bus",
+      "label": "Event Bus",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "data_management_and_crafting",
+      "label": "data_management_and_crafting.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/data_management_and_crafting.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "data_manager",
+      "label": "DataManager",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/data_management_and_crafting.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gdscript_modern_features",
+      "label": "gdscript_modern_features.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/gdscript_modern_features.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gdscript_recipes_and_patterns",
+      "label": "gdscript_recipes_and_patterns.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/gdscript_recipes_and_patterns.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "autoload_singleton_pattern",
+      "label": "Autoload Singleton Pattern",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/gdscript_recipes_and_patterns.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gdscript_signals_and_tweens",
+      "label": "gdscript_signals_and_tweens.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/gdscript_signals_and_tweens.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "input_handling_and_remapping",
+      "label": "input_handling_and_remapping.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "input_manager",
+      "label": "InputManager",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "remap_button",
+      "label": "RemapButton",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_and_item_systems",
+      "label": "inventory_and_item_systems.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "item_data",
+      "label": "ItemData",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "slot_data",
+      "label": "SlotData",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_data",
+      "label": "InventoryData",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "level_generation_and_pcg",
+      "label": "level_generation_and_pcg.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/level_generation_and_pcg.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_noise_lite",
+      "label": "FastNoiseLite",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/level_generation_and_pcg.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mobile_and_resolution_scaling",
+      "label": "mobile_and_resolution_scaling.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/mobile_and_resolution_scaling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "safe_area_ui",
+      "label": "SafeAreaUI",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/mobile_and_resolution_scaling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "multiplayer_and_networking_api",
+      "label": "multiplayer_and_networking_api.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/multiplayer_and_networking_api.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "performance_optimization",
+      "label": "performance_optimization.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/performance_optimization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "object_pooling",
+      "label": "Object Pooling",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/performance_optimization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "bullet_pool",
+      "label": "BulletPool",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/performance_optimization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "post_processing_and_environment",
+      "label": "post_processing_and_environment.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/post_processing_and_environment.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdfgi",
+      "label": "SDFGI",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/post_processing_and_environment.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "voxelgi",
+      "label": "VoxelGI",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/post_processing_and_environment.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "project_structure_guidelines",
+      "label": "project_structure_guidelines.md",
+      "file_type": "document",
+      "source_file": "addons/gamedev_ai/skills/project_structure_guidelines.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feature_based_organization",
+      "label": "Feature-Based Organization",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/project_structure_guidelines.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dialogue_manager",
+      "label": "DialogueManager",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "quest_resource",
+      "label": "Quest",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "quest_objective",
+      "label": "QuestObjective",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "quest_manager",
+      "label": "QuestManager",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "save_manager",
+      "label": "SaveManager",
+      "file_type": "code",
+      "source_file": "addons/gamedev_ai/skills/save_system_and_persistence.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gdshader",
+      "label": "GDShader",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/shaders_and_vfx.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fsm_pattern",
+      "label": "Finite State Machine",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/state_machine_implementation.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "responsive_ui",
+      "label": "Responsive UI",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/ui_ux_patterns.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "styleboxflat",
+      "label": "StyleBoxFlat",
+      "file_type": "rationale",
+      "source_file": "addons/gamedev_ai/skills/ui_ux_patterns.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "godot_ai",
+      "label": "Godot AI",
+      "file_type": "document",
+      "source_file": "addons/godot_ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mcp",
+      "label": "Model Context Protocol",
+      "file_type": "rationale",
+      "source_file": "addons/godot_ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "kaykit_halloween_bits",
+      "label": "KayKit: Halloween Bits",
+      "file_type": "document",
+      "source_file": "addons/kaykit_halloween_bits/Assets/LICENSE.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "Kay Lousberg",
+      "contributor": null
+    },
+    {
+      "id": "smartshape2d",
+      "label": "SmartShape2D",
+      "file_type": "document",
+      "source_file": "addons/rmsmartshape/documentation/Quickstart.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ss2d_shape",
+      "label": "SS2D_Shape",
+      "file_type": "code",
+      "source_file": "addons/rmsmartshape/documentation/Quickstart.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ss2d_shape_anchor",
+      "label": "SS2D_Shape_Anchor",
+      "file_type": "code",
+      "source_file": "addons/rmsmartshape/documentation/Quickstart.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shape_material",
+      "label": "Shape Material",
+      "file_type": "rationale",
+      "source_file": "addons/rmsmartshape/documentation/Resources.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "edge_meta_material",
+      "label": "Edge Meta Material",
+      "file_type": "rationale",
+      "source_file": "addons/rmsmartshape/documentation/Resources.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "edge_material",
+      "label": "Edge Material",
+      "file_type": "rationale",
+      "source_file": "addons/rmsmartshape/documentation/Resources.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "check_colors_py",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "check_colors.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "check_colors_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "check_colors.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "clean_base_py",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "clean_base.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "clean_base_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "clean_base.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "convert_bg_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "convert_bg.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "convert_bg_py",
+      "target": "wave_defense_td_convert_bg_remove_background",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "convert_bg.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "crop_base_py",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "crop_base.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "crop_base_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "crop_base.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "crop_base_py",
+      "target": "numpy",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "crop_base.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "install_graphify_ps1",
+      "target": "wave_defense_td_install_graphify_find_graphifypython",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "install_graphify.ps1",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "glob",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "wave_defense_td_process_new_turrets_process_image",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "process_new_turrets.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "remove_checkerboard_py",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "remove_checkerboard.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "remove_checkerboard_py",
+      "target": "pil",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "remove_checkerboard.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "remove_checkerboard_py",
+      "target": "wave_defense_td_remove_checkerboard_is_bg",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "remove_checkerboard.py",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_json",
+      "target": "gemini_settings_experimental",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_contextmanagement",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_generalistprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_automemory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_useosc52copy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_useosc52paste",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_worktrees",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_experimental",
+      "target": "gemini_settings_experimental_gemma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_json",
+      "target": "gemini_settings_mcpservers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_mcpservers",
+      "target": "gemini_settings_mcpservers_github",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_mcpservers_github",
+      "target": "gemini_settings_github_command",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_mcpservers_github",
+      "target": "gemini_settings_github_args",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_run",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_i",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_rm",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_e",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_github_personal_access_token",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_github_args",
+      "target": "ref_ghcr_io_github_github_mcp_server_latest",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "gemini_settings_mcpservers_github",
+      "target": "gemini_settings_github_env",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_github_env",
+      "target": "gemini_settings_env_github_personal_access_token",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_json",
+      "target": "gemini_settings_model",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_model",
+      "target": "gemini_settings_model_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_json",
+      "target": "gemini_settings_ide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_ide",
+      "target": "gemini_settings_ide_enabled",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_json",
+      "target": "gemini_settings_ui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_ui",
+      "target": "gemini_settings_ui_terminalbuffer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_ui",
+      "target": "gemini_settings_ui_showmodelinfoinchat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "gemini_settings_ui",
+      "target": "gemini_settings_ui_showmemoryusage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini\\settings.json",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_append_node_tools_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\append_node_tools.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_patch_handlers_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\patch_handlers.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_refactor_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\refactor.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_restore_actions_py",
+      "target": "re",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_restore_actions_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_restore_actions_py",
+      "target": "subprocess",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "addons_gamedev_ai_restore_actions_py",
+      "target": "gamedev_ai_restore_actions_replace_self_with_executor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "addons\\gamedev_ai\\restore_actions.py",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_performance_rules",
+      "target": "enemy_manager_gd",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_dual_grid_system",
+      "target": "map1_tscn",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "crop_base_py",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "remove_checkerboard_py",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "convert_bg_py",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "check_colors_py",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "process_new_turrets_py",
+      "target": "clean_base_py",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "process_new_turrets.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "refactor_py",
+      "target": "patch_handlers_py",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/refactor.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "patch_handlers_py",
+      "target": "append_node_tools_py",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/patch_handlers.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "restore_actions_py",
+      "target": "patch_handlers_py",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "addons/gamedev_ai/restore_actions.py",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ai_and_pathfinding_md",
+      "target": "gamedev_ai_skills_concept",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/skills/ai_and_pathfinding.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "animation_and_cutscenes_md",
+      "target": "gamedev_ai_skills_concept",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/skills/animation_and_cutscenes.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "audio_management_best_practices_md",
+      "target": "gamedev_ai_skills_concept",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/skills/audio_management_best_practices.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "common_architectures",
+      "target": "composition_over_inheritance",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "common_architectures",
+      "target": "finite_state_machine",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "common_architectures",
+      "target": "event_bus",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "finite_state_machine",
+      "target": "state_machine",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "finite_state_machine",
+      "target": "state",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "state_machine",
+      "target": "state",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "data_management_and_crafting",
+      "target": "data_manager",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/data_management_and_crafting.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "gdscript_recipes_and_patterns",
+      "target": "autoload_singleton_pattern",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/gdscript_recipes_and_patterns.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "input_handling_and_remapping",
+      "target": "input_manager",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "input_handling_and_remapping",
+      "target": "remap_button",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "remap_button",
+      "target": "input_manager",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/input_handling_and_remapping.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_and_item_systems",
+      "target": "item_data",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_and_item_systems",
+      "target": "slot_data",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_and_item_systems",
+      "target": "inventory_data",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_data",
+      "target": "slot_data",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "slot_data",
+      "target": "item_data",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "level_generation_and_pcg",
+      "target": "fast_noise_lite",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/level_generation_and_pcg.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mobile_and_resolution_scaling",
+      "target": "safe_area_ui",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/mobile_and_resolution_scaling.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "performance_optimization",
+      "target": "object_pooling",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/performance_optimization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "performance_optimization",
+      "target": "bullet_pool",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/performance_optimization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "post_processing_and_environment",
+      "target": "sdfgi",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/post_processing_and_environment.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "post_processing_and_environment",
+      "target": "voxelgi",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/post_processing_and_environment.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_guidelines",
+      "target": "feature_based_organization",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/project_structure_guidelines.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "event_bus",
+      "target": "autoload_singleton_pattern",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "addons/gamedev_ai/skills/common_architectures.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "quest_manager",
+      "target": "quest_resource",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "quest_resource",
+      "target": "quest_objective",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/quest_and_dialogue_systems.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "state_machine",
+      "target": "state",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/state_machine_implementation.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "state_machine",
+      "target": "fsm_pattern",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/skills/state_machine_implementation.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "godot_ai",
+      "target": "mcp",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/godot_ai/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "smartshape2d",
+      "target": "ss2d_shape",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/rmsmartshape/documentation/Quickstart.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "smartshape2d",
+      "target": "shape_material",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/rmsmartshape/documentation/Quickstart.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "shape_material",
+      "target": "edge_meta_material",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/rmsmartshape/documentation/Resources.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "edge_meta_material",
+      "target": "edge_material",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/rmsmartshape/documentation/Resources.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "image_processing_pipeline",
+      "label": "Image Processing Pipeline",
+      "nodes": [
+        "check_colors_py",
+        "clean_base_py",
+        "convert_bg_py",
+        "crop_base_py",
+        "process_new_turrets_py",
+        "remove_checkerboard_py",
+        "image_processing_concept"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "process_new_turrets.py"
+    },
+    {
+      "id": "gamedev_ai_ast_modifiers",
+      "label": "GameDev AI AST Modifiers",
+      "nodes": [
+        "append_node_tools_py",
+        "patch_handlers_py",
+        "refactor_py",
+        "restore_actions_py",
+        "ai_agent_code_modification"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/refactor.py"
+    },
+    {
+      "id": "gamedev_ai_knowledge_skills",
+      "label": "GameDev AI Knowledge Skills",
+      "nodes": [
+        "ai_and_pathfinding_md",
+        "animation_and_cutscenes_md",
+        "audio_management_best_practices_md",
+        "gamedev_ai_skills_concept"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "addons/gamedev_ai/skills/ai_and_pathfinding.md"
+    },
+    {
+      "id": "inventory_resources",
+      "label": "Inventory Resource System",
+      "nodes": [
+        "item_data",
+        "slot_data",
+        "inventory_data"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/gamedev_ai/skills/inventory_and_item_systems.md"
+    },
+    {
+      "id": "smartshape_material_hierarchy",
+      "label": "SmartShape Material Hierarchy",
+      "nodes": [
+        "shape_material",
+        "edge_meta_material",
+        "edge_material"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "addons/rmsmartshape/documentation/Resources.md"
+    }
+  ],
+  "input_tokens": 1250,
+  "output_tokens": 850
+}

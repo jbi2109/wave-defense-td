@@ -168,10 +168,8 @@ func on_gpu_fire(p_target_pos: Vector2):
 	tracer.set_script(tracer_scene)
 	
 	var m_pos = global_position
-	var gun_rot = 0.0
 	if has_node("GunSprite"):
 		m_pos = $GunSprite.global_position
-		gun_rot = $GunSprite.rotation
 		if $GunSprite.has_node("Muzzle"):
 			m_pos = $GunSprite/Muzzle.global_position
 			

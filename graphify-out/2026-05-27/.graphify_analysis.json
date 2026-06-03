@@ -1,0 +1,348 @@
+{
+  "communities": {
+    "0": [
+      "gemini_settings_ide",
+      "gemini_settings_ide_enabled",
+      "gemini_settings_json",
+      "gemini_settings_mcpservers",
+      "gemini_settings_model",
+      "gemini_settings_model_name",
+      "gemini_settings_ui",
+      "gemini_settings_ui_showmemoryusage",
+      "gemini_settings_ui_showmodelinfoinchat",
+      "gemini_settings_ui_terminalbuffer"
+    ],
+    "1": [
+      "autoload_singleton_pattern",
+      "common_architectures",
+      "composition_over_inheritance",
+      "event_bus",
+      "finite_state_machine",
+      "fsm_pattern",
+      "gdscript_recipes_and_patterns",
+      "state",
+      "state_machine"
+    ],
+    "2": [
+      "check_colors_py",
+      "clean_base_py",
+      "convert_bg_py",
+      "crop_base_py",
+      "process_new_turrets_py",
+      "remove_checkerboard_py",
+      "wave_defense_td_convert_bg_remove_background",
+      "wave_defense_td_process_new_turrets_process_image",
+      "wave_defense_td_remove_checkerboard_is_bg"
+    ],
+    "3": [
+      "gemini_settings_experimental",
+      "gemini_settings_experimental_automemory",
+      "gemini_settings_experimental_contextmanagement",
+      "gemini_settings_experimental_gemma",
+      "gemini_settings_experimental_generalistprofile",
+      "gemini_settings_experimental_useosc52copy",
+      "gemini_settings_experimental_useosc52paste",
+      "gemini_settings_experimental_worktrees"
+    ],
+    "4": [
+      "gemini_settings_env_github_personal_access_token",
+      "gemini_settings_github_args",
+      "gemini_settings_github_command",
+      "gemini_settings_github_env",
+      "gemini_settings_mcpservers_github"
+    ],
+    "5": [
+      "edge_material",
+      "edge_meta_material",
+      "shape_material",
+      "smartshape2d",
+      "ss2d_shape"
+    ],
+    "6": [
+      "ai_and_pathfinding_md",
+      "animation_and_cutscenes_md",
+      "audio_management_best_practices_md",
+      "gamedev_ai_skills_concept"
+    ],
+    "7": [
+      "inventory_and_item_systems",
+      "inventory_data",
+      "item_data",
+      "slot_data"
+    ],
+    "8": [
+      "append_node_tools_py",
+      "patch_handlers_py",
+      "refactor_py",
+      "restore_actions_py"
+    ],
+    "9": [
+      "input_handling_and_remapping",
+      "input_manager",
+      "remap_button"
+    ],
+    "10": [
+      "bullet_pool",
+      "object_pooling",
+      "performance_optimization"
+    ],
+    "11": [
+      "quest_manager",
+      "quest_objective",
+      "quest_resource"
+    ],
+    "12": [
+      "post_processing_and_environment",
+      "sdfgi",
+      "voxelgi"
+    ],
+    "13": [
+      "addons_gamedev_ai_restore_actions_py",
+      "gamedev_ai_restore_actions_replace_self_with_executor"
+    ],
+    "14": [
+      "data_management_and_crafting",
+      "data_manager"
+    ],
+    "15": [
+      "godot_ai",
+      "mcp"
+    ],
+    "16": [
+      "fast_noise_lite",
+      "level_generation_and_pcg"
+    ],
+    "17": [
+      "feature_based_organization",
+      "project_structure_guidelines"
+    ],
+    "18": [
+      "mobile_and_resolution_scaling",
+      "safe_area_ui"
+    ],
+    "19": [
+      "install_graphify_ps1",
+      "wave_defense_td_install_graphify_find_graphifypython"
+    ],
+    "20": [
+      "addons_gamedev_ai_append_node_tools_py"
+    ],
+    "21": [
+      "addons_gamedev_ai_patch_handlers_py"
+    ],
+    "22": [
+      "addons_gamedev_ai_refactor_py"
+    ],
+    "23": [
+      "claude_performance_rules"
+    ],
+    "24": [
+      "readme_dual_grid_system"
+    ],
+    "25": [
+      "settings_json"
+    ],
+    "26": [
+      "contributing_md"
+    ],
+    "27": [
+      "debug_ready_txt"
+    ],
+    "28": [
+      "image_processing_concept"
+    ],
+    "29": [
+      "ai_agent_code_modification"
+    ],
+    "30": [
+      "health_component"
+    ],
+    "31": [
+      "gdscript_modern_features"
+    ],
+    "32": [
+      "gdscript_signals_and_tweens"
+    ],
+    "33": [
+      "multiplayer_and_networking_api"
+    ],
+    "34": [
+      "dialogue_manager"
+    ],
+    "35": [
+      "save_manager"
+    ],
+    "36": [
+      "gdshader"
+    ],
+    "37": [
+      "responsive_ui"
+    ],
+    "38": [
+      "styleboxflat"
+    ],
+    "39": [
+      "kaykit_halloween_bits"
+    ],
+    "40": [
+      "ss2d_shape_anchor"
+    ]
+  },
+  "cohesion": {
+    "0": 0.2,
+    "1": 0.25,
+    "2": 0.2222222222222222,
+    "3": 0.25,
+    "4": 0.4,
+    "5": 0.4,
+    "6": 0.5,
+    "7": 0.8333333333333334,
+    "8": 0.5,
+    "9": 1.0,
+    "10": 0.6666666666666666,
+    "11": 0.6666666666666666,
+    "12": 0.6666666666666666,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0
+  },
+  "gods": [
+    {
+      "id": "gemini_settings_experimental",
+      "label": "experimental",
+      "degree": 8
+    },
+    {
+      "id": "gemini_settings_mcpservers_github",
+      "label": "github",
+      "degree": 4
+    },
+    {
+      "id": "gemini_settings_ui",
+      "label": "ui",
+      "degree": 4
+    },
+    {
+      "id": "gamedev_ai_skills_concept",
+      "label": "GameDev AI Skills",
+      "degree": 3
+    },
+    {
+      "id": "finite_state_machine",
+      "label": "Finite State Machine",
+      "degree": 3
+    },
+    {
+      "id": "state_machine",
+      "label": "StateMachine",
+      "degree": 3
+    },
+    {
+      "id": "slot_data",
+      "label": "SlotData",
+      "degree": 3
+    },
+    {
+      "id": "gemini_settings_mcpservers",
+      "label": "mcpServers",
+      "degree": 2
+    },
+    {
+      "id": "gemini_settings_github_env",
+      "label": "env",
+      "degree": 2
+    },
+    {
+      "id": "gemini_settings_model",
+      "label": "model",
+      "degree": 2
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Event Bus",
+      "target": "Autoload Singleton Pattern",
+      "source_files": [
+        "addons/gamedev_ai/skills/common_architectures.md",
+        "addons/gamedev_ai/skills/gdscript_recipes_and_patterns.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "StateMachine",
+      "target": "Finite State Machine",
+      "source_files": [
+        "addons/gamedev_ai/skills/common_architectures.md",
+        "addons/gamedev_ai/skills/state_machine_implementation.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "implements",
+      "why": "inferred connection - not explicitly stated in source"
+    },
+    {
+      "source": "SmartShape2D",
+      "target": "Shape Material",
+      "source_files": [
+        "addons/rmsmartshape/documentation/Quickstart.md",
+        "addons/rmsmartshape/documentation/Resources.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `experimental` connect `Community 3` to `Community 0`?",
+      "why": "High betweenness centrality (0.024) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `mcpServers` connect `Community 0` to `Community 4`?",
+      "why": "High betweenness centrality (0.016) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `github` connect `Community 4` to `Community 0`?",
+      "why": "High betweenness centrality (0.014) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `GameDev AI Skills` (e.g. with `ai_and_pathfinding.md` and `animation_and_cutscenes.md`) actually correct?",
+      "why": "`GameDev AI Skills` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `contextManagement`, `generalistProfile`, `autoMemory` to the rest of the system?",
+      "why": "43 weakly-connected nodes found - possible documentation gaps or missing edges."
+    }
+  ]
+}

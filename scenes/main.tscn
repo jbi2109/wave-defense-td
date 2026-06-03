@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://c3xr3m6rudg6x" path="res://scripts/camera_shake.gd" id="15_shake"]
 [ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://scripts/turret_definition.gd" id="15_tdef"]
 [ext_resource type="Script" uid="uid://b5nld5uki3dr0" path="res://scripts/damage_text_manager.gd" id="16_dmgtx"]
+[ext_resource type="Script" uid="uid://c47nmdsg5j8y1" path="res://scripts/ability_manager.gd" id="17_abmgr"]
 
 [node name="Main" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")
@@ -28,15 +29,14 @@ spawn_rate = 0.01
 
 [node name="map1" type="Node" parent="WaveManager" unique_id=942912224]
 script = ExtResource("3_muem4")
-base_enemies_per_wave = 1000
 wave_scaler = 1.2
 spawn_rate = 0.01
 max_waves = 5
 
 [node name="map2" type="Node" parent="WaveManager" unique_id=786662830]
 script = ExtResource("3_muem4")
+base_enemies_per_wave = 10000
 wave_scaler = 1.2
-spawn_rate = 0.01
 max_waves = 10
 
 [node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
@@ -110,7 +110,6 @@ script = ExtResource("13_hlthb")
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
 overlap_weight = 0.2
-dynamic_path_ratio = 0.6
 
 [node name="Swarmer" type="Node" parent="EnemyManager" unique_id=2000000001]
 script = ExtResource("10_edef")
@@ -413,6 +412,29 @@ text = "WAVE 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="ManaBar" type="ProgressBar" parent="HUD/Overlay" unique_id=1000000001]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = -20.0
+grow_vertical = 0
+value = 100.0
+
+[node name="AbilityContainer" type="HBoxContainer" parent="HUD/Overlay" unique_id=1000000002]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -80.0
+offset_right = 520.0
+offset_bottom = -45.0
+grow_vertical = 0
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1851217568]
 environment = ExtResource("5_bujp1")
 
@@ -431,3 +453,6 @@ extents = Vector2(5, 100)
 
 [node name="DamageTextManager" type="Node2D" parent="." unique_id=987654323]
 script = ExtResource("16_dmgtx")
+
+[node name="AbilityManager" type="Node2D" parent="." unique_id=987654324]
+script = ExtResource("17_abmgr")
