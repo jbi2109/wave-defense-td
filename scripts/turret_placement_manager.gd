@@ -17,6 +17,7 @@ var _editing_existing_turret: Turret = null
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
+@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
 
 var definitions := {}
 

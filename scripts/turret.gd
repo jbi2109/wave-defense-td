@@ -98,8 +98,8 @@ func _load_stats_from_data():
 #  PROCESS
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
+	var wave_manager = get_node_or_null("/root/Main/WaveManager")
 	if is_instance_valid(_target_sprite):
-		var wave_manager = get_node_or_null("/root/Main/WaveManager")
 		var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 		_target_sprite.visible = is_build_phase
 		if is_build_phase:
@@ -114,7 +114,6 @@ func _process(delta):
 		_was_overdriven = false
 		queue_redraw()
 
-	var wave_manager = get_node_or_null("/root/Main/WaveManager")
 	var is_wave_active = wave_manager and wave_manager.current_wave > 0 and not wave_manager.is_inter_wave
 	if not is_wave_active: return
 
