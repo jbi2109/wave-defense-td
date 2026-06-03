@@ -25,6 +25,10 @@ var types = PackedInt32Array()
 var gold_yields = PackedInt32Array()
 var speed_modifiers = PackedInt32Array()
 var flash_amounts = PackedInt32Array()
+var freeze_timers = PackedFloat32Array()
+
+const CPU_CELL_SIZE = 128.0
+var grid_cells_cpu: Dictionary = {}
 
 # Per-type caching
 var type_scales = PackedFloat32Array()
@@ -222,6 +226,8 @@ void fragment() {
 	speed_modifiers.resize(MAX_AGENTS)
 	flash_amounts.resize(MAX_AGENTS)
 	flash_amounts.fill(0)
+	freeze_timers.resize(MAX_AGENTS)
+	freeze_timers.fill(0.0)
 
 	_init_gpu()
 
@@ -575,7 +581,69 @@ func _process(delta):
 	)
 
 func _update_agent_data(data: PackedByteArray, dispatched_count: int):
-	pass
+	var count = min(dispatched_count, active_count)
+	grid_cells_cpu.clear()
+	for i in range(count):
+		var offset = i * AGENT_STRUCT_SIZE
+		var px = data.decode_float(offset + 0)
+		var py = data.decode_float(offset + 4)
+		var hp = data.decode_s32(offset + 16) / 100
+		positions[i] = Vector2(px, py)
+		healths[i] = hp
+		
+		var cell_coord = Vector2i(int(floor(px / CPU_CELL_SIZE)), int(floor(py / CPU_CELL_SIZE)))
+		if grid_cells_cpu.has(cell_coord):
+			grid_cells_cpu[cell_coord].append(i)
+		else:
+			grid_cells_cpu[cell_coord] = [i]
+
+func damage_enemy(index: int, amount: float, bonus_if_slowed: bool = false):
+	if index >= 0 and index < active_count:
+		var armor = type_armors[types[index]]
+		var bonus_mult = 1.5 if (bonus_if_slowed and speed_modifiers[index] < 900) else 1.0
+		var net_damage = maxf(0.0, (amount * bonus_mult) * (1.0 - armor))
+		healths[index] -= net_damage
+		flash_amounts[index] = 1.0
+		var bytes = PackedByteArray()
+		bytes.resize(4)
+		bytes.encode_s32(0, int(healths[index] * 100.0))
+		if rd:
+			RenderingServer.call_on_render_thread(func():
+				if agent_buffer_rid.is_valid():
+					rd.buffer_update(agent_buffer_rid, index * AGENT_STRUCT_SIZE + 16, 4, bytes)
+			)
+
+func apply_aoe_damage(pos: Vector2, radius: float, damage: float, bonus_if_slowed: bool = false):
+	pending_damages.append({"pos": pos, "radius": radius, "damage": damage, "bonus_if_slowed": bonus_if_slowed})
+
+func apply_aoe_slow(pos: Vector2, radius: float, slow_factor: float):
+	var nearby = get_nearby_enemies(pos, radius)
+	for idx in nearby:
+		speed_modifiers[idx] = mini(speed_modifiers[idx], int(slow_factor * 1000.0))
+
+func apply_aoe_freeze(pos: Vector2, radius: float, duration: float):
+	var nearby = get_nearby_enemies(pos, radius)
+	for idx in nearby:
+		freeze_timers[idx] = maxf(freeze_timers[idx], duration)
+		speed_modifiers[idx] = 0
+
+func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
+	var results: Array[int] = []
+	var rsq = radius * radius
+	
+	var min_cell_x = int(floor((world_pos.x - radius) / CPU_CELL_SIZE))
+	var max_cell_x = int(floor((world_pos.x + radius) / CPU_CELL_SIZE))
+	var min_cell_y = int(floor((world_pos.y - radius) / CPU_CELL_SIZE))
+	var max_cell_y = int(floor((world_pos.y + radius) / CPU_CELL_SIZE))
+	
+	for cx in range(min_cell_x, max_cell_x + 1):
+		for cy in range(min_cell_y, max_cell_y + 1):
+			var cell = Vector2i(cx, cy)
+			if grid_cells_cpu.has(cell):
+				for i in grid_cells_cpu[cell]:
+					if positions[i].distance_squared_to(world_pos) <= rsq:
+						results.append(i)
+	return results
 
 func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	if not flow_field.ff_texture or not flow_field.ff_texture.get_rid().is_valid(): return
@@ -702,7 +770,18 @@ func _tick_cpu_logic(delta: float):
 	for t in range(num_types):
 		var mmi = multimeshes[t]
 		mmi.multimesh.visible_instance_count = active_count
-		
+	
+	# Decay freeze timers and speed modifiers
+	for i in range(active_count):
+		if freeze_timers[i] > 0.0:
+			freeze_timers[i] -= delta
+			if freeze_timers[i] <= 0.0:
+				freeze_timers[i] = 0.0
+			else:
+				speed_modifiers[i] = 0
+		elif speed_modifiers[i] < 1000:
+			speed_modifiers[i] = mini(speed_modifiers[i] + int(delta * 400.0), 1000)
+	
 	# Poll turret fire events
 	turret_fire_events_buffer.read_counted_async(_on_turret_fire_events_readback)
 
@@ -833,6 +912,8 @@ func _remove_enemy(index: int):
 		gold_yields[index] = gold_yields[active_count]
 		speed_modifiers[index] = speed_modifiers[active_count]
 		flash_amounts[index] = flash_amounts[active_count]
+		freeze_timers[index] = freeze_timers[active_count]
+		freeze_timers[active_count] = 0.0
 		
 	var dead_bytes = PackedByteArray()
 	dead_bytes.resize(4)

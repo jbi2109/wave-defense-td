@@ -6,6 +6,10 @@ extends Node2D
 @onready var wave_manager  : WaveManager      = $WaveManager
 
 var is_game_over: bool = false
+var _particle_pools: Array[Array] = [[], [], [], [], [], [], [], []]
+var _last_gold: int = -1
+var _last_wave: int = -1
+var _last_enemy_count: int = -1
 
 # ─────────────────────────────────────────────────────────────
 #  READY
@@ -28,6 +32,7 @@ func _ready():
 			var map_inst = map_scene.instantiate()
 			map_inst.name = "SmartShapeMap"
 			add_child(map_inst)
+			move_child(map_inst, 0)
 			Globals.currentMap = map_inst
 
 	await get_tree().process_frame
@@ -166,13 +171,21 @@ func _process(delta):
 # ─────────────────────────────────────────────────────────────
 #  HUD UPDATE
 # ─────────────────────────────────────────────────────────────
-func _update_hud():
-	if has_node("HUD/Overlay/EnemyCountLabel"):
-		$HUD/Overlay/EnemyCountLabel.text = "Enemies: %d" % enemy_manager.active_count
-	if has_node("HUD/Overlay/WaveLabel"):
-		$HUD/Overlay/WaveLabel.text = "Wave: %d" % wave_manager.current_wave
-	if has_node("HUD/Overlay/GoldLabel"):
-		$HUD/Overlay/GoldLabel.text = "Gold: %d" % Globals.gold
+func _update_hud() -> void:
+	if Globals.gold != _last_gold:
+		_last_gold = Globals.gold
+		if has_node("HUD/Overlay/GoldLabel"):
+			$HUD/Overlay/GoldLabel.text = "Gold: %d" % _last_gold
+			
+	if wave_manager.current_wave != _last_wave:
+		_last_wave = wave_manager.current_wave
+		if has_node("HUD/Overlay/WaveLabel"):
+			$HUD/Overlay/WaveLabel.text = "Wave: %d" % _last_wave
+			
+	if enemy_manager.active_count != _last_enemy_count:
+		_last_enemy_count = enemy_manager.active_count
+		if has_node("HUD/Overlay/EnemyCountLabel"):
+			$HUD/Overlay/EnemyCountLabel.text = "Enemies: %d" % _last_enemy_count
 
 # ─────────────────────────────────────────────────────────────
 #  SPAWN CALLBACK
@@ -244,61 +257,109 @@ func _on_next_wave_pressed():
 func _on_enemy_killed(type_idx: int, pos: Vector2, gold_yield: int):
 	Globals.add_gold(gold_yield)
 	_spawn_death_particles(pos, type_idx)
+	
+	if type_idx >= 0 and type_idx < enemy_manager.enemy_types.size():
+		var split_count = enemy_manager.type_split_count[type_idx]
+		if split_count > 0:
+			var split_type = enemy_manager.type_split_type[type_idx]
+			for i in range(split_count):
+				var offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
+				enemy_manager.spawn_enemy(pos + offset, split_type)
 
-func _spawn_death_particles(pos: Vector2, type_idx: int):
-	var particles = CPUParticles2D.new()
-	particles.global_position = pos
-	particles.one_shot = true
-	particles.explosiveness = 1.0
-	particles.lifetime = 0.6
-	particles.spread = 180.0
-	particles.gravity = Vector2(0, 300)
-	particles.initial_velocity_min = 60.0
-	particles.initial_velocity_max = 140.0
+func _spawn_death_particles(pos: Vector2, type_idx: int) -> void:
+	if type_idx < 0 or type_idx >= _particle_pools.size():
+		return
+		
+	var pool = _particle_pools[type_idx]
+	var p: CPUParticles2D = null
+	
+	# Find an inactive emitter
+	for emitter in pool:
+		if is_instance_valid(emitter) and not emitter.emitting:
+			p = emitter
+			break
+			
+	if p:
+		p.global_position = pos
+		p.emitting = true
+		return
+		
+	# Create new one if none found
+	p = CPUParticles2D.new()
+	p.global_position = pos
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.lifetime = 0.6
+	p.spread = 180.0
+	p.gravity = Vector2(0, 300)
+	p.initial_velocity_min = 60.0
+	p.initial_velocity_max = 140.0
 	
 	# Custom properties by type
-	# 0: Swarmer, 1: Tank, 2: Runner, 3: Armored, 4: MiniBoss, 5: BigBoss
+	# 0: Ghoul, 1: Abomination, 2: Hound, 3: Draugr, 4: Dullahan, 5: Lich King, 6: Banshee Bat, 7: Crypt Sludge
 	match type_idx:
-		0: # Swarmer
-			particles.amount = 12
-			particles.color = Color(0.85, 0.3, 0.2) # Reddish orange
-			particles.scale_amount_min = 2.0
-			particles.scale_amount_max = 5.0
-		1: # Tank
-			particles.amount = 16
-			particles.color = Color(0.2, 0.4, 0.9) # Blue
-			particles.scale_amount_min = 3.0
-			particles.scale_amount_max = 7.0
-		2: # Runner
-			particles.amount = 10
-			particles.color = Color(0.9, 0.8, 0.2) # Yellow
-			particles.scale_amount_min = 2.0
-			particles.scale_amount_max = 4.0
-		3: # Armored
-			particles.amount = 15
-			particles.color = Color(0.6, 0.6, 0.65) # Metallic gray sparks
-			particles.gravity = Vector2(0, 500) # Spark gravity
-			particles.initial_velocity_min = 100.0
-			particles.initial_velocity_max = 200.0
-			particles.scale_amount_min = 1.5
-			particles.scale_amount_max = 3.5
-		4: # Mini Boss
-			particles.amount = 30
-			particles.color = Color(0.9, 0.1, 0.1) # Bright red
-			particles.initial_velocity_min = 100.0
-			particles.initial_velocity_max = 250.0
-			particles.scale_amount_min = 4.0
-			particles.scale_amount_max = 9.0
-		5: # Big Boss
-			particles.amount = 60
-			particles.color = Color(1.0, 0.2, 0.1) # Giant explosion
-			particles.initial_velocity_min = 120.0
-			particles.initial_velocity_max = 350.0
-			particles.scale_amount_min = 5.0
-			particles.scale_amount_max = 12.0
+		0: # Drowned Ghoul: decaying meat splash
+			p.amount = 12
+			p.color = Color(0.18, 0.35, 0.22) # Slime green
+			p.gravity = Vector2(0, 350)
+			p.scale_amount_min = 2.0
+			p.scale_amount_max = 5.0
+		1: # Flesh Abomination: massive blood splash
+			p.amount = 24
+			p.color = Color(0.45, 0.08, 0.08) # Dried blood red
+			p.gravity = Vector2(0, 500) # Heavy fall
+			p.scale_amount_min = 4.0
+			p.scale_amount_max = 8.0
+		2: # Plague Hound: toxic spores explode and float
+			p.amount = 14
+			p.color = Color(0.3, 0.7, 0.1) # Toxic lime green
+			p.gravity = Vector2(0, -30) # Drift upwards slightly
+			p.scale_amount_min = 2.0
+			p.scale_amount_max = 4.5
+		3: # Draugr Warrior: skeleton bones fall to ground
+			p.amount = 18
+			p.color = Color(0.85, 0.82, 0.76) # Bone white
+			p.gravity = Vector2(0, 500) # Fall down
+			p.initial_velocity_min = 80.0
+			p.initial_velocity_max = 180.0
+			p.scale_amount_min = 1.5
+			p.scale_amount_max = 4.0
+		4: # Dullahan: dark shadowy fire
+			p.amount = 35
+			p.color = Color(0.5, 0.1, 0.7) # Shadowy purple
+			p.gravity = Vector2(0, 100)
+			p.initial_velocity_min = 100.0
+			p.initial_velocity_max = 240.0
+			p.scale_amount_min = 3.5
+			p.scale_amount_max = 8.5
+		5: # Lich King: radial frost explosion
+			p.amount = 70
+			p.color = Color(0.4, 0.85, 1.0) # Frost cyan
+			p.gravity = Vector2(0, 0) # Radial, no gravity!
+			p.initial_velocity_min = 120.0
+			p.initial_velocity_max = 320.0
+			p.scale_amount_min = 5.0
+			p.scale_amount_max = 11.0
+		6: # Banshee Bat: ectoplasmic dust floats UP
+			p.amount = 16
+			p.color = Color(0.4, 0.9, 0.6) # Spectral mint green
+			p.gravity = Vector2(0, -150) # Float up!
+			p.initial_velocity_min = 60.0
+			p.initial_velocity_max = 150.0
+			p.scale_amount_min = 2.5
+			p.scale_amount_max = 6.0
+		7: # Crypt Sludge: dark slime splash
+			p.amount = 25
+			p.color = Color(0.2, 0.5, 0.15) # Dark bile green
+			p.gravity = Vector2(0, 300)
+			p.initial_velocity_min = 80.0
+			p.initial_velocity_max = 200.0
+			p.scale_amount_min = 3.0
+			p.scale_amount_max = 7.0
 			
-	particles.script = load("res://scripts/death_effect.gd")
-	add_child(particles)
+	add_child(p)
+	p.emitting = true
+	pool.append(p)
 
 func _on_nexus_destroyed():
 	is_game_over = true
