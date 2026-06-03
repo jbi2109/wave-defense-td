@@ -20,6 +20,16 @@ var _fire_timer: float = 0.0
 var gpu_idx: int = -1
 var target_pos: Vector2 = Vector2.INF
 
+var cone_center: float = 0.0
+var cone_width: float = TAU
+var sweep_phase: float = 0.0
+var sweep_speed: float = PI / 6.0
+var sweep_direction: float = 1.0
+
+var overdrive_timer: float = 0.0
+var overdrive_multiplier: float = 1.5
+var _was_overdriven: bool = false
+
 @export_group("Inspector Overrides")
 @export var size_override: float = 0.0
 @export var damage_override: float = 0.0
@@ -38,6 +48,10 @@ func _ready():
 		fire_rate = fire_rate_override
 	if size_override > 0.0:
 		scale = Vector2(size_override, size_override)
+		
+	if has_node("GunSprite"):
+		$GunSprite.z_index = 1
+		$GunSprite.rotation = cone_center
 		
 	call_deferred("_register_with_manager")
 
@@ -66,19 +80,60 @@ func _load_stats_from_data():
 		if tex_path.begins_with("res://Assets"):
 			tex_path = tex_path.replace("res://Assets", "res://assets")
 		if tex_path != "":
-			texture = load(tex_path)
+			texture = preload("res://assets/turrets/base.png")
+			if has_node("GunSprite"):
+				$GunSprite.texture = load(tex_path)
 		if turret_type == "slow":
 			self_modulate = Color(0.2, 0.7, 1.0, 1.0)
-
 
 # ─────────────────────────────────────────────────────────────
 #  PROCESS
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
+	if overdrive_timer > 0.0:
+		overdrive_timer -= delta
+		if not _was_overdriven:
+			_was_overdriven = true
+			queue_redraw()
+	elif _was_overdriven:
+		_was_overdriven = false
+		queue_redraw()
+
+	var wave_manager = get_node_or_null("/root/Main/WaveManager")
+	var is_wave_active = wave_manager and wave_manager.current_wave > 0 and not wave_manager.is_inter_wave
+	if not is_wave_active: return
+
 	_fire_timer -= delta
-	if target_pos != Vector2.INF and rotates:
-		var target_angle = (target_pos - global_position).angle()
-		rotation = lerp_angle(rotation, target_angle, delta * 15.0)
+
+	if rotates:
+		sweep_phase += sweep_direction * sweep_speed * delta
+		var half_cone = cone_width / 2.0
+		if sweep_phase > half_cone:
+			sweep_phase = half_cone
+			sweep_direction = -1.0
+		elif sweep_phase < -half_cone:
+			sweep_phase = -half_cone
+			sweep_direction = 1.0
+		
+		if has_node("GunSprite"):
+			$GunSprite.rotation = cone_center + sweep_phase
+
+func _draw():
+	if _was_overdriven:
+		var r = max(texture.get_width(), texture.get_height()) * 0.55 if texture else 25.0
+		var time = Time.get_ticks_msec() / 1000.0
+		var pulse = 1.0 + sin(time * 6.0) * 0.08
+		var current_r = r * pulse
+		
+		var num_segments = 3
+		var segment_length = (TAU / num_segments) * 0.7 
+		var spin = time * 3.0 - rotation
+		
+		var color = Color(1.0, 0.84, 0.0, 0.9)
+		for i in range(num_segments):
+			var start_angle = spin + i * (TAU / num_segments)
+			var end_angle = start_angle + segment_length
+			draw_arc(Vector2.ZERO, current_r, start_angle, end_angle, 12, color, 2.5, true)
 
 # ─────────────────────────────────────────────────────────────
 #  GPU EVENTS
@@ -88,15 +143,38 @@ func on_gpu_fire(p_target_pos: Vector2):
 	
 	SoundManager.play_sfx("shoot_" + turret_type)
 	
+	var current_rotation = rotation
+	if has_node("GunSprite"):
+		current_rotation = $GunSprite.rotation
+		
+		# Firing Recoil/Vibration Animation
+		var tween = create_tween()
+		if turret_type == "laser":
+			# Flamethrower: vibration
+			var original_pos = Vector2.ZERO
+			tween.tween_property($GunSprite, "position", original_pos + Vector2(randf_range(-2, 2), randf_range(-2, 2)), 0.05)
+			tween.tween_property($GunSprite, "position", original_pos, 0.05)
+		else:
+			# Others: Recoil
+			var original_pos = Vector2.ZERO
+			var recoil_dist = -8.0
+			var recoil_vec = Vector2.RIGHT.rotated(current_rotation) * recoil_dist
+			tween.tween_property($GunSprite, "position", original_pos + recoil_vec, 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			tween.tween_property($GunSprite, "position", original_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			
 	# Spawn visual tracer
 	var tracer_scene = load("res://scripts/bullet_tracer.gd")
 	var tracer = Node2D.new()
 	tracer.set_script(tracer_scene)
 	
 	var m_pos = global_position
-	if has_node("Muzzle"):
-		m_pos = $Muzzle.global_position
-		
+	var gun_rot = 0.0
+	if has_node("GunSprite"):
+		m_pos = $GunSprite.global_position
+		gun_rot = $GunSprite.rotation
+		if $GunSprite.has_node("Muzzle"):
+			m_pos = $GunSprite/Muzzle.global_position
+			
 	var col = Color(1.0, 0.9, 0.5, 0.9)
 	var w = 3.0
 	
@@ -132,8 +210,6 @@ func _exit_tree():
 	if is_instance_valid(enemy_manager) and enemy_manager.has_method("remove_turret"):
 		enemy_manager.remove_turret(self)
 
-
-
 # ─────────────────────────────────────────────────────────────
 #  UPGRADE
 # ─────────────────────────────────────────────────────────────
@@ -150,7 +226,6 @@ func upgrade() -> bool:
 	total_spent += cost
 	current_level += 1
 
-	# Apply upgrade bonuses from t_def
 	if t_def.damage_upgrade > 0.0:
 		if t_def.damage_upgrade_multiplies:
 			damage *= t_def.damage_upgrade
@@ -159,10 +234,10 @@ func upgrade() -> bool:
 			
 	if t_def.speed_upgrade > 0.0:
 		if t_def.speed_upgrade_multiplies:
-			fire_rate /= t_def.speed_upgrade   # faster = lower interval
+			fire_rate /= t_def.speed_upgrade
 		else:
 			fire_rate -= t_def.speed_upgrade
-	fire_rate = maxf(fire_rate, 0.03)  # Never faster than ~33 shots/s
+	fire_rate = maxf(fire_rate, 0.03)
 
 	if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
 		enemy_manager.update_turret(self)
@@ -189,4 +264,3 @@ func is_max_level() -> bool:
 	var t_def = get_definition()
 	if not t_def: return true
 	return current_level >= t_def.max_level
-
