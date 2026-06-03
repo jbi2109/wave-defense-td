@@ -17,7 +17,8 @@ var rotates: bool = true
 
 @onready var enemy_manager: EnemyManager = get_node("/root/Main/EnemyManager")
 var _fire_timer: float = 0.0
-var target_idx: int = -1
+var gpu_idx: int = -1
+var target_pos: Vector2 = Vector2.INF
 
 @export_group("Inspector Overrides")
 @export var size_override: float = 0.0
@@ -37,6 +38,12 @@ func _ready():
 		fire_rate = fire_rate_override
 	if size_override > 0.0:
 		scale = Vector2(size_override, size_override)
+		
+	call_deferred("_register_with_manager")
+
+func _register_with_manager():
+	if is_instance_valid(enemy_manager) and enemy_manager.has_method("add_turret"):
+		enemy_manager.add_turret(self)
 
 func get_definition() -> Node:
 	var placement_manager = get_node_or_null("/root/Main/TurretPlacementManager")
@@ -69,92 +76,17 @@ func _load_stats_from_data():
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
 	_fire_timer -= delta
-	if not enemy_manager: return
-
-	# Check if current cached target is still valid
-	var target_valid = false
-	if target_idx >= 0 and target_idx < enemy_manager.active_count:
-		if enemy_manager.healths[target_idx] > 0.0:
-			var target_pos = enemy_manager.positions[target_idx]
-			if global_position.distance_squared_to(target_pos) <= attack_range * attack_range:
-				target_valid = true
-
-	if not target_valid:
-		target_idx = _find_target()
-
-	if target_idx == -1: return
-
-	if rotates:
-		look_at(enemy_manager.positions[target_idx])
-
-	if _fire_timer <= 0.0:
-		_fire(target_idx)
-		_fire_timer = fire_rate
+	if target_pos != Vector2.INF and rotates:
+		var target_angle = (target_pos - global_position).angle()
+		rotation = lerp_angle(rotation, target_angle, delta * 15.0)
 
 # ─────────────────────────────────────────────────────────────
-#  TARGETING
+#  GPU EVENTS
 # ─────────────────────────────────────────────────────────────
-func _find_target() -> int:
-	var nearby = enemy_manager.get_nearby_enemies(global_position, attack_range)
-	if nearby.is_empty(): return -1
-
-	match target_mode:
-		TargetMode.CLOSEST:
-			return _target_closest(nearby)
-		TargetMode.STRONGEST:
-			return _target_strongest(nearby)
-		TargetMode.FIRST:
-			return _target_first(nearby)
-		TargetMode.LAST:
-			return _target_last(nearby)
-	return _target_closest(nearby)
-
-func _target_closest(indices: Array[int]) -> int:
-	var best_idx = -1
-	var best_dsq = INF
-	for idx in indices:
-		var dsq = global_position.distance_squared_to(enemy_manager.positions[idx])
-		if dsq < best_dsq:
-			best_dsq = dsq
-			best_idx = idx
-	return best_idx
-
-func _target_strongest(indices: Array[int]) -> int:
-	var best_idx = -1
-	var best_hp  = -1.0
-	for idx in indices:
-		if enemy_manager.healths[idx] > best_hp:
-			best_hp  = enemy_manager.healths[idx]
-			best_idx = idx
-	return best_idx
-
-func _target_first(indices: Array[int]) -> int:
-	# "First" = lowest health remaining as a proxy for closest to nexus
-	var best_idx = -1
-	var best_hp  = INF
-	for idx in indices:
-		if enemy_manager.healths[idx] < best_hp:
-			best_hp  = enemy_manager.healths[idx]
-			best_idx = idx
-	return best_idx
-
-func _target_last(indices: Array[int]) -> int:
-	# "Last" = highest health (furthest from nexus proxy)
-	return _target_strongest(indices)
-
-# ─────────────────────────────────────────────────────────────
-#  FIRE
-# ─────────────────────────────────────────────────────────────
-func _fire(p_target_idx: int):
+func on_gpu_fire(p_target_pos: Vector2):
+	target_pos = p_target_pos
+	
 	SoundManager.play_sfx("shoot_" + turret_type)
-	if turret_type == "slow":
-		var targets = enemy_manager.get_nearby_enemies(global_position, attack_range)
-		for idx in targets:
-			if idx >= 0 and idx < enemy_manager.active_count:
-				enemy_manager.speed_modifiers[idx] = minf(enemy_manager.speed_modifiers[idx], 0.4)
-				enemy_manager.damage_enemy(idx, damage)
-	else:
-		enemy_manager.damage_enemy(p_target_idx, damage)
 	
 	# Spawn visual tracer
 	var tracer_scene = load("res://scripts/bullet_tracer.gd")
@@ -165,8 +97,6 @@ func _fire(p_target_idx: int):
 	if has_node("Muzzle"):
 		m_pos = $Muzzle.global_position
 		
-	var target_pos = enemy_manager.positions[p_target_idx]
-	
 	var col = Color(1.0, 0.9, 0.5, 0.9)
 	var w = 3.0
 	
@@ -175,22 +105,34 @@ func _fire(p_target_idx: int):
 			col = Color(1.0, 0.85, 0.4, 0.9)
 			w = 2.0
 		"laser":
-			col = Color(1.0, 0.4, 0.1, 0.8) # Fire/Flamethrower color
+			col = Color(1.0, 0.4, 0.1, 0.8)
 			w = 6.0
 		"ray":
-			col = Color(0.1, 0.8, 1.0, 0.9) # Cyan laser
+			col = Color(0.1, 0.8, 1.0, 0.9)
 			w = 4.0
 		"melee":
-			col = Color(0.9, 0.2, 0.1, 0.7) # Red explosive shockwave
+			col = Color(0.9, 0.2, 0.1, 0.7)
 			w = 12.0
 		"slow":
-			col = Color(0.1, 0.7, 1.0, 0.9) # Ice cyan laser
+			col = Color(0.1, 0.7, 1.0, 0.9)
 			w = 4.0
 			
-	# Add to main scene tree
 	get_parent().add_child(tracer)
-	tracer.global_position = global_position # Anchor to local coordinate space reference
+	tracer.global_position = global_position
 	tracer.init(m_pos, target_pos, col, w)
+
+# ─────────────────────────────────────────────────────────────
+#  MANAGEMENT
+# ─────────────────────────────────────────────────────────────
+func _enter_tree():
+	if not is_in_group("turret"):
+		add_to_group("turret")
+
+func _exit_tree():
+	if is_instance_valid(enemy_manager) and enemy_manager.has_method("remove_turret"):
+		enemy_manager.remove_turret(self)
+
+
 
 # ─────────────────────────────────────────────────────────────
 #  UPGRADE
@@ -221,6 +163,9 @@ func upgrade() -> bool:
 		else:
 			fire_rate -= t_def.speed_upgrade
 	fire_rate = maxf(fire_rate, 0.03)  # Never faster than ~33 shots/s
+
+	if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
+		enemy_manager.update_turret(self)
 
 	GlobalEvents.turret_upgraded.emit(self)
 	SoundManager.play_sfx("build")

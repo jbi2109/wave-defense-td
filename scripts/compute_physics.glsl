@@ -28,13 +28,21 @@ layout(push_constant, std430) uniform Params {
 	vec2 explosion_pos;
 	float explosion_radius;
 	float explosion_damage;
+	
+	// Nexus
+	vec2 nexus_pos;
+	float nexus_radius;
+	uint nexus_valid;
+	
+	// Type damage map (up to 6 types)
+	uint type_nexus_dmg[6];
 } params;
 
 // === Data Structures ===
 struct Agent {
 	vec2 pos;
 	vec2 vel;
-	float health;
+	int health;
 	float max_speed;
 	float scale;
 	uint type;
@@ -42,8 +50,11 @@ struct Agent {
 
 // === Buffers ===
 // Binding 0: Agents
-layout(set = 0, binding = 0, std430) restrict buffer AgentBuffer {
-	Agent agents[];
+layout(set = 0, binding = 0, std430) restrict buffer AgentBufferIn {
+	Agent agents_in[];
+};
+layout(set = 0, binding = 13, std430) restrict buffer AgentBufferOut {
+	Agent agents_out[];
 };
 
 // Binding 1: Spatial Hash Counts
@@ -66,8 +77,69 @@ layout(set = 0, binding = 4) uniform sampler2D obstacle_field;
 
 // Binding 5: Speed Modifiers
 layout(set = 0, binding = 5, std430) buffer SpeedModifierBuffer {
-	float speed_modifiers[];
+	int speed_modifiers[];
 };
+
+// Binding 6: Agent Data Texture (for rendering)
+layout(set = 0, binding = 6, rgba32f) restrict writeonly uniform image2D agent_data_tex;
+
+// Binding 7: Flash Amounts
+layout(set = 0, binding = 7, std430) buffer FlashAmountBuffer {
+	int flash_amounts[];
+};
+
+// Binding 8: Dead Enemies
+layout(set = 0, binding = 8, std430) buffer DeadEnemiesBuffer {
+	uint dead_last_write; // offset 0
+	uint dead_pad0, dead_pad1, dead_pad2; // offset 4, 8, 12
+	uint dead_data[]; // offset 16
+};
+
+// Binding 9: Nexus Damage
+layout(set = 0, binding = 9, std430) buffer NexusDamageBuffer {
+	uint nexus_last_write; // offset 0
+	uint nexus_damage_values[]; // offset 4
+};
+
+struct DamageEvent {
+	vec2 pos;
+	float radius;
+	float damage;
+};
+
+// Binding 10: Damage Events
+layout(set = 0, binding = 10, std430) buffer DamageEventsBuffer {
+	uint event_count;
+	uint dmg_pad0, dmg_pad1, dmg_pad2;
+	DamageEvent damage_events[];
+};
+
+struct TurretData {
+	vec2 pos;
+	float range;
+	float damage;
+	uint target_mode;
+	uint turret_type;
+	float cooldown;
+	float fire_rate;
+	uint instance_id;
+	uint padding0, padding1, padding2;
+};
+
+// Binding 11: Turrets
+layout(set = 0, binding = 11, std430) buffer TurretsBuffer {
+	uint turret_count;
+	uint tur_pad0, tur_pad1, tur_pad2;
+	TurretData turrets[];
+};
+
+// Binding 12: Turret Fire Events
+layout(set = 0, binding = 12, std430) buffer TurretFireEventsBuffer {
+	uint fire_last_write;
+	uint fire_pad0, fire_pad1, fire_pad2;
+	uint fire_data[];
+};
+
 
 // === Helper Functions ===
 uint get_hash_index(vec2 pos) {
@@ -160,27 +232,75 @@ void pass_clear_grid(uint id) {
 	}
 }
 
-void pass_binning(uint id) {
+void pass_kinematics(uint id) {
 	if (id >= params.active_count) return;
 	
-	Agent ag = agents[id];
-	if (isnan(ag.health) || isinf(ag.health)) {
-		ag.health = 0.0;
+	int sm_int = speed_modifiers[id];
+	float sm = float(sm_int) / 1000.0;
+	if (sm < 1.0) {
+		sm = min(1.0, sm + params.delta * 0.4);
+	} else if (sm > 1.0) {
+		sm = max(1.0, sm - params.delta * 0.4);
 	}
-	if (ag.health <= 0.0) return; // Dead
+	speed_modifiers[id] = int(sm * 1000.0);
 	
-	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
-		ag.pos = vec2(0.0);
+	int fa_int = flash_amounts[id];
+	float fa = float(fa_int) / 1000.0;
+	if (fa > 0.0) {
+		fa = max(0.0, fa - params.delta * 16.0);
 	}
-	if (isnan(ag.vel.x) || isnan(ag.vel.y) || isinf(ag.vel.x) || isinf(ag.vel.y)) {
-		ag.vel = vec2(0.0);
-	}
-	if (isnan(ag.scale) || isinf(ag.scale) || ag.scale <= 0.001) {
-		ag.scale = 1.0;
+	flash_amounts[id] = int(fa * 1000.0);
+	
+	Agent ag = agents_in[id];
+	
+	if (ag.health <= -9000000) return; // Dead and processed
+	
+	if (params.nexus_valid > 0u && ag.health > 0) {
+		vec2 d = ag.pos - params.nexus_pos;
+		if (dot(d, d) <= params.nexus_radius * params.nexus_radius) {
+			ag.health = 0;
+			uint dmg = 0;
+			if (ag.type < 6) {
+				dmg = params.type_nexus_dmg[ag.type];
+			}
+			atomicAdd(nexus_damage_values[nexus_last_write], dmg);
+			
+			uint seg_offset = dead_last_write * 16384;
+			uint idx = atomicAdd(dead_data[seg_offset], 1);
+			if (idx < 4095) {
+				dead_data[seg_offset + 4 + idx * 4 + 0] = id | 0x80000000u; // Mark as nexus death
+				dead_data[seg_offset + 4 + idx * 4 + 1] = ag.type;
+				dead_data[seg_offset + 4 + idx * 4 + 2] = floatBitsToUint(ag.pos.x);
+				dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
+			}
+			agents_in[id].health = -10000000;
+			
+			ivec2 tex_coord = ivec2(id % 512, id / 512);
+			imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
+			return;
+		}
 	}
 	
-	// 1. Flow field acceleration
-	// Convert world pos to flow field cell index
+	if (ag.health <= 0) {
+		uint seg_offset = dead_last_write * 16384;
+		uint idx = atomicAdd(dead_data[seg_offset], 1);
+		if (idx < 4095) {
+			dead_data[seg_offset + 4 + idx * 4 + 0] = id;
+			dead_data[seg_offset + 4 + idx * 4 + 1] = ag.type;
+			dead_data[seg_offset + 4 + idx * 4 + 2] = floatBitsToUint(ag.pos.x);
+			dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
+		}
+		agents_in[id].health = -10000000;
+		
+		ivec2 tex_coord = ivec2(id % 512, id / 512);
+		imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
+		return;
+	}
+	
+	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) { ag.pos = vec2(0.0); }
+	if (isnan(ag.vel.x) || isnan(ag.vel.y) || isinf(ag.vel.x) || isinf(ag.vel.y)) { ag.vel = vec2(0.0); }
+	if (isnan(ag.scale) || isinf(ag.scale) || ag.scale <= 0.001) { ag.scale = 1.0; }
+	
 	vec2 ff_pos = (ag.pos / params.cell_size) - params.grid_offset;
 	ivec2 tex_size = textureSize(flow_field, 0);
 	ivec2 ff_cell = ivec2(floor(ff_pos));
@@ -188,35 +308,22 @@ void pass_binning(uint id) {
 	vec2 t_dir = vec2(0.0);
 	if (ff_cell.x >= 0 && ff_cell.x < tex_size.x && ff_cell.y >= 0 && ff_cell.y < tex_size.y) {
 		vec4 f_val = texelFetch(flow_field, ff_cell, 0);
-		// Flow field texture will be encoded as R=x, G=y (from -1 to 1, mapped to 0 to 1)
 		t_dir = f_val.xy * 2.0 - 1.0; 
 	}
 	
 	if (length(t_dir) > 0.01) {
 		t_dir = normalize(t_dir);
-		
-		// Apply minor curl noise (divergence-free perturbation) to break alignment
 		float freq = 0.006;
 		float t = params.time_msec * 0.001 * 0.4;
 		float px = ag.pos.x * freq + t;
 		float py = ag.pos.y * freq - t;
-		
 		vec2 curl = vec2(-sin(px) * sin(py), -cos(px) * cos(py));
 		t_dir = normalize(t_dir + 0.15 * curl);
 	}
 	
-	// Move
-	float current_speed = ag.max_speed * speed_modifiers[id];
+	float current_speed = ag.max_speed * sm;
 	vec2 vel = ag.vel;
 	
-	// Safe check
-	if (isnan(vel.x) || isnan(vel.y) || isinf(vel.x) || isinf(vel.y)) {
-		vel = vec2(0.0);
-	}
-	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
-		ag.pos = vec2(0.0);
-	}
-
 	float lf = 6.0 * params.delta;
 	vel = vel + (t_dir * current_speed - vel) * lf;
 	
@@ -224,37 +331,32 @@ void pass_binning(uint id) {
 	float radius = ag.scale * 10.0;
 	resolve_circle_vs_obstacles(target_pos, vel, radius);
 	
-	ag.pos = target_pos;
-	ag.vel = vel;
+	if (isnan(target_pos.x) || isnan(target_pos.y)) { target_pos = vec2(0.0); }
+	if (isnan(vel.x) || isnan(vel.y)) { vel = vec2(0.0); }
 	
-	// Double safety check
-	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
-		ag.pos = vec2(0.0);
-	}
-	if (isnan(ag.vel.x) || isnan(ag.vel.y) || isinf(ag.vel.x) || isinf(ag.vel.y)) {
-		ag.vel = vec2(0.0);
-	}
+	agents_in[id].pos = target_pos;
+	agents_in[id].vel = vel;
+}
+
+void pass_binning(uint id) {
+	if (id >= params.active_count) return;
+	Agent ag = agents_in[id];
+	if (ag.health <= 0) return;
 	
-	agents[id] = ag;
-	
-	// 2. Bin into spatial hash
 	uint cell_idx = get_hash_index(ag.pos);
 	uint local_idx = atomicAdd(counts[cell_idx], 1);
-	if (local_idx < 32) { // MAX_PER_CELL = 32
+	if (local_idx < 32) {
 		cells[cell_idx * 32 + local_idx] = id;
 	}
 }
-
 void pass_separation(uint id) {
 	if (id >= params.active_count) {
 		return;
 	}
 	
-	Agent ag = agents[id];
-	if (isnan(ag.health) || isinf(ag.health)) {
-		ag.health = 0.0;
-	}
-	if (ag.health <= 0.0) {
+	Agent ag = agents_in[id];
+	if (ag.health <= 0) {
+		agents_out[id] = ag;
 		return;
 	}
 	
@@ -288,7 +390,7 @@ void pass_separation(uint id) {
 				for (uint i = 0; i < cell_count; i++) {
 					uint other_id = cells[cell_idx * 32 + i];
 					if (other_id != id && other_id < params.active_count) {
-						Agent other = agents[other_id];
+						Agent other = agents_in[other_id];
 						vec2 d = pos - other.pos;
 						float dsq = dot(d, d);
 						float sep = params.separation_multiplier * (my_scale + other.scale);
@@ -355,25 +457,157 @@ void pass_separation(uint id) {
 	}
 	
 	// Write back
-	agents[id] = ag;
+	agents_out[id].pos = pos;
+	agents_out[id].vel = temp_vel;
+	agents_out[id].health = ag.health;
+	agents_out[id].max_speed = ag.max_speed;
+	agents_out[id].scale = ag.scale;
+	agents_out[id].type = ag.type;
+}
+
+void pass_multimesh(uint id) {
+	if (id >= params.active_count) return;
+	Agent ag = agents_in[id];
+	if (ag.health <= 0) return;
 	
+	// Calculate animation frame
+	float frame_idx = 0.0;
+	float speed_sq = ag.vel.x * ag.vel.x + ag.vel.y * ag.vel.y;
+	bool is_fast = ag.max_speed >= 120.0;
+	if (speed_sq > 100.0) {
+		if (is_fast && speed_modifiers[id] >= 0.7) {
+			frame_idx = 10.0 + mod(params.time_msec * 0.015 + float(id) * 3.0, 5.0);
+		} else {
+			frame_idx = 4.0 + mod(params.time_msec * 0.012 + float(id) * 3.0, 6.0);
+		}
+	} else {
+		frame_idx = mod(params.time_msec * 0.006 + float(id) * 2.0, 4.0);
+	}
+	
+	float final_scale = (ag.vel.x < 0.0) ? -ag.scale : ag.scale;
+	float flash_amt = float(flash_amounts[id]) / 1000.0;
+	float type_and_frame = float(ag.type) + (floor(frame_idx) / 100.0) + (clamp(flash_amt, 0.0, 1.0) / 10000.0);
+	
+	ivec2 tex_coord = ivec2(id % 512, id / 512);
+	imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, final_scale, type_and_frame));
 }
 
 void pass_damage(uint id) {
 	if (id >= params.active_count) return;
-	Agent ag = agents[id];
-	if (isnan(ag.health) || isinf(ag.health)) {
-		ag.health = 0.0;
-	}
-	if (ag.health <= 0.0) return;
+	Agent ag = agents_in[id];
+	if (ag.health <= 0) return;
 	
-	vec2 d = ag.pos - params.explosion_pos;
-	float dsq = dot(d, d);
-	if (dsq < params.explosion_radius * params.explosion_radius) {
-		ag.health -= params.explosion_damage;
-		agents[id] = ag;
+	for (uint i = 0; i < event_count; i++) {
+		DamageEvent ev = damage_events[i];
+		vec2 d = ag.pos - ev.pos;
+		float dsq = dot(d, d);
+		if (dsq < ev.radius * ev.radius) {
+			atomicAdd(agents_in[id].health, -int(ev.damage * 100.0));
+			atomicMax(flash_amounts[id], 1000);
+		}
+	}
+	
+	if (ag.health <= 0) {
+		uint seg_offset = dead_last_write * 16384;
+		uint idx = atomicAdd(dead_data[seg_offset], 1);
+		if (idx < 4095) {
+			dead_data[seg_offset + 4 + idx * 4 + 0] = id;
+			dead_data[seg_offset + 4 + idx * 4 + 1] = ag.type;
+			dead_data[seg_offset + 4 + idx * 4 + 2] = floatBitsToUint(ag.pos.x);
+			dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
+		}
+		agents_in[id].health = -10000000;
+		
+		ivec2 tex_coord = ivec2(id % 512, id / 512);
+		imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
 	}
 }
+
+void pass_turret_targeting(uint t_id) {
+	if (t_id >= turret_count) return;
+	
+	TurretData t = turrets[t_id];
+	t.cooldown -= params.delta;
+	
+	if (t.cooldown <= 0.0) {
+		// Find target
+		float best_score = -1000000.0; // max score is best (e.g. max hp for STRONGEST, min dist for CLOSEST)
+		uint best_target = 0xFFFFFFFFu;
+		vec2 best_pos = vec2(0.0);
+		
+		int gx = clamp(int(floor(t.pos.x * params.inv_hash_cell_size)), 0, int(params.hash_width) - 1);
+		int gy = clamp(int(floor(t.pos.y * params.inv_hash_cell_size)), 0, int(params.hash_height) - 1);
+		
+		int search_cells = int(ceil(t.range * params.inv_hash_cell_size));
+		
+		for (int dy = -search_cells; dy <= search_cells; dy++) {
+			for (int dx = -search_cells; dx <= search_cells; dx++) {
+				int nx = gx + dx;
+				int ny = gy + dy;
+				if (nx >= 0 && nx < int(params.hash_width) && ny >= 0 && ny < int(params.hash_height)) {
+					uint cell_idx = uint(ny * params.hash_width + nx);
+					uint cell_count = min(counts[cell_idx], 32u);
+					
+					for (uint i = 0; i < cell_count; i++) {
+						uint a_id = cells[cell_idx * 32 + i];
+						if (a_id < params.active_count) {
+							Agent a = agents_in[a_id];
+							if (a.health > 0) {
+								vec2 d = t.pos - a.pos;
+								float dsq = dot(d, d);
+								if (dsq <= t.range * t.range) {
+									if (t.turret_type == 1 || t.turret_type == 2) {
+										atomicAdd(agents_in[a_id].health, -int(t.damage * 100.0));
+										atomicMax(flash_amounts[a_id], 1000);
+										if (t.turret_type == 2) {
+											atomicMin(speed_modifiers[a_id], 400);
+										}
+									}
+									
+									float score = 0.0;
+									if (t.target_mode == 3) { // CLOSEST
+										score = -dsq; 
+									} else if (t.target_mode == 2) { // STRONGEST
+										score = float(a.health) / 100.0;
+									} else if (t.target_mode == 0) { // FIRST (lowest health left proxy)
+										score = float(-a.health) / 100.0; 
+									} else { // LAST
+										score = float(a.health) / 100.0;
+									}
+									
+									if (score > best_score) {
+										best_score = score;
+										best_target = a_id;
+										best_pos = a.pos;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (best_target != 0xFFFFFFFFu) {
+			if (t.turret_type == 0) {
+				atomicAdd(agents_in[best_target].health, -int(t.damage * 100.0));
+				atomicMax(flash_amounts[best_target], 1000);
+			}
+			t.cooldown = t.fire_rate;
+			uint seg_offset = fire_last_write * 16384;
+			uint e_idx = atomicAdd(fire_data[seg_offset], 1);
+			if (e_idx < 4095) {
+				fire_data[seg_offset + 4 + e_idx * 4 + 0] = t.instance_id;
+				fire_data[seg_offset + 4 + e_idx * 4 + 1] = best_target;
+				fire_data[seg_offset + 4 + e_idx * 4 + 2] = floatBitsToUint(best_pos.x);
+				fire_data[seg_offset + 4 + e_idx * 4 + 3] = floatBitsToUint(best_pos.y);
+			}
+		}
+	}
+	
+	turrets[t_id] = t;
+}
+
 
 void main() {
 	uint id = gl_GlobalInvocationID.x;
@@ -381,10 +615,16 @@ void main() {
 	if (params.pass_idx == 0) {
 		pass_clear_grid(id);
 	} else if (params.pass_idx == 1) {
-		pass_binning(id);
+		pass_kinematics(id);
 	} else if (params.pass_idx == 2) {
-		pass_separation(id);
+		pass_binning(id);
 	} else if (params.pass_idx == 3) {
+		pass_separation(id);
+	} else if (params.pass_idx == 4) {
+		pass_multimesh(id);
+	} else if (params.pass_idx == 5) {
 		pass_damage(id);
+	} else if (params.pass_idx == 6) {
+		pass_turret_targeting(id);
 	}
 }
