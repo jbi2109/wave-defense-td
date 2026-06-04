@@ -53,7 +53,6 @@ var pipeline_rid: RID
 var agent_buffer_rid: RID
 var grid_counts_rid: RID
 var grid_cells_rid: RID
-var speed_modifier_rid: RID
 var linear_sampler_rid: RID
 var dummy_ff_rid: RID
 var dummy_obs_rid: RID
@@ -65,7 +64,6 @@ var uniform_set_b: RID
 var agent_buffer_rid_2: RID
 var texture_rd_rid: RID
 var agent_data_tex: Texture2DRD
-var flash_amounts_rid: RID
 var _bindings_dirty: bool = true
 var _last_ff_rid: RID
 
@@ -75,7 +73,7 @@ var damage_events_buffer_rid: RID
 
 # 150k max enemies
 const MAX_AGENTS = 150000
-const AGENT_STRUCT_SIZE = 32 # 8 floats
+const AGENT_STRUCT_SIZE = 48 # 12 floats = 48 bytes
 
 # Spatial Hash Params
 const HASH_WIDTH = 128
@@ -283,11 +281,6 @@ func _init_gpu():
 	grid_cells_bytes.fill(0)
 	grid_cells_rid = rd.storage_buffer_create(grid_cells_bytes.size(), grid_cells_bytes)
 	
-	var speed_modifier_bytes = PackedByteArray()
-	speed_modifier_bytes.resize(MAX_AGENTS * 4) # 4 bytes per float
-	speed_modifier_bytes.fill(0)
-	speed_modifier_rid = rd.storage_buffer_create(speed_modifier_bytes.size(), speed_modifier_bytes)
-	
 	linear_sampler_rid = rd.sampler_create(RDSamplerState.new())
 	
 	var dummy_ff_img = Image.create(1, 1, false, Image.FORMAT_RGBA8)
@@ -305,11 +298,6 @@ func _init_gpu():
 	dummy_obs_tf.height = 1
 	dummy_obs_tf.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 	dummy_obs_rid = rd.texture_create(dummy_obs_tf, RDTextureView.new(), [dummy_obs_img.get_data()])
-
-	var flash_bytes = PackedByteArray()
-	flash_bytes.resize(MAX_AGENTS * 4)
-	flash_bytes.fill(0)
-	flash_amounts_rid = rd.storage_buffer_create(flash_bytes.size(), flash_bytes)
 
 	var tf = RDTextureFormat.new()
 	tf.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
@@ -334,7 +322,7 @@ func _init_gpu():
 	nexus_damage_buffer = GPUHelpers.ReadbackBufferInt32.new(rd, "nexus_damage")
 	
 	var dmg_bytes = PackedByteArray()
-	dmg_bytes.resize(16 + 1024 * 16)
+	dmg_bytes.resize(16 + 1024 * 32)
 	damage_events_buffer_rid = rd.storage_buffer_create(dmg_bytes.size(), dmg_bytes)
 
 func _update_bindings():
@@ -383,57 +371,45 @@ func _update_bindings():
 		u_obs.add_id(dummy_obs_rid)
 	bindings.append(u_obs)
 	
-	var u_speed = RDUniform.new()
-	u_speed.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_speed.binding = 5
-	u_speed.add_id(speed_modifier_rid)
-	bindings.append(u_speed)
-	
 	var u_agent_tex = RDUniform.new()
 	u_agent_tex.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-	u_agent_tex.binding = 6
+	u_agent_tex.binding = 5
 	u_agent_tex.add_id(texture_rd_rid)
 	bindings.append(u_agent_tex)
 	
-	var u_flash = RDUniform.new()
-	u_flash.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_flash.binding = 7
-	u_flash.add_id(flash_amounts_rid)
-	bindings.append(u_flash)
-	
 	var u_dead = RDUniform.new()
 	u_dead.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_dead.binding = 8
+	u_dead.binding = 6
 	u_dead.add_id(dead_enemies_buffer.data_buffer)
 	bindings.append(u_dead)
 	
 	var u_nexus_dmg = RDUniform.new()
 	u_nexus_dmg.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_nexus_dmg.binding = 9
+	u_nexus_dmg.binding = 7
 	u_nexus_dmg.add_id(nexus_damage_buffer.buffer)
 	bindings.append(u_nexus_dmg)
 	
 	var u_dmg = RDUniform.new()
 	u_dmg.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_dmg.binding = 10
+	u_dmg.binding = 8
 	u_dmg.add_id(damage_events_buffer_rid)
 	bindings.append(u_dmg)
 	
 	var u_turrets = RDUniform.new()
 	u_turrets.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_turrets.binding = 11
+	u_turrets.binding = 9
 	u_turrets.add_id(turrets_buffer_rid)
 	bindings.append(u_turrets)
-
+ 
 	var u_fires = RDUniform.new()
 	u_fires.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_fires.binding = 12
+	u_fires.binding = 10
 	u_fires.add_id(turret_fire_events_buffer.data_buffer)
 	bindings.append(u_fires)
 	
 	var u_agent2 = RDUniform.new()
 	u_agent2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	u_agent2.binding = 13
+	u_agent2.binding = 11
 	u_agent2.add_id(agent_buffer_rid_2)
 	bindings.append(u_agent2)
 	uniform_set = rd.uniform_set_create(bindings, shader_rid, 0)
@@ -443,10 +419,10 @@ func _update_bindings():
 	bindings_b[0].uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	bindings_b[0].binding = 0
 	bindings_b[0].add_id(agent_buffer_rid_2)
-	bindings_b[13] = RDUniform.new() # Assuming agent2 is at end of original bindings before append
-	bindings_b[13].uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	bindings_b[13].binding = 13
-	bindings_b[13].add_id(agent_buffer_rid)
+	bindings_b[11] = RDUniform.new()
+	bindings_b[11].uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	bindings_b[11].binding = 11
+	bindings_b[11].add_id(agent_buffer_rid)
 	uniform_set_b = rd.uniform_set_create(bindings_b, shader_rid, 0)
 
 func spawn_enemy(pos: Vector2, type_index: int = 0):
@@ -466,9 +442,7 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 		relative_time = float(wave_manager.enemies_spawned) / float(max(1, wave_manager.enemies_to_spawn))
 		
 	# Exponential level difficulty scaling
-	var level_idx = 1
-	if Globals.selected_map == "map2":
-		level_idx = 2
+	var level_idx = 2 if Globals.selected_map == "map2" else 1
 	var level_factor = pow(2.5, level_idx - 1)
 	
 	# Health scales quadratically with scale factor, linearly with wave progress, exponentially with level
@@ -493,20 +467,14 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	bytes.encode_float(20, type_speeds[type_index]) # max_speed
 	bytes.encode_float(24, dynamic_scale) # scale
 	bytes.encode_u32(28, type_index) # type
-	var speed_bytes = PackedByteArray()
-	speed_bytes.resize(4)
-	speed_bytes.encode_s32(0, 1000)
-	
-	var flash_bytes = PackedByteArray()
-	flash_bytes.resize(4)
-	flash_bytes.encode_s32(0, 0)
+	bytes.encode_float(32, 0.0) # freeze_timer
+	bytes.encode_s32(36, 0) # flash_amount
+	bytes.encode_s32(40, 1000) # speed_modifier
 	
 	RenderingServer.call_on_render_thread(func():
 		if agent_buffer_rid.is_valid():
 			rd.buffer_update(agent_buffer_rid, idx * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, bytes)
 			rd.buffer_update(agent_buffer_rid_2, idx * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, bytes)
-			rd.buffer_update(speed_modifier_rid, idx * 4, 4, speed_bytes)
-			rd.buffer_update(flash_amounts_rid, idx * 4, 4, flash_bytes)
 	)
 	
 	if type_is_boss[type_index]:
@@ -580,18 +548,22 @@ func _process(delta):
 	var dmg_bytes = PackedByteArray()
 	if not pending_damages.is_empty():
 		var event_count = min(pending_damages.size(), 1024)
-		dmg_bytes.resize(16 + event_count * 16)
+		dmg_bytes.resize(16 + event_count * 32)
 		dmg_bytes.encode_u32(0, event_count)
 		for i in range(event_count):
 			var ev = pending_damages[i]
-			var offset = 16 + i * 16
+			var offset = 16 + i * 32
 			dmg_bytes.encode_float(offset, ev.pos.x)
 			dmg_bytes.encode_float(offset + 4, ev.pos.y)
 			dmg_bytes.encode_float(offset + 8, ev.radius)
 			dmg_bytes.encode_float(offset + 12, ev.damage)
+			dmg_bytes.encode_u32(offset + 16, ev.get("effect_type", 0))
+			dmg_bytes.encode_float(offset + 20, ev.get("effect_value", 0.0))
+			dmg_bytes.encode_u32(offset + 24, 0)
+			dmg_bytes.encode_u32(offset + 28, 0)
 		pending_damages.clear()
 	else:
-		dmg_bytes.resize(4)
+		dmg_bytes.resize(16)
 		dmg_bytes.encode_u32(0, 0)
 	var turret_rotations = PackedFloat32Array()
 	turret_rotations.resize(turrets.size())
@@ -654,15 +626,22 @@ func apply_aoe_damage(pos: Vector2, radius: float, damage: float, bonus_if_slowe
 	pending_damages.append({"pos": pos, "radius": radius, "damage": damage, "bonus_if_slowed": bonus_if_slowed})
 
 func apply_aoe_slow(pos: Vector2, radius: float, slow_factor: float):
-	var nearby = get_nearby_enemies(pos, radius)
-	for idx in nearby:
-		speed_modifiers[idx] = mini(speed_modifiers[idx], int(slow_factor * 1000.0))
+	pending_damages.append({
+		"pos": pos,
+		"radius": radius,
+		"damage": 0.0,
+		"effect_type": 1,
+		"effect_value": slow_factor
+	})
 
 func apply_aoe_freeze(pos: Vector2, radius: float, duration: float):
-	var nearby = get_nearby_enemies(pos, radius)
-	for idx in nearby:
-		freeze_timers[idx] = maxf(freeze_timers[idx], duration)
-		speed_modifiers[idx] = 0
+	pending_damages.append({
+		"pos": pos,
+		"radius": radius,
+		"damage": 0.0,
+		"effect_type": 2,
+		"effect_value": duration
+	})
 
 func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
 	var results: Array[int] = []
@@ -933,12 +912,6 @@ func _remove_enemy(index: int):
 				
 				rd.buffer_copy(agent_buffer_rid_2, swap_buffer_rid, start_byte, 0, AGENT_STRUCT_SIZE)
 				rd.buffer_copy(swap_buffer_rid, agent_buffer_rid_2, 0, dest_byte, AGENT_STRUCT_SIZE)
-				
-				rd.buffer_copy(speed_modifier_rid, swap_buffer_rid, active_count * 4, 0, 4)
-				rd.buffer_copy(swap_buffer_rid, speed_modifier_rid, 0, index * 4, 4)
-				
-				rd.buffer_copy(flash_amounts_rid, swap_buffer_rid, active_count * 4, 0, 4)
-				rd.buffer_copy(swap_buffer_rid, flash_amounts_rid, 0, index * 4, 4)
 		)
 		
 		positions[index] = positions[active_count]
@@ -978,19 +951,18 @@ func _ensure_flow_field_initialized():
 	flow_field.generate_field_for_rect(nexus.global_position, nexus.extents)
 
 func _notification(what):
-	if what == NOTIFICATION_PREDELETE:
-		if rd:
-			if uniform_set.is_valid() and rd.uniform_set_is_valid(uniform_set):
-				rd.free_rid(uniform_set)
-			if uniform_set_b != null and typeof(uniform_set_b) == TYPE_RID and uniform_set_b.is_valid() and rd.uniform_set_is_valid(uniform_set_b):
-				rd.free_rid(uniform_set_b)
-			if dead_enemies_buffer:
-				dead_enemies_buffer.free_rids()
-			if turret_fire_events_buffer:
-				turret_fire_events_buffer.free_rids()
-			if nexus_damage_buffer:
-				nexus_damage_buffer.free_rids()
-			var rids = [pipeline_rid, shader_rid, agent_buffer_rid, agent_buffer_rid_2, grid_counts_rid, grid_cells_rid, speed_modifier_rid, linear_sampler_rid, texture_rd_rid, flash_amounts_rid, damage_events_buffer_rid, turrets_buffer_rid, dummy_ff_rid, dummy_obs_rid]
-			for r in rids:
-				if r and r.is_valid():
-					rd.free_rid(r)
+	if what == NOTIFICATION_PREDELETE and rd:
+		if uniform_set.is_valid() and rd.uniform_set_is_valid(uniform_set):
+			rd.free_rid(uniform_set)
+		if uniform_set_b.is_valid() and rd.uniform_set_is_valid(uniform_set_b):
+			rd.free_rid(uniform_set_b)
+		if dead_enemies_buffer:
+			dead_enemies_buffer.free_rids()
+		if turret_fire_events_buffer:
+			turret_fire_events_buffer.free_rids()
+		if nexus_damage_buffer:
+			nexus_damage_buffer.free_rids()
+		var rids = [pipeline_rid, shader_rid, agent_buffer_rid, agent_buffer_rid_2, grid_counts_rid, grid_cells_rid, linear_sampler_rid, texture_rd_rid, damage_events_buffer_rid, turrets_buffer_rid, dummy_ff_rid, dummy_obs_rid, swap_buffer_rid]
+		for r in rids:
+			if r and r.is_valid():
+				rd.free_rid(r)

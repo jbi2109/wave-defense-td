@@ -3,6 +3,8 @@ class_name TurretPlacementManager
 
 const TURRET_PREFAB = preload("res://prefabs/turret.tscn")
 
+@export var gridless_placement: bool = false
+
 var selected_type: String = ""
 var ghost_instance: Node2D = null
 
@@ -123,10 +125,9 @@ func _process(_delta):
 	queue_redraw()
 	
 	if current_state == PlacementState.PLACING_BASE:
-		var cell_size = 32.0
-		var grid_x = floor(mouse_pos.x / cell_size)
-		var grid_y = floor(mouse_pos.y / cell_size)
-		var snap_pos = Vector2(grid_x, grid_y) * cell_size + Vector2(16.0, 16.0)
+		var snap_pos = mouse_pos
+		if not gridless_placement:
+			snap_pos = (mouse_pos / 32.0).floor() * 32.0 + Vector2(16.0, 16.0)
 		
 		if ghost_instance:
 			ghost_instance.global_position = snap_pos
@@ -217,6 +218,22 @@ func _draw():
 			var local_mouse = to_local(get_global_mouse_position())
 			draw_line(local_base, local_mouse, Color(0.0, 1.0, 1.0, 0.2), 1.0)
 
+func _get_grass_path_polygon() -> PackedVector2Array:
+	var map_root = get_parent().get_node_or_null("SmartShapeMap")
+	if not map_root:
+		return PackedVector2Array()
+	var grass_path = map_root.get_node_or_null("Grass_Path")
+	if not grass_path:
+		return PackedVector2Array()
+	var path_poly = PackedVector2Array()
+	if grass_path.has_method("get_point_array"):
+		for v in grass_path.get_point_array().get_vertices():
+			path_poly.append(grass_path.to_global(v))
+	elif grass_path is Polygon2D:
+		for v in grass_path.polygon:
+			path_poly.append(grass_path.to_global(v))
+	return path_poly
+
 func _is_position_valid(pos: Vector2) -> bool:
 	if not flow_field:
 		return false
@@ -229,14 +246,22 @@ func _is_position_valid(pos: Vector2) -> bool:
 	if tx < 0 or tx >= flow_field.grid_size.x or ty < 0 or ty >= flow_field.grid_size.y:
 		return false
 		
-	if not flow_field.obstacle_field[tx][ty]:
+	if gridless_placement:
+		var turret_poly = PackedVector2Array([
+			pos + Vector2(-16, -16),
+			pos + Vector2(16, -16),
+			pos + Vector2(16, 16),
+			pos + Vector2(-16, 16)
+		])
+		var path_poly = _get_grass_path_polygon()
+		if not path_poly.is_empty() and not Geometry2D.intersect_polygons(turret_poly, path_poly).is_empty():
+			return false
+	elif not flow_field.obstacle_field[tx][ty]:
 		return false
-		
-	var turrets = get_tree().get_nodes_in_group("turret")
-	for t in turrets:
-		if is_instance_valid(t) and t != ghost_instance:
-			if t.global_position.distance_squared_to(pos) < 28.0 * 28.0:
-				return false
+			
+	for t in get_tree().get_nodes_in_group("turret"):
+		if is_instance_valid(t) and t != ghost_instance and t.global_position.distance_squared_to(pos) < 28.0 * 28.0:
+			return false
 				
 	return true
 
