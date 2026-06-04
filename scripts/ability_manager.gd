@@ -194,13 +194,6 @@ func _on_ability_button_pressed(index: int):
 func _cast_ability(index: int, pos: Vector2):
 	var ability = abilities[index]
 	
-	# Pre-check for target-dependent abilities
-	if ability.name == "Chain Lightning":
-		var em = get_node_or_null("/root/Main/EnemyManager")
-		if em and em.get_nearby_enemies(pos, ability.radius).is_empty():
-			_clear_targeting()
-			return
-			
 	if Globals.spend_mana(ability.cost):
 		ability.current_cooldown = ability.cooldown
 		
@@ -211,7 +204,7 @@ func _cast_ability(index: int, pos: Vector2):
 			"Frost Nova":
 				_do_frost_nova(pos, ability.radius, ability.duration)
 			"Chain Lightning":
-				_do_chain_lightning(pos, ability.damage, ability.bounces, ability.bounce_range, ability.radius)
+				_do_chain_lightning(pos, ability.damage, ability.bounces, ability.bounce_range, ability.radius, ability)
 			"Overdrive":
 				_do_overdrive(ability.duration, ability.multiplier)
 			"Acid Pool":
@@ -255,60 +248,69 @@ func _do_frost_nova(pos: Vector2, radius: float, duration: float):
 	if camera and camera.has_method("shake"):
 		camera.shake(0.3, 8.0)
 
-func _do_chain_lightning(pos: Vector2, damage: float, bounces: int, bounce_range: float, radius: float):
+func _do_chain_lightning(pos: Vector2, damage: float, bounces: int, bounce_range: float, radius: float, ability: Dictionary):
 	if not enemy_manager: return
 	
-	# Find all enemies within the ability radius of click position
-	var nearby = enemy_manager.get_nearby_enemies(pos, radius)
-	if nearby.is_empty(): return
-	
-	# Sort by distance from click to get closest first
-	var target_idx = -1
-	var min_dist = INF
-	for i in nearby:
-		if enemy_manager.healths[i] > 0.0:
-			var d = enemy_manager.positions[i].distance_to(pos)
-			if d < min_dist:
-				min_dist = d
-				target_idx = i
-				
-	if target_idx == -1: return
-	
-	# Find bouncing sequence
-	var hit_indices = [target_idx]
-	var current_pos = enemy_manager.positions[target_idx]
-	
-	for bounce in range(bounces - 1):
-		var next_idx = -1
-		var next_min_dist = bounce_range
-		for i in range(enemy_manager.active_count):
-			if enemy_manager.healths[i] > 0.0 and not hit_indices.has(i):
-				var d = enemy_manager.positions[i].distance_to(current_pos)
-				if d < next_min_dist:
-					next_min_dist = d
-					next_idx = i
-		if next_idx != -1:
-			hit_indices.append(next_idx)
-			current_pos = enemy_manager.positions[next_idx]
-		else:
-			break
+	enemy_manager.get_agent_data_async(func(positions: PackedVector2Array, healths: PackedFloat32Array):
+		var count = positions.size()
+		if count == 0:
+			Globals.mana = minf(Globals.mana + ability.cost, Globals.max_mana)
+			GlobalEvents.mana_changed.emit(Globals.mana, Globals.max_mana)
+			ability.current_cooldown = 0.0
+			return
 			
-	# Apply damage & trigger visuals — bolts come from above each enemy
-	for idx in hit_indices:
-		enemy_manager.damage_enemy(idx, damage, false)
+		# Find first target
+		var target_idx = -1
+		var min_dist = radius
+		for i in range(count):
+			if healths[i] > 0.0:
+				var d = positions[i].distance_to(pos)
+				if d < min_dist:
+					min_dist = d
+					target_idx = i
+					
+		if target_idx == -1:
+			Globals.mana = minf(Globals.mana + ability.cost, Globals.max_mana)
+			GlobalEvents.mana_changed.emit(Globals.mana, Globals.max_mana)
+			ability.current_cooldown = 0.0
+			return
+			
+		# Bouncing sequence
+		var hit_indices = [target_idx]
+		var current_pos = positions[target_idx]
 		
-	# Visuals: vertical bolts from sky onto each hit enemy
-	var cl_script = load("res://scripts/chain_lightning_effect.gd")
-	if cl_script:
-		var cl = Node2D.new()
-		cl.set_script(cl_script)
-		get_parent().add_child(cl)
-		var hit_positions: Array[Vector2] = []
+		for bounce in range(bounces - 1):
+			var next_idx = -1
+			var next_min_dist = bounce_range
+			for i in range(count):
+				if healths[i] > 0.0 and not hit_indices.has(i):
+					var d = positions[i].distance_to(current_pos)
+					if d < next_min_dist:
+						next_min_dist = d
+						next_idx = i
+			if next_idx != -1:
+				hit_indices.append(next_idx)
+				current_pos = positions[next_idx]
+			else:
+				break
+				
+		# Apply damage
 		for idx in hit_indices:
-			hit_positions.append(enemy_manager.positions[idx])
-		cl.init_bolts_from_above(hit_positions)
-		
-	SoundManager.play_sfx("shoot_gatling")
+			enemy_manager.damage_enemy(idx, damage, false)
+			
+		# Visuals: vertical bolts from sky onto each hit enemy
+		var cl_script = load("res://scripts/chain_lightning_effect.gd")
+		if cl_script:
+			var cl = Node2D.new()
+			cl.set_script(cl_script)
+			get_parent().add_child(cl)
+			var hit_positions: Array[Vector2] = []
+			for idx in hit_indices:
+				hit_positions.append(positions[idx])
+			cl.init_bolts_from_above(hit_positions)
+			
+		SoundManager.play_sfx("shoot_gatling")
+	)
 
 func _do_overdrive(duration: float, multiplier: float):
 	var turrets = get_tree().get_nodes_in_group("turret")

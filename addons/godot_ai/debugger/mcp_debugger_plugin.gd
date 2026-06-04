@@ -433,8 +433,12 @@ func _wait_then_eval(
 	while not is_game_capture_ready() and Time.get_ticks_msec() < deadline:
 		await tree.process_frame
 	if not is_game_capture_ready():
-		_send_error(connection, request_id, ErrorCodes.INTERNAL_ERROR,
-			"Game-side autoload never registered its debugger capture within %ds. Is the game actually running? Start it with project_run / the editor's Play button, then retry. If it IS running, check Project Settings → Autoload for _mcp_game_helper (added automatically when the plugin is enabled)." % int(EVAL_READY_WAIT_SEC))
+		## #518: EVAL_GAME_NOT_READY (not INTERNAL_ERROR) — the play session is up
+		## but the game-side capture didn't register within the short wait. Fast
+		## and caller-actionable; classifying it apart from the opaque 10s hang
+		## keeps the INTERNAL_ERROR telemetry bucket meaning "the eval truly hung".
+		_send_error(connection, request_id, ErrorCodes.EVAL_GAME_NOT_READY,
+			"Game-side capture didn't register within %ds. The play session is already running, so the game is most likely still booting — wait a moment and retry. If it persists, the _mcp_game_helper autoload is missing or disabled (Project Settings → Autoload; added automatically when the plugin is enabled), or the game uses a custom main loop." % int(EVAL_READY_WAIT_SEC))
 		return
 	_send_eval(tree, code, request_id, connection, timeout_sec)
 
@@ -448,8 +452,11 @@ func _send_eval(
 ) -> void:
 	var session: EditorDebuggerSession = _first_active_session()
 	if session == null:
-		_send_error(connection, request_id, ErrorCodes.INTERNAL_ERROR,
-			"No active debugger session — is the game actually running?")
+		## #518: capture reported ready but the debugger session is no longer live
+		## (the game just stopped / is restarting) — a not-ready race, so the same
+		## caller-actionable EVAL_GAME_NOT_READY rather than the opaque hang bucket.
+		_send_error(connection, request_id, ErrorCodes.EVAL_GAME_NOT_READY,
+			"Game-side capture registered but its debugger session is no longer active — the game likely just stopped or is restarting. Confirm it's running and retry.")
 		return
 
 	var timer: SceneTreeTimer = tree.create_timer(timeout_sec)

@@ -54,9 +54,11 @@ func _process(delta):
 func _apply_tick_effects():
 	if not enemy_manager: return
 	
-	var nearby = enemy_manager.get_nearby_enemies(global_position, radius)
 	var damage_tick = damage_per_sec * tick_interval
-	
-	for idx in nearby:
-		enemy_manager.damage_enemy(idx, damage_tick, false)
-		enemy_manager.speed_modifiers[idx] = mini(enemy_manager.speed_modifiers[idx], int(slow_factor * 1000.0))
+	enemy_manager.pending_damages.append({
+		"pos": global_position,
+		"radius": radius,
+		"damage": damage_tick,
+		"effect_type": 3,
+		"effect_value": slow_factor
+	})

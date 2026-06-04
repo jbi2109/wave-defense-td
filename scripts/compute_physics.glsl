@@ -46,14 +46,18 @@ struct Agent {
 	float max_speed;
 	float scale;
 	uint type;
-}; // 8 floats = 32 bytes
+	float freeze_timer;
+	int flash_amount;
+	int speed_modifier;
+	uint pad0;
+}; // 12 floats = 48 bytes
 
 // === Buffers ===
 // Binding 0: Agents
 layout(set = 0, binding = 0, std430) restrict buffer AgentBufferIn {
 	Agent agents_in[];
 };
-layout(set = 0, binding = 13, std430) restrict buffer AgentBufferOut {
+layout(set = 0, binding = 11, std430) restrict buffer AgentBufferOut {
 	Agent agents_out[];
 };
 
@@ -75,28 +79,18 @@ layout(set = 0, binding = 3) uniform sampler2D flow_field;
 // Binding 4: Obstacle Texture
 layout(set = 0, binding = 4) uniform sampler2D obstacle_field;
 
-// Binding 5: Speed Modifiers
-layout(set = 0, binding = 5, std430) buffer SpeedModifierBuffer {
-	int speed_modifiers[];
-};
+// Binding 5: Agent Data Texture (for rendering)
+layout(set = 0, binding = 5, rgba32f) restrict writeonly uniform image2D agent_data_tex;
 
-// Binding 6: Agent Data Texture (for rendering)
-layout(set = 0, binding = 6, rgba32f) restrict writeonly uniform image2D agent_data_tex;
-
-// Binding 7: Flash Amounts
-layout(set = 0, binding = 7, std430) buffer FlashAmountBuffer {
-	int flash_amounts[];
-};
-
-// Binding 8: Dead Enemies
-layout(set = 0, binding = 8, std430) buffer DeadEnemiesBuffer {
+// Binding 6: Dead Enemies
+layout(set = 0, binding = 6, std430) buffer DeadEnemiesBuffer {
 	uint dead_last_write; // offset 0
 	uint dead_pad0, dead_pad1, dead_pad2; // offset 4, 8, 12
 	uint dead_data[]; // offset 16
 };
 
-// Binding 9: Nexus Damage
-layout(set = 0, binding = 9, std430) buffer NexusDamageBuffer {
+// Binding 7: Nexus Damage
+layout(set = 0, binding = 7, std430) buffer NexusDamageBuffer {
 	uint nexus_last_write; // offset 0
 	uint nexus_damage_values[]; // offset 4
 };
@@ -105,10 +99,14 @@ struct DamageEvent {
 	vec2 pos;
 	float radius;
 	float damage;
-};
+	uint effect_type;  // 0: Damage, 1: Slow, 2: Freeze, 3: Damage + Slow (Acid)
+	float effect_value; // slow factor or freeze duration
+	uint pad0;
+	uint pad1;
+}; // 32 bytes
 
-// Binding 10: Damage Events
-layout(set = 0, binding = 10, std430) buffer DamageEventsBuffer {
+// Binding 8: Damage Events
+layout(set = 0, binding = 8, std430) buffer DamageEventsBuffer {
 	uint event_count;
 	uint dmg_pad0, dmg_pad1, dmg_pad2;
 	DamageEvent damage_events[];
@@ -126,15 +124,15 @@ struct TurretData {
 	uint padding0, padding1, padding2;
 };
 
-// Binding 11: Turrets
-layout(set = 0, binding = 11, std430) buffer TurretsBuffer {
+// Binding 9: Turrets
+layout(set = 0, binding = 9, std430) buffer TurretsBuffer {
 	uint turret_count;
 	uint tur_pad0, tur_pad1, tur_pad2;
 	TurretData turrets[];
 };
 
-// Binding 12: Turret Fire Events
-layout(set = 0, binding = 12, std430) buffer TurretFireEventsBuffer {
+// Binding 10: Turret Fire Events
+layout(set = 0, binding = 10, std430) buffer TurretFireEventsBuffer {
 	uint fire_last_write;
 	uint fire_pad0, fire_pad1, fire_pad2;
 	uint fire_data[];
@@ -235,25 +233,30 @@ void pass_clear_grid(uint id) {
 void pass_kinematics(uint id) {
 	if (id >= params.active_count) return;
 	
-	int sm_int = speed_modifiers[id];
-	float sm = float(sm_int) / 1000.0;
-	if (sm < 1.0) {
-		sm = min(1.0, sm + params.delta * 0.4);
-	} else if (sm > 1.0) {
-		sm = max(1.0, sm - params.delta * 0.4);
-	}
-	speed_modifiers[id] = int(sm * 1000.0);
-	
-	int fa_int = flash_amounts[id];
-	float fa = float(fa_int) / 1000.0;
-	if (fa > 0.0) {
-		fa = max(0.0, fa - params.delta * 16.0);
-	}
-	flash_amounts[id] = int(fa * 1000.0);
-	
 	Agent ag = agents_in[id];
 	
 	if (ag.health <= -9000000) return; // Dead and processed
+	
+	// Decay freeze_timer and speed_modifier
+	if (ag.freeze_timer > 0.0) {
+		ag.freeze_timer -= params.delta;
+		if (ag.freeze_timer <= 0.0) {
+			ag.freeze_timer = 0.0;
+		} else {
+			ag.speed_modifier = 0;
+		}
+	} else {
+		if (ag.speed_modifier < 1000) {
+			ag.speed_modifier = min(1000, ag.speed_modifier + int(params.delta * 400.0));
+		} else if (ag.speed_modifier > 1000) {
+			ag.speed_modifier = max(1000, ag.speed_modifier - int(params.delta * 400.0));
+		}
+	}
+	
+	// Decay flash_amount
+	if (ag.flash_amount > 0) {
+		ag.flash_amount = max(0, ag.flash_amount - int(params.delta * 16000.0));
+	}
 	
 	if (params.nexus_valid > 0u && ag.health > 0) {
 		vec2 d = ag.pos - params.nexus_pos;
@@ -274,6 +277,9 @@ void pass_kinematics(uint id) {
 				dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
 			}
 			agents_in[id].health = -10000000;
+			agents_in[id].freeze_timer = 0.0;
+			agents_in[id].flash_amount = 0;
+			agents_in[id].speed_modifier = 1000;
 			
 			ivec2 tex_coord = ivec2(id % 512, id / 512);
 			imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
@@ -291,6 +297,9 @@ void pass_kinematics(uint id) {
 			dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
 		}
 		agents_in[id].health = -10000000;
+		agents_in[id].freeze_timer = 0.0;
+		agents_in[id].flash_amount = 0;
+		agents_in[id].speed_modifier = 1000;
 		
 		ivec2 tex_coord = ivec2(id % 512, id / 512);
 		imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
@@ -321,6 +330,7 @@ void pass_kinematics(uint id) {
 		t_dir = normalize(t_dir + 0.15 * curl);
 	}
 	
+	float sm = float(ag.speed_modifier) / 1000.0;
 	float current_speed = ag.max_speed * sm;
 	vec2 vel = ag.vel;
 	
@@ -336,6 +346,10 @@ void pass_kinematics(uint id) {
 	
 	agents_in[id].pos = target_pos;
 	agents_in[id].vel = vel;
+	agents_in[id].health = ag.health;
+	agents_in[id].freeze_timer = ag.freeze_timer;
+	agents_in[id].flash_amount = ag.flash_amount;
+	agents_in[id].speed_modifier = ag.speed_modifier;
 }
 
 void pass_binning(uint id) {
@@ -463,6 +477,9 @@ void pass_separation(uint id) {
 	agents_out[id].max_speed = ag.max_speed;
 	agents_out[id].scale = ag.scale;
 	agents_out[id].type = ag.type;
+	agents_out[id].freeze_timer = ag.freeze_timer;
+	agents_out[id].flash_amount = ag.flash_amount;
+	agents_out[id].speed_modifier = ag.speed_modifier;
 }
 
 void pass_multimesh(uint id) {
@@ -474,8 +491,9 @@ void pass_multimesh(uint id) {
 	float frame_idx = 0.0;
 	float speed_sq = ag.vel.x * ag.vel.x + ag.vel.y * ag.vel.y;
 	bool is_fast = ag.max_speed >= 120.0;
+	float sm = float(ag.speed_modifier) / 1000.0;
 	if (speed_sq > 100.0) {
-		if (is_fast && speed_modifiers[id] >= 0.7) {
+		if (is_fast && sm >= 0.7) {
 			frame_idx = 10.0 + mod(params.time_msec * 0.015 + float(id) * 3.0, 5.0);
 		} else {
 			frame_idx = 4.0 + mod(params.time_msec * 0.012 + float(id) * 3.0, 6.0);
@@ -485,7 +503,7 @@ void pass_multimesh(uint id) {
 	}
 	
 	float final_scale = (ag.vel.x < 0.0) ? -ag.scale : ag.scale;
-	float flash_amt = float(flash_amounts[id]) / 1000.0;
+	float flash_amt = float(ag.flash_amount) / 1000.0;
 	float type_and_frame = float(ag.type) + (floor(frame_idx) / 100.0) + (clamp(flash_amt, 0.0, 1.0) / 10000.0);
 	
 	ivec2 tex_coord = ivec2(id % 512, id / 512);
@@ -502,8 +520,20 @@ void pass_damage(uint id) {
 		vec2 d = ag.pos - ev.pos;
 		float dsq = dot(d, d);
 		if (dsq < ev.radius * ev.radius) {
-			atomicAdd(agents_in[id].health, -int(ev.damage * 100.0));
-			atomicMax(flash_amounts[id], 1000);
+			if (ev.damage > 0.0) {
+				ag.health -= int(ev.damage * 100.0);
+				ag.flash_amount = 1000;
+			}
+			
+			// Apply Slow/Freeze
+			if (ev.effect_type == 1) { // Slow
+				ag.speed_modifier = min(ag.speed_modifier, int(ev.effect_value * 1000.0));
+			} else if (ev.effect_type == 2) { // Freeze
+				ag.freeze_timer = max(ag.freeze_timer, ev.effect_value);
+				ag.speed_modifier = 0;
+			} else if (ev.effect_type == 3) { // Damage + Slow (Acid)
+				ag.speed_modifier = min(ag.speed_modifier, int(ev.effect_value * 1000.0));
+			}
 		}
 	}
 	
@@ -517,9 +547,17 @@ void pass_damage(uint id) {
 			dead_data[seg_offset + 4 + idx * 4 + 3] = floatBitsToUint(ag.pos.y);
 		}
 		agents_in[id].health = -10000000;
+		agents_in[id].freeze_timer = 0.0;
+		agents_in[id].flash_amount = 0;
+		agents_in[id].speed_modifier = 1000;
 		
 		ivec2 tex_coord = ivec2(id % 512, id / 512);
 		imageStore(agent_data_tex, tex_coord, vec4(ag.pos.x, ag.pos.y, 0.0, float(ag.type)));
+	} else {
+		agents_in[id].health = ag.health;
+		agents_in[id].speed_modifier = ag.speed_modifier;
+		agents_in[id].freeze_timer = ag.freeze_timer;
+		agents_in[id].flash_amount = ag.flash_amount;
 	}
 }
 
@@ -563,9 +601,9 @@ void pass_turret_targeting(uint t_id) {
 									if (dot_prod > 0.0 && (dot_prod * dot_prod) >= 0.9829629 * dsq) {
 										if (t.turret_type == 1 || t.turret_type == 2) {
 											atomicAdd(agents_in[a_id].health, -int(t.damage * 100.0));
-											atomicMax(flash_amounts[a_id], 1000);
+											atomicMax(agents_in[a_id].flash_amount, 1000);
 											if (t.turret_type == 2) {
-												atomicMin(speed_modifiers[a_id], 400);
+												atomicMin(agents_in[a_id].speed_modifier, 400);
 											}
 										}
 										
@@ -597,7 +635,7 @@ void pass_turret_targeting(uint t_id) {
 		if (best_target != 0xFFFFFFFFu) {
 			if (t.turret_type == 0) {
 				atomicAdd(agents_in[best_target].health, -int(t.damage * 100.0));
-				atomicMax(flash_amounts[best_target], 1000);
+				atomicMax(agents_in[best_target].flash_amount, 1000);
 			}
 			t.cooldown = t.fire_rate;
 			uint seg_offset = fire_last_write * 16384;
@@ -613,7 +651,6 @@ void pass_turret_targeting(uint t_id) {
 	
 	turrets[t_id] = t;
 }
-
 
 void main() {
 	uint id = gl_GlobalInvocationID.x;
