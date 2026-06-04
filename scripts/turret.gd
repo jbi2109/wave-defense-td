@@ -85,7 +85,7 @@ func _ready():
 	if fire_rate_override > 0.0:
 		fire_rate = fire_rate_override
 	if size_override > 0.0:
-		scale = Vector2(size_override, size_override)
+		scale = get_auto_scale(size_override)
 		
 	if has_node("GunSprite"):
 		$GunSprite.z_index = 1
@@ -103,6 +103,17 @@ func get_definition() -> Node:
 		return placement_manager.get_definition(turret_type)
 	return null
 
+func get_auto_scale(custom_scale: float) -> Vector2:
+	var cell_size_val = 32.0
+	var ff = get_node_or_null("/root/Main/FlowFieldManager")
+	if ff and "cell_size" in ff:
+		cell_size_val = float(ff.cell_size)
+	var base_width = 819.0
+	if texture:
+		base_width = float(texture.get_width())
+	var s = (cell_size_val / base_width) * custom_scale
+	return Vector2(s, s)
+
 func _load_stats_from_data():
 	var t_def = get_definition()
 	if t_def:
@@ -111,7 +122,6 @@ func _load_stats_from_data():
 		fire_rate    = t_def.fire_rate
 		total_spent  = t_def.cost
 		var s        = t_def.scale
-		scale        = Vector2(s, s)
 		rotates      = t_def.rotates
 		
 		var tex_path = t_def.sprite_path
@@ -123,6 +133,7 @@ func _load_stats_from_data():
 				$GunSprite.texture = load(tex_path)
 		if turret_type == "slow":
 			self_modulate = Color(0.2, 0.7, 1.0, 1.0)
+		scale = get_auto_scale(s)
 
 # ─────────────────────────────────────────────────────────────
 #  PROCESS

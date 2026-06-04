@@ -92,11 +92,6 @@ func _setup_map_logic():
 				poly.append(shape.to_global(v))
 			obstacle_polys.append(poly)
 
-	var path_rect = _bounds(path_poly)
-	var obs_rects: Array[Rect2] = []
-	for p in obstacle_polys:
-		obs_rects.append(_bounds(p))
-
 	var cell_size = float(flow_field.cell_size)
 	var offset    = flow_field.grid_offset
 
@@ -105,27 +100,23 @@ func _setup_map_logic():
 			var cell_pos = Vector2(x + offset.x, y + offset.y) * cell_size
 			var wp = cell_pos + Vector2(cell_size * 0.5, cell_size * 0.5)
 			
-			var is_walkable = _is_point_walkable(wp, path_rect, path_poly, obs_rects, obstacle_polys)
+			var in_grass = Geometry2D.is_point_in_polygon(wp, path_poly)
+			var in_obs = false
+			for poly in obstacle_polys:
+				if Geometry2D.is_point_in_polygon(wp, poly):
+					in_obs = true
+					break
+			var is_walkable = in_grass and not in_obs
 			flow_field.set_obstacle(Vector2i(x + offset.x, y + offset.y), not is_walkable)
 			
 	flow_field.commit_obstacles()
 
-func _is_point_walkable(pt: Vector2, path_rect: Rect2, path_poly: PackedVector2Array, obs_rects: Array[Rect2], obstacle_polys: Array[PackedVector2Array]) -> bool:
-	var in_grass = path_rect.has_point(pt) and Geometry2D.is_point_in_polygon(pt, path_poly)
-	if not in_grass:
-		return false
-	for i in range(obstacle_polys.size()):
-		if obs_rects[i].has_point(pt) and Geometry2D.is_point_in_polygon(pt, obstacle_polys[i]):
-			return false
-	return true
-
-func _bounds(poly: PackedVector2Array) -> Rect2:
-	if poly.is_empty(): return Rect2()
-	var mn = poly[0]; var mx = poly[0]
-	for p in poly:
-		mn.x = minf(mn.x, p.x); mn.y = minf(mn.y, p.y)
-		mx.x = maxf(mx.x, p.x); mx.y = maxf(mx.y, p.y)
-	return Rect2(mn, mx - mn)
+func is_point_walkable(pos: Vector2) -> bool:
+	var gp = Vector2i((pos / float(flow_field.cell_size)).floor()) - flow_field.grid_offset
+	if gp.x >= 0 and gp.x < flow_field.grid_size.x and gp.y >= 0 and gp.y < flow_field.grid_size.y:
+		if flow_field.obs_image:
+			return flow_field.obs_image.get_pixel(gp.x, gp.y).r < 0.5
+	return false
 
 # ─────────────────────────────────────────────────────────────
 #  PROCESS

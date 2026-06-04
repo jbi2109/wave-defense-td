@@ -63,7 +63,14 @@ func start_placement(type: String):
 	
 	var base_sprite = Sprite2D.new()
 	base_sprite.texture = load("res://assets/turrets/base.png")
-	base_sprite.scale = Vector2(s, s)
+	var cell_size_val = 32.0
+	if is_instance_valid(flow_field) and "cell_size" in flow_field:
+		cell_size_val = float(flow_field.cell_size)
+	var base_width = 819.0
+	if base_sprite.texture:
+		base_width = float(base_sprite.texture.get_width())
+	var final_scale = (cell_size_val / base_width) * s
+	base_sprite.scale = Vector2(final_scale, final_scale)
 	if type == "slow":
 		pass
 	elif type == "generator":
@@ -73,7 +80,7 @@ func start_placement(type: String):
 	if tex_path.begins_with("res://Assets"):
 		tex_path = tex_path.replace("res://Assets", "res://assets")
 	gun_sprite.texture = load(tex_path)
-	gun_sprite.scale = Vector2(s, s)
+	gun_sprite.scale = Vector2(final_scale, final_scale)
 	
 	ghost_instance.add_child(base_sprite)
 	ghost_instance.add_child(gun_sprite)
@@ -97,6 +104,10 @@ func _can_place() -> bool:
 	return wave_manager.current_wave == 0 or wave_manager.is_inter_wave
 
 func _process(_delta):
+	var ability_mgr = get_node_or_null("/root/Main/AbilityManager")
+	if ability_mgr and ability_mgr.active_ability_index != -1:
+		return
+		
 	var mouse_pos = get_global_mouse_position()
 	
 	var left_mouse_down = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)

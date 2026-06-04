@@ -211,6 +211,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="EnemyCountLabel" type="Label" parent="HUD/Overlay" unique_id=858288642]
 layout_mode = 1
@@ -395,6 +396,7 @@ offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(300, 100)
+mouse_filter = 2
 script = ExtResource("14_wnnce")
 
 [node name="Label" type="Label" parent="HUD/Overlay/WaveAnnouncement" unique_id=1814093357]

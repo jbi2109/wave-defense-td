@@ -24,18 +24,18 @@ layout(push_constant, std430) uniform Params {
 	float separation_multiplier;
 	float overlap_weight;
 	
-	// Explosion event
-	vec2 explosion_pos;
-	float explosion_radius;
-	float explosion_damage;
-	
 	// Nexus
 	vec2 nexus_pos;
 	float nexus_radius;
 	uint nexus_valid;
 	
 	// Type damage map (up to 6 types)
-	uint type_nexus_dmg[6];
+	uint type_nexus_dmg_0;
+	uint type_nexus_dmg_1;
+	uint type_nexus_dmg_2;
+	uint type_nexus_dmg_3;
+	uint type_nexus_dmg_4;
+	uint type_nexus_dmg_5;
 } params;
 
 // === Data Structures ===
@@ -403,7 +403,7 @@ void pass_separation(uint id) {
 	if (length(push) > 0.0) {
 		// Cap the maximum separation push per frame to prevent the swarm from exploding into walls
 		// when density gets very high. This fixes the hollow center pathing issue.
-		float max_push = ag.max_speed * params.delta * 1.5;
+		float max_push = max(ag.max_speed, 80.0) * params.delta * 1.5;
 		if (length(push) > max_push) {
 			push = normalize(push) * max_push;
 		}

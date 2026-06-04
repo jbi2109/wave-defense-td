@@ -21,6 +21,10 @@ var selected_turret: Turret = null
 var selection_indicator: Node2D = null
 
 func _ready():
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if get_parent() is Control:
+		get_parent().mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
 	_create_ui_nodes()
 	_populate_build_menu()
 	
@@ -347,6 +351,10 @@ func _unhandled_input(event):
 		return
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var ability_mgr = get_node_or_null("/root/Main/AbilityManager")
+		if ability_mgr and ability_mgr.active_ability_index != -1:
+			return
+			
 		var click_pos = get_global_mouse_position()
 		var clicked_turret: Turret = null
 		

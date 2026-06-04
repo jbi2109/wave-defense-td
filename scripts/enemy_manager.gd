@@ -4,8 +4,8 @@ class_name EnemyManager
 const EnemyDef = preload("res://scripts/enemy_definition.gd")
 
 # --- Exports ---
-@export var separation_radius_multiplier: float = 20.0
-@export var overlap_weight: float = 0.4
+@export var separation_radius_multiplier: float = 10.0
+@export var overlap_weight: float = 0.15
 @export var grid_cell_size: int = 72
 @export var regenerate_flow_field_periodically: bool = true
 @export var use_top_down_rotation: bool = false
@@ -27,10 +27,6 @@ var gold_yields = PackedInt32Array()
 var speed_modifiers = PackedInt32Array()
 var flash_amounts = PackedInt32Array()
 var freeze_timers = PackedFloat32Array()
-
-const CPU_CELL_SIZE = 128.0
-var grid_cells_cpu: Dictionary = {}
-
 # Per-type caching
 var type_scales = PackedFloat32Array()
 var type_speeds = PackedFloat32Array()
@@ -523,7 +519,7 @@ func _process(delta):
 
 	# 3. Setup push constants for compute shader
 	var push_bytes = PackedByteArray()
-	push_bytes.resize(112) # 80 + 32 for nexus
+	push_bytes.resize(96) # 72 + 24 for type_nexus_dmg
 	push_bytes.fill(0)
 	
 	# offset 4: active_count
@@ -550,18 +546,18 @@ func _process(delta):
 	push_bytes.encode_float(48, separation_radius_multiplier)
 	push_bytes.encode_float(52, overlap_weight)
 	
-	# offset 72: nexus
+	# offset 56: nexus
 	if _nexus_valid:
-		push_bytes.encode_float(72, nexus.global_position.x)
-		push_bytes.encode_float(76, nexus.global_position.y)
+		push_bytes.encode_float(56, nexus.global_position.x)
+		push_bytes.encode_float(60, nexus.global_position.y)
 		var n_rad = 32.0
 		if "extents" in nexus:
 			n_rad = maxf(nexus.extents.x, nexus.extents.y)
-		push_bytes.encode_float(80, n_rad)
-		push_bytes.encode_u32(84, 1)
+		push_bytes.encode_float(64, n_rad)
+		push_bytes.encode_u32(68, 1)
 	
 	for i in range(min(6, enemy_types.size())):
-		push_bytes.encode_u32(88 + i * 4, type_nexus_dmg[i])
+		push_bytes.encode_u32(72 + i * 4, type_nexus_dmg[i])
 		
 	# Batch damage events
 	var dmg_bytes = PackedByteArray()
@@ -608,22 +604,7 @@ func _process(delta):
 		_dispatch_compute(push_bytes, active_count)
 	)
 
-func _update_agent_data(data: PackedByteArray, dispatched_count: int):
-	var count = min(dispatched_count, active_count)
-	grid_cells_cpu.clear()
-	for i in range(count):
-		var offset = i * AGENT_STRUCT_SIZE
-		var px = data.decode_float(offset + 0)
-		var py = data.decode_float(offset + 4)
-		var hp = data.decode_s32(offset + 16) / 100.0
-		positions[i] = Vector2(px, py)
-		healths[i] = hp
-		
-		var cell_coord = Vector2i(int(floor(px / CPU_CELL_SIZE)), int(floor(py / CPU_CELL_SIZE)))
-		if grid_cells_cpu.has(cell_coord):
-			grid_cells_cpu[cell_coord].append(i)
-		else:
-			grid_cells_cpu[cell_coord] = [i]
+
 
 func damage_enemy(index: int, amount: float, bonus_if_slowed: bool = false):
 	if index >= 0 and index < active_count:
@@ -662,32 +643,9 @@ func apply_aoe_freeze(pos: Vector2, radius: float, duration: float):
 		"effect_value": duration
 	})
 
-func get_nearby_enemies(world_pos: Vector2, radius: float) -> Array[int]:
-	var results: Array[int] = []
-	var rsq = radius * radius
-	
-	var min_cell_x = int(floor((world_pos.x - radius) / CPU_CELL_SIZE))
-	var max_cell_x = int(floor((world_pos.x + radius) / CPU_CELL_SIZE))
-	var min_cell_y = int(floor((world_pos.y - radius) / CPU_CELL_SIZE))
-	var max_cell_y = int(floor((world_pos.y + radius) / CPU_CELL_SIZE))
-	
-	for cx in range(min_cell_x, max_cell_x + 1):
-		for cy in range(min_cell_y, max_cell_y + 1):
-			var cell = Vector2i(cx, cy)
-			if grid_cells_cpu.has(cell):
-				for i in grid_cells_cpu[cell]:
-					if positions[i].distance_squared_to(world_pos) <= rsq:
-						results.append(i)
-	return results
-
 func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	if not flow_field.flow_result_tex.is_valid(): return
 	
-	if current_active_count > 0:
-		rd.buffer_get_data_async(agent_buffer_rid, func(data: PackedByteArray):
-			call_deferred("_update_agent_data", data, current_active_count)
-		)
-		
 	if _bindings_dirty or not uniform_set.is_valid():
 		_update_bindings()
 		_bindings_dirty = false
@@ -704,13 +662,13 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	
 	# Pass 0: Clear Grid
 	push_bytes.encode_u32(0, 0)
-	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+	rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 	rd.compute_list_dispatch(compute_list, grid_groups, 1, 1)
 	rd.compute_list_add_barrier(compute_list)
 	
 	# Pass 1: Kinematics
 	push_bytes.encode_u32(0, 1)
-	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+	rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 	rd.compute_list_dispatch(compute_list, groups, 1, 1)
 	rd.compute_list_add_barrier(compute_list)
 	
@@ -718,13 +676,13 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	for i in range(6):
 		# Pass 2: Binning
 		push_bytes.encode_u32(0, 2)
-		rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+		rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 		rd.compute_list_dispatch(compute_list, groups, 1, 1)
 		rd.compute_list_add_barrier(compute_list)
 		
 		# Pass 3: Separation
 		push_bytes.encode_u32(0, 3)
-		rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+		rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 		rd.compute_list_dispatch(compute_list, groups, 1, 1)
 		rd.compute_list_add_barrier(compute_list)
 		
@@ -735,7 +693,7 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 		# Clear grid for next binning
 		if i < 5:
 			push_bytes.encode_u32(0, 0)
-			rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+			rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 			rd.compute_list_dispatch(compute_list, grid_groups, 1, 1)
 			rd.compute_list_add_barrier(compute_list)
 			
@@ -746,19 +704,19 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 		
 	# Pass 4: MultiMesh
 	push_bytes.encode_u32(0, 4)
-	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+	rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 	rd.compute_list_dispatch(compute_list, groups, 1, 1)
 	rd.compute_list_add_barrier(compute_list)
 	
 	# Pass 5: Damage
 	push_bytes.encode_u32(0, 5)
-	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+	rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 	rd.compute_list_dispatch(compute_list, groups, 1, 1)
 	rd.compute_list_add_barrier(compute_list)
 	
 	# Pass 6: Turrets
 	push_bytes.encode_u32(0, 6)
-	rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
+	rd.compute_list_set_push_constant(compute_list, push_bytes, 96)
 	var turret_groups = max(1, int(ceil(float(turrets.size()) / 256.0)))
 	rd.compute_list_dispatch(compute_list, turret_groups, 1, 1)
 	rd.compute_list_end()
