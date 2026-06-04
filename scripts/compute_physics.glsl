@@ -30,12 +30,7 @@ layout(push_constant, std430) uniform Params {
 	uint nexus_valid;
 	
 	// Type damage map (up to 6 types)
-	uint type_nexus_dmg_0;
-	uint type_nexus_dmg_1;
-	uint type_nexus_dmg_2;
-	uint type_nexus_dmg_3;
-	uint type_nexus_dmg_4;
-	uint type_nexus_dmg_5;
+	uint type_nexus_dmg[6];
 } params;
 
 // === Data Structures ===

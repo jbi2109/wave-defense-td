@@ -443,8 +443,8 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	var rf = randf()
 	var R = 2.0 + 2.0 * pow(rf, 10.0)
 	
-	# Quadratic mass: M = 15.0 * R^2
-	var mass = 15.0 * R * R
+	# Quadratic mass: M = 15.0 * R^2 (kept for future use — affects knockback)
+	var _mass = 15.0 * R * R
 	
 	# Map R (in [2.0, 4.0]) to scale multiplier (in [1.0, 2.0]) for wave-defense-td scale coords
 	var scale_mult = R / 2.0
