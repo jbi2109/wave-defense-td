@@ -27,6 +27,7 @@ var flow_shader: RID
 var flow_pipeline: RID
 var sdf_ping: RID
 var sdf_pong: RID
+var final_sdf_tex: RID
 var flow_ping: RID
 var flow_pong: RID
 var flow_result_tex: RID
@@ -81,6 +82,7 @@ func _init_gpu_resources():
 	
 	sdf_ping = rd.texture_create(tf_sdf, RDTextureView.new(), [])
 	sdf_pong = rd.texture_create(tf_sdf, RDTextureView.new(), [])
+	final_sdf_tex = sdf_ping
 	
 	var tf_flow = RDTextureFormat.new()
 	tf_flow.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
@@ -379,6 +381,7 @@ func generate_field_gpu(target_pos: Vector2):
 		step /= 2
 		
 		var current_sdf_set = uniform_set_sdf_ping
+		var last_sdf_tex_is_ping = true
 		while step >= 1:
 			push.encode_u32(0, 1)
 			push.encode_u32(4, step)
@@ -386,8 +389,14 @@ func generate_field_gpu(target_pos: Vector2):
 			rd.compute_list_dispatch(cl, groups_x, groups_y, 1)
 			rd.compute_list_add_barrier(cl)
 			step /= 2
-			current_sdf_set = uniform_set_sdf_pong if current_sdf_set == uniform_set_sdf_ping else uniform_set_sdf_ping
+			if current_sdf_set == uniform_set_sdf_ping:
+				current_sdf_set = uniform_set_sdf_pong
+				last_sdf_tex_is_ping = false
+			else:
+				current_sdf_set = uniform_set_sdf_ping
+				last_sdf_tex_is_ping = true
 			rd.compute_list_bind_uniform_set(cl, current_sdf_set, 0)
+		final_sdf_tex = sdf_ping if last_sdf_tex_is_ping else sdf_pong
 			
 		# Pass 2: Seed Flow
 		# We must rebind the uniform sets for flow (set 1) and keep SDF on set 0

@@ -66,6 +66,7 @@ var texture_rd_rid: RID
 var agent_data_tex: Texture2DRD
 var _bindings_dirty: bool = true
 var _last_ff_rid: RID
+var _last_sdf_rid: RID
 
 var dead_enemies_buffer: GPUHelpers.ReadbackBuffer
 var nexus_damage_buffer: GPUHelpers.ReadbackBufferInt32
@@ -412,6 +413,17 @@ func _update_bindings():
 	u_agent2.binding = 11
 	u_agent2.add_id(agent_buffer_rid_2)
 	bindings.append(u_agent2)
+	
+	var u_sdf = RDUniform.new()
+	u_sdf.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	u_sdf.binding = 12
+	u_sdf.add_id(linear_sampler_rid)
+	if flow_field.final_sdf_tex.is_valid():
+		u_sdf.add_id(flow_field.final_sdf_tex)
+	else:
+		u_sdf.add_id(dummy_obs_rid)
+	bindings.append(u_sdf)
+	
 	uniform_set = rd.uniform_set_create(bindings, shader_rid, 0)
 	
 	var bindings_b = bindings.duplicate()
@@ -431,9 +443,15 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 	var idx = active_count
 	positions[idx] = pos
 	
-	# Dynamic size/scale using power-law random factor matching Studio Game
+	# Spawning radius via power-law: R = 2.0 + 2.0 * randf()^10
 	var rf = randf()
-	var scale_mult = 1.0 + 1.0 * pow(rf, 10.0)
+	var R = 2.0 + 2.0 * pow(rf, 10.0)
+	
+	# Quadratic mass: M = 15.0 * R^2
+	var mass = 15.0 * R * R
+	
+	# Map R (in [2.0, 4.0]) to scale multiplier (in [1.0, 2.0]) for wave-defense-td scale coords
+	var scale_mult = R / 2.0
 	var dynamic_scale = type_scales[type_index] * scale_mult
 	
 	# Relative wave spawning progress
@@ -443,12 +461,10 @@ func spawn_enemy(pos: Vector2, type_index: int = 0):
 		
 	# Exponential level difficulty scaling
 	var level_idx = 2 if Globals.selected_map == "map2" else 1
-	var level_factor = pow(2.5, level_idx - 1)
 	
-	# Health scales quadratically with scale factor, linearly with wave progress, exponentially with level
-	var size_factor = scale_mult * scale_mult
-	var time_factor = 1.0 + relative_time * 1.0
-	var starting_hp = enemy_types[type_index].health * size_factor * time_factor * level_factor
+	# Exponential health level scaling: H = 0.2 * R^2 * (1.0 + relative_time) * 2.5^(level - 1)
+	var H = 0.2 * (R * R) * (1.0 + relative_time) * pow(2.5, level_idx - 1)
+	var starting_hp = enemy_types[type_index].health * H
 	
 	healths[idx] = starting_hp
 	max_healths[idx] = starting_hp
@@ -493,6 +509,9 @@ func _process(delta):
 	if flow_field.flow_result_tex.is_valid() and flow_field.flow_result_tex != _last_ff_rid:
 		_bindings_dirty = true
 		_last_ff_rid = flow_field.flow_result_tex
+	if flow_field.final_sdf_tex.is_valid() and flow_field.final_sdf_tex != _last_sdf_rid:
+		_bindings_dirty = true
+		_last_sdf_rid = flow_field.final_sdf_tex
 	
 	if active_count == 0: return
 	
@@ -696,7 +715,7 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 	rd.compute_list_add_barrier(compute_list)
 	
 	# Loop for binning + separation
-	for i in range(4):
+	for i in range(6):
 		# Pass 2: Binning
 		push_bytes.encode_u32(0, 2)
 		rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
@@ -714,7 +733,7 @@ func _dispatch_compute(push_bytes: PackedByteArray, current_active_count: int):
 		rd.compute_list_bind_uniform_set(compute_list, current_set, 0)
 		
 		# Clear grid for next binning
-		if i < 3:
+		if i < 5:
 			push_bytes.encode_u32(0, 0)
 			rd.compute_list_set_push_constant(compute_list, push_bytes, 112)
 			rd.compute_list_dispatch(compute_list, grid_groups, 1, 1)

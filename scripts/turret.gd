@@ -20,11 +20,38 @@ var _fire_timer: float = 0.0
 var gpu_idx: int = -1
 var target_pos: Vector2 = Vector2.INF
 
-var cone_center: float = 0.0
-var cone_width: float = TAU
+var target_dist: float = 60.0
+var sweep_time: float = 0.0
+var _dragging_target: bool = false
+
+var cone_center: float = 0.0:
+	set(val):
+		cone_center = val
+		if has_node("GunSprite"):
+			$GunSprite.rotation = cone_center
+
+var cone_width: float = TAU:
+	set(val):
+		cone_width = val
+		if not _dragging_target:
+			_update_target_dist_from_cone_width()
+
 var sweep_phase: float = 0.0
 var sweep_speed: float = PI / 6.0
 var sweep_direction: float = 1.0
+
+func _update_target_dist_from_cone_width():
+	var max_w = PI * 0.75
+	var min_w = PI / 8.0
+	var denominator = min_w - max_w
+	var t = 0.0
+	if abs(denominator) > 0.0001:
+		t = (cone_width - max_w) / denominator
+	target_dist = lerp(20.0, 100.0, clampf(t, 0.0, 1.0))
+
+func _update_cone_width():
+	var t = (target_dist - 20.0) / 80.0
+	cone_width = lerp(PI * 0.75, PI / 8.0, clampf(t, 0.0, 1.0))
 
 var overdrive_timer: float = 0.0
 var overdrive_multiplier: float = 1.5
@@ -49,6 +76,9 @@ func _ready():
 	_target_sprite.z_index = 5
 	_target_sprite.top_level = true
 	add_child(_target_sprite)
+	
+	sweep_time = randf() * TAU
+	_update_target_dist_from_cone_width()
 	
 	if damage_override > 0.0:
 		damage = damage_override
@@ -103,7 +133,7 @@ func _process(delta):
 		var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 		_target_sprite.visible = is_build_phase
 		if is_build_phase:
-			_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * attack_range
+			_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * target_dist
 
 	if overdrive_timer > 0.0:
 		overdrive_timer -= delta
@@ -120,17 +150,52 @@ func _process(delta):
 	_fire_timer -= delta
 
 	if rotates:
-		sweep_phase += sweep_direction * sweep_speed * delta
-		var half_cone = cone_width / 2.0
-		if sweep_phase > half_cone:
-			sweep_phase = half_cone
-			sweep_direction = -1.0
-		elif sweep_phase < -half_cone:
-			sweep_phase = -half_cone
-			sweep_direction = 1.0
+		sweep_time += sweep_speed * delta
+		sweep_phase = (cone_width / 2.0) * sin(sweep_time)
 		
 		if has_node("GunSprite"):
 			$GunSprite.rotation = cone_center + sweep_phase
+
+func _unhandled_input(event: InputEvent):
+	var wave_manager = get_node_or_null("/root/Main/WaveManager")
+	var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
+	if not is_build_phase:
+		_dragging_target = false
+		return
+		
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.is_pressed():
+			if is_instance_valid(_target_sprite) and _target_sprite.visible:
+				var mouse_pos = get_global_mouse_position()
+				if mouse_pos.distance_to(_target_sprite.global_position) < 24.0:
+					_dragging_target = true
+					get_viewport().set_input_as_handled()
+		else:
+			if _dragging_target:
+				_dragging_target = false
+				get_viewport().set_input_as_handled()
+				if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
+					enemy_manager.update_turret(self)
+					
+	elif event is InputEventMouseMotion and _dragging_target:
+		var mouse_pos = get_global_mouse_position()
+		var to_mouse = mouse_pos - global_position
+		cone_center = to_mouse.angle()
+		target_dist = clamp(to_mouse.length(), 20.0, 100.0)
+		
+		if is_instance_valid(_target_sprite):
+			_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * target_dist
+			
+		_update_cone_width()
+		
+		if has_node("GunSprite"):
+			$GunSprite.rotation = cone_center
+			
+		if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
+			enemy_manager.update_turret(self)
+			
+		get_viewport().set_input_as_handled()
+		queue_redraw()
 
 func _draw():
 	if _was_overdriven:
@@ -155,7 +220,7 @@ func _draw():
 func on_gpu_fire(p_target_pos: Vector2):
 	target_pos = p_target_pos
 	
-	SoundManager.play_sfx("shoot_" + turret_type)
+	SoundManager.play_sfx("shoot_" + turret_type, randf_range(0.85, 1.15))
 	
 	var current_rotation = rotation
 	if has_node("GunSprite"):

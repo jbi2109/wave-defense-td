@@ -35,7 +35,7 @@ func _ready():
 		add_child(player)
 		_players.append(player)
 
-func play_sfx(key: String):
+func play_sfx(key: String, custom_pitch: float = 0.0):
 	if not _sfx_cache.has(key):
 		return
 		
@@ -47,7 +47,7 @@ func play_sfx(key: String):
 	
 	var player = _find_idle_player()
 	player.stream = _sfx_cache[key]
-	player.pitch_scale = randf_range(0.9, 1.1)
+	player.pitch_scale = custom_pitch if custom_pitch > 0.0 else randf_range(0.9, 1.1)
 	player.play()
 
 func _find_idle_player() -> AudioStreamPlayer:
