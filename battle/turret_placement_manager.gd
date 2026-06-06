@@ -104,7 +104,7 @@ func _can_place() -> bool:
 	return wave_manager.current_wave == 0 or wave_manager.is_inter_wave
 
 func _process(_delta):
-	var ability_mgr = get_node_or_null("/root/Main/AbilityManager")
+	var ability_mgr = get_tree().current_scene.get_node_or_null("AbilityManager")
 	if ability_mgr and ability_mgr.active_ability_index != -1:
 		return
 		

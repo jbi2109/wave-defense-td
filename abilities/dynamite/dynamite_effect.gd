@@ -33,7 +33,7 @@ func explode():
 	if GPUSim:
 		GPUSim.apply_aoe_damage(global_position, radius, damage, false)
 	
-	var main_node = get_node_or_null("/root/Battle")
+	var main_node = get_tree().current_scene
 	if main_node and main_node.has_method("_spawn_death_particles"):
 		main_node._spawn_death_particles(global_position, 5) # BigBoss explosion
 		
@@ -41,7 +41,7 @@ func explode():
 	if camera and camera.has_method("shake"):
 		camera.shake(0.5, 15.0)
 		
-	var sound_mgr = get_node_or_null("/root/SoundManager")
+	var sound_mgr = SoundManager
 	if sound_mgr and sound_mgr.has_method("play_sfx"):
 		sound_mgr.play_sfx("shoot_mortar")
 		

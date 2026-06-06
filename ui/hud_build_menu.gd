@@ -260,7 +260,7 @@ func show_upgrade_panel(turret: Turret):
 	selection_indicator.fill_color = Color(0.2, 0.6, 1.0, 0.08)
 	selection_indicator.line_color = Color(0.2, 0.6, 1.0, 0.35)
 	selection_indicator.z_index = 8
-	get_node("/root/Main").add_child(selection_indicator)
+	get_tree().current_scene.add_child(selection_indicator)
 	
 	_update_upgrade_panel_content()
 
@@ -351,7 +351,7 @@ func _unhandled_input(event):
 		return
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var ability_mgr = get_node_or_null("/root/Main/AbilityManager")
+		var ability_mgr = get_tree().current_scene.get_node_or_null("AbilityManager")
 		if ability_mgr and ability_mgr.active_ability_index != -1:
 			return
 			

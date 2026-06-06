@@ -1,8 +1,8 @@
 extends Node2D
 class_name AbilityManager
 
-@onready var mana_bar: ProgressBar = get_node("/root/Battle/HUD/Overlay/ManaBar")
-@onready var ability_container: HBoxContainer = get_node("/root/Battle/HUD/Overlay/AbilityContainer")
+@onready var mana_bar: ProgressBar = get_tree().current_scene.get_node_or_null("HUD/Overlay/ManaBar")
+@onready var ability_container: HBoxContainer = get_tree().current_scene.get_node_or_null("HUD/Overlay/AbilityContainer")
 
 
 @export var ability_configs: Array[AbilityConfig] = []
@@ -123,7 +123,7 @@ func _update_button_state(index: int):
 	var btn: Button = ability.button
 	if not btn: return
 	
-	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
+	var wave_manager = get_tree().current_scene.get_node_or_null("WaveManager")
 	var is_wave_active = wave_manager and wave_manager.current_wave > 0 and not wave_manager.is_inter_wave
 	
 	if not is_wave_active:
@@ -143,7 +143,7 @@ func _update_button_state(index: int):
 			btn.text = ability.name + "\n(" + str(ability.cost) + " MP)"
 
 func _on_ability_button_pressed(index: int):
-	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
+	var wave_manager = get_tree().current_scene.get_node_or_null("WaveManager")
 	var is_wave_active = wave_manager and wave_manager.current_wave > 0 and not wave_manager.is_inter_wave
 	if not is_wave_active: return
 

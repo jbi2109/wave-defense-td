@@ -96,14 +96,14 @@ func _register_with_manager():
 	GPUSim.add_turret(self)
 
 func get_definition() -> Node:
-	var placement_manager = get_node_or_null("/root/Battle/TurretPlacementManager")
+	var placement_manager = get_tree().current_scene.get_node_or_null("TurretPlacementManager")
 	if placement_manager and placement_manager.has_method("get_definition"):
 		return placement_manager.get_definition(turret_type)
 	return null
 
 func get_auto_scale(custom_scale: float) -> Vector2:
 	var cell_size_val = 32.0
-	var ff = get_node_or_null("/root/Battle/FlowFieldManager")
+	var ff = get_tree().current_scene.get_node_or_null("FlowFieldManager")
 	if ff and "cell_size" in ff:
 		cell_size_val = float(ff.cell_size)
 	var base_width = 819.0
@@ -137,7 +137,7 @@ func _load_stats_from_data():
 #  PROCESS
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
-	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
+	var wave_manager = get_tree().current_scene.get_node_or_null("WaveManager")
 	if is_instance_valid(_target_sprite):
 		var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 		_target_sprite.visible = is_build_phase
@@ -166,7 +166,7 @@ func _process(delta):
 			$GunSprite.rotation = cone_center + sweep_phase
 
 func _unhandled_input(event: InputEvent):
-	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
+	var wave_manager = get_tree().current_scene.get_node_or_null("WaveManager")
 	var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 	if not is_build_phase:
 		_dragging_target = false
