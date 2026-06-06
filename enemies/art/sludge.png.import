@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://2354ojtn8qph"
-path="res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"
+path="res://.godot/imported/sludge.png-1210a1d7b4b976d3a5318d84c51409a1.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://enemies/art/sludge.png"
-dest_files=["res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"]
+dest_files=["res://.godot/imported/sludge.png-1210a1d7b4b976d3a5318d84c51409a1.ctex"]
 
 [params]
 

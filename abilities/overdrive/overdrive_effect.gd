@@ -6,7 +6,7 @@ var sprite: Sprite2D = null
 
 func _ready():
 	sprite = Sprite2D.new()
-	var tex = load("res://assets/overdrive.jpg")
+	var tex = load("res://abilities/overdrive/overdrive.jpg")
 	if tex:
 		sprite.texture = tex
 		sprite.scale = Vector2(0.5, 0.5)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://55ot4wuj4rih"
-path="res://.godot/imported/frost_nova.png-054acba8c440a847821802e2f9057d71.ctex"
+uid="uid://isueos4lbakt"
+path="res://.godot/imported/chain_lightning.jpg-6192c41d013544f67e4421fd3fd99270.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/frost_nova.png"
-dest_files=["res://.godot/imported/frost_nova.png-054acba8c440a847821802e2f9057d71.ctex"]
+source_file="res://abilities/chain_lightning/chain_lightning.jpg"
+dest_files=["res://.godot/imported/chain_lightning.jpg-6192c41d013544f67e4421fd3fd99270.ctex"]
 
 [params]
 

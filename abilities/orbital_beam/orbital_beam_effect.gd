@@ -6,7 +6,7 @@ var sprite: Sprite2D = null
 
 func _ready():
 	sprite = Sprite2D.new()
-	var tex = load("res://assets/orbital_beam.png")
+	var tex = load("res://abilities/orbital_beam/orbital_beam.png")
 	if tex:
 		sprite.texture = tex
 		# Pivot at bottom

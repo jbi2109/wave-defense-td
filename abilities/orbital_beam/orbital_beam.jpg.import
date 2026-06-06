@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kfyd66ndbxh0"
-path="res://.godot/imported/frost_nova.jpg-26f890f171edcdd7a0fa1e755c287e8d.ctex"
+uid="uid://cofmqtorsvwon"
+path="res://.godot/imported/orbital_beam.jpg-244319abc601f395bd67de1a91ed528e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/frost_nova.jpg"
-dest_files=["res://.godot/imported/frost_nova.jpg-26f890f171edcdd7a0fa1e755c287e8d.ctex"]
+source_file="res://abilities/orbital_beam/orbital_beam.jpg"
+dest_files=["res://.godot/imported/orbital_beam.jpg-244319abc601f395bd67de1a91ed528e.ctex"]
 
 [params]
 

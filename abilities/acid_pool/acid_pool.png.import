@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0e4l1ud5rj6h"
-path="res://.godot/imported/orbital_beam.png-b2db65788e8ebf2787c1362fa754b9c9.ctex"
+uid="uid://b7tijs6xtlg46"
+path="res://.godot/imported/acid_pool.png-d690da26a3a5edcccfb4fd46fbcd81a1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/orbital_beam.png"
-dest_files=["res://.godot/imported/orbital_beam.png-b2db65788e8ebf2787c1362fa754b9c9.ctex"]
+source_file="res://abilities/acid_pool/acid_pool.png"
+dest_files=["res://.godot/imported/acid_pool.png-d690da26a3a5edcccfb4fd46fbcd81a1.ctex"]
 
 [params]
 

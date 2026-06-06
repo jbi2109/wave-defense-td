@@ -183,7 +183,7 @@ func _do_orbital_strike(pos: Vector2, radius: float, damage: float):
 	GlobalEvents.aoe_damage_requested.emit(pos, radius, damage, false)
 		
 	# Visuals
-	var beam_script = load("res://scripts/orbital_beam_effect.gd")
+	var beam_script = load("res://abilities/orbital_beam/orbital_beam_effect.gd")
 	if beam_script:
 		var beam = Node2D.new()
 		beam.set_script(beam_script)
@@ -200,7 +200,7 @@ func _do_frost_nova(pos: Vector2, radius: float, duration: float):
 	GlobalEvents.aoe_freeze_requested.emit(pos, radius, duration)
 		
 	# Visuals
-	var fn_script = load("res://scripts/frost_nova_effect.gd")
+	var fn_script = load("res://abilities/frost_nova/frost_nova_effect.gd")
 	if fn_script:
 		var fn = Node2D.new()
 		fn.set_script(fn_script)
@@ -264,7 +264,7 @@ func _do_chain_lightning(pos: Vector2, damage: float, bounces: int, bounce_range
 			GlobalEvents.aoe_damage_requested.emit(positions[idx], 10.0, damage, false)
 			
 		# Visuals: vertical bolts from sky onto each hit enemy
-		var cl_script = load("res://scripts/chain_lightning_effect.gd")
+		var cl_script = load("res://abilities/chain_lightning/chain_lightning_effect.gd")
 		if cl_script:
 			var cl = Node2D.new()
 			cl.set_script(cl_script)
@@ -298,7 +298,7 @@ func _do_overdrive(duration: float, multiplier: float):
 	SoundManager.play_sfx("sell")
 
 func _do_acid_pool(pos: Vector2, radius: float, damage: float, duration: float, slow_factor: float):
-	var pool_script = load("res://scripts/acid_pool_effect.gd")
+	var pool_script = load("res://abilities/acid_pool/acid_pool_effect.gd")
 	if pool_script:
 		var pool = Node2D.new()
 		pool.set_script(pool_script)
@@ -308,7 +308,7 @@ func _do_acid_pool(pos: Vector2, radius: float, damage: float, duration: float, 
 	SoundManager.play_sfx("shoot_plasma")
 
 func _do_dynamite(pos: Vector2, damage: float, radius: float, duration: float):
-	var dyn_script = load("res://scripts/dynamite_effect.gd")
+	var dyn_script = load("res://abilities/dynamite/dynamite_effect.gd")
 	if dyn_script:
 		var dyn = Node2D.new()
 		dyn.set_script(dyn_script)

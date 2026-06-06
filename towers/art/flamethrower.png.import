@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dkewdvirnb5xr"
-path="res://.godot/imported/flamethrower.png-01d259b92b2d94e7af6d9538f4e68924.ctex"
+path="res://.godot/imported/flamethrower.png-1256bb4a955dc2fa1f9faac4a719f058.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://towers/art/flamethrower.png"
-dest_files=["res://.godot/imported/flamethrower.png-01d259b92b2d94e7af6d9538f4e68924.ctex"]
+dest_files=["res://.godot/imported/flamethrower.png-1256bb4a955dc2fa1f9faac4a719f058.ctex"]
 
 [params]
 

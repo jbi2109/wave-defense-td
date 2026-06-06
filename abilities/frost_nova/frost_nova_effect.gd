@@ -6,7 +6,7 @@ var sprite: Sprite2D = null
 
 func _ready():
 	sprite = Sprite2D.new()
-	var tex = load("res://assets/frost_nova.png")
+	var tex = load("res://abilities/frost_nova/frost_nova.png")
 	if tex:
 		sprite.texture = tex
 		sprite.scale = Vector2(0.1, 0.1) # Start small

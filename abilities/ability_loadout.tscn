@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://ability_loadout"]
 
-[ext_resource type="Script" path="res://scripts/ability_loadout.gd" id="1_script"]
+[ext_resource type="Script" path="res://abilities/ability_loadout.gd" id="1_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_loadout"]
 bg_color = Color(0.08, 0.08, 0.1, 0.96)

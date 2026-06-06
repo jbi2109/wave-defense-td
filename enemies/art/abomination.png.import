@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bid4tvol0mgrm"
-path="res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"
+path="res://.godot/imported/abomination.png-94d575a2c1b79ba848b4f0e9e5b31bbc.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://enemies/art/abomination.png"
-dest_files=["res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"]
+dest_files=["res://.godot/imported/abomination.png-94d575a2c1b79ba848b4f0e9e5b31bbc.ctex"]
 
 [params]
 

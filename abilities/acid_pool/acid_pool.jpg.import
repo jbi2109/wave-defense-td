@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://isueos4lbakt"
-path="res://.godot/imported/chain_lightning.jpg-ffea880671009a770cf968314f4779e7.ctex"
+uid="uid://d3n3avavglpeb"
+path="res://.godot/imported/acid_pool.jpg-d4773837caf42206096baa60b5dfd89f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/chain_lightning.jpg"
-dest_files=["res://.godot/imported/chain_lightning.jpg-ffea880671009a770cf968314f4779e7.ctex"]
+source_file="res://abilities/acid_pool/acid_pool.jpg"
+dest_files=["res://.godot/imported/acid_pool.jpg-d4773837caf42206096baa60b5dfd89f.ctex"]
 
 [params]
 

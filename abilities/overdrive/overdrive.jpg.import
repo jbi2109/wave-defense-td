@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d3n3avavglpeb"
-path="res://.godot/imported/acid_pool.jpg-a778b40c821a18036efa1d648495cb93.ctex"
+uid="uid://bv3ecdhohncod"
+path="res://.godot/imported/overdrive.jpg-a6c8c399d2050c285f8d8e081b7ec379.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/acid_pool.jpg"
-dest_files=["res://.godot/imported/acid_pool.jpg-a778b40c821a18036efa1d648495cb93.ctex"]
+source_file="res://abilities/overdrive/overdrive.jpg"
+dest_files=["res://.godot/imported/overdrive.jpg-a6c8c399d2050c285f8d8e081b7ec379.ctex"]
 
 [params]
 

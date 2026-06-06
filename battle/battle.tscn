@@ -17,7 +17,7 @@
 [ext_resource type="Script" uid="uid://c3xr3m6rudg6x" path="res://scripts/camera_shake.gd" id="15_shake"]
 [ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="15_tdef"]
 [ext_resource type="Script" uid="uid://b5nld5uki3dr0" path="res://scripts/damage_text_manager.gd" id="16_dmgtx"]
-[ext_resource type="Script" uid="uid://c47nmdsg5j8y1" path="res://scripts/ability_manager.gd" id="17_abmgr"]
+[ext_resource type="Script" uid="uid://c47nmdsg5j8y1" path="res://abilities/ability_manager.gd" id="17_abmgr"]
 
 [node name="Battle" type="Node2D" unique_id=1528089360]
 script = ExtResource("1_tbgi4")

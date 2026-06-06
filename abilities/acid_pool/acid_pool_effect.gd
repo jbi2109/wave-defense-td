@@ -24,7 +24,7 @@ func _ready():
 	z_index = -1 # Render behind enemies (z=0) but above the ground (z=-10)
 	
 	sprite = Sprite2D.new()
-	var tex = load("res://assets/acid_pool.png")
+	var tex = load("res://abilities/acid_pool/acid_pool.png")
 	if tex:
 		sprite.texture = tex
 		var s = (radius * 2.0) / tex.get_width()

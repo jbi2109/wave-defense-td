@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkgqxpaijfebf"
-path="res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"
+path="res://.godot/imported/dino3.png-3414af0058089ca1363b6ff032f2cc09.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://enemies/art/dino3.png"
-dest_files=["res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"]
+dest_files=["res://.godot/imported/dino3.png-3414af0058089ca1363b6ff032f2cc09.ctex"]
 
 [params]
 

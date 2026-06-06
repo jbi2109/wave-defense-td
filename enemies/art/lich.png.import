@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvdgpnpwtp6t2"
-path="res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"
+path="res://.godot/imported/lich.png-e3d30434a1e32b1783bbacfc9a878715.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://enemies/art/lich.png"
-dest_files=["res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"]
+dest_files=["res://.godot/imported/lich.png-e3d30434a1e32b1783bbacfc9a878715.ctex"]
 
 [params]
 
