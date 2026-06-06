@@ -181,7 +181,7 @@ func _create_ui_nodes():
 	settings_btn.pressed.connect(func():
 		var existing = get_node_or_null("SettingsMenu")
 		if not existing:
-			var sm_scene = load("res://scenes/ui/settings_menu.tscn")
+			var sm_scene = load("res://ui/settings_menu.tscn")
 			if sm_scene:
 				var sm = sm_scene.instantiate()
 				add_child(sm)
@@ -343,7 +343,7 @@ func _unhandled_input(event):
 		if existing:
 			existing._on_close_pressed()
 		else:
-			var sm_scene = load("res://scenes/ui/settings_menu.tscn")
+			var sm_scene = load("res://ui/settings_menu.tscn")
 			if sm_scene:
 				var sm = sm_scene.instantiate()
 				add_child(sm)

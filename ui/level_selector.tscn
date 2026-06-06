@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://level_selector"]
 
-[ext_resource type="Script" path="res://scripts/level_selector.gd" id="1_script"]
+[ext_resource type="Script" path="res://ui/level_selector.gd" id="1_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.05, 0.05, 0.07, 1)

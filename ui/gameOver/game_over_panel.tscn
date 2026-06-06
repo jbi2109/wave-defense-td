@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://efjbh7i3n3nn"]
 
-[ext_resource type="Script" path="res://Scenes/ui/gameOver/game_over_panel.gd" id="1_7egy2"]
+[ext_resource type="Script" path="res://ui/gameOver/game_over_panel.gd" id="1_7egy2"]
 
 [node name="GameOverPanel" type="PanelContainer"]
 modulate = Color(1, 1, 1, 0)

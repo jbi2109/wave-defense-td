@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://76x4ipe6m14d" path="res://battle/wave_manager.gd" id="9_wavem"]
 [ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://enemies/enemy_definition.gd" id="10_edef"]
 [ext_resource type="Script" uid="uid://c3mo6rcwqaqc2" path="res://scripts/turret_placement_manager.gd" id="11_plcmt"]
-[ext_resource type="Script" uid="uid://75i6o481f7k8" path="res://scripts/hud_build_menu.gd" id="12_buildm"]
+[ext_resource type="Script" uid="uid://75i6o481f7k8" path="res://ui/hud_build_menu.gd" id="12_buildm"]
 [ext_resource type="Script" uid="uid://b0fisn4u25xdn" path="res://fx/enemy_health_bars.gd" id="13_hlthb"]
 [ext_resource type="Script" uid="uid://di5usepgfvpyg" path="res://fx/wave_announcement.gd" id="14_wnnce"]
 [ext_resource type="Script" uid="uid://c3xr3m6rudg6x" path="res://fx/camera_shake.gd" id="15_shake"]

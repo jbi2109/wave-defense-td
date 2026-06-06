@@ -15,4 +15,4 @@ func _on_retry_button_pressed():
 	queue_free()
 
 func _on_main_menu_button_pressed():
-	get_tree().change_scene_to_file("res://Scenes/ui/mainMenu/mainMenu.tscn")
+	get_tree().change_scene_to_file("res://ui/mainMenu/mainMenu.tscn")

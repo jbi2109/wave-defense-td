@@ -15,19 +15,19 @@ ss2d/version="3.3.1"
 [application]
 
 config/name="Wave-defense-td"
-run/main_scene="res://scenes/ui/level_selector.tscn"
+run/main_scene="res://ui/level_selector.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 GPUSim="*res://gpu_sim/gpu_sim.gd"
+_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 GlobalEvents="*res://globals/global_events.gd"
 Globals="*res://globals/globals.gd"
 Data="*res://globals/data.gd"
 SoundManager="*res://globals/sound_manager.gd"
 SaveManager="*res://globals/save_manager.gd"
-_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 

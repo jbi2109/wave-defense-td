@@ -53,10 +53,10 @@ func _ready():
 		$HUD/Overlay/NextWaveButton.visible = true
 	if has_node("HUD/Overlay/GameOverContainer/RestartButton"):
 		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(
-			func(): get_tree().change_scene_to_file("res://scenes/ui/level_selector.tscn"))
+			func(): get_tree().change_scene_to_file("res://ui/level_selector.tscn"))
 	if has_node("HUD/Overlay/VictoryContainer/PlayAgainButton"):
 		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(
-			func(): get_tree().change_scene_to_file("res://scenes/ui/level_selector.tscn"))
+			func(): get_tree().change_scene_to_file("res://ui/level_selector.tscn"))
 
 	Globals.reset_gold()
 	if Globals.auto_test_active:

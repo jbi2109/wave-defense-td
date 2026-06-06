@@ -8,7 +8,7 @@ extends Control
 @onready var btn_settings = $CenterContainer/VBoxContainer/BottomButtons/SettingsButton
 @onready var btn_quit = $CenterContainer/VBoxContainer/BottomButtons/QuitButton
 
-var settings_scene = preload("res://scenes/ui/settings_menu.tscn")
+var settings_scene = preload("res://ui/settings_menu.tscn")
 
 func _ready():
 	# Load high scores

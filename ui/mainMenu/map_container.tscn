@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://v27byrwdrux5"]
 
 [ext_resource type="Texture2D" uid="uid://b8725vkgyjjo8" path="res://Assets/maps/map1.webp" id="1_6vcye"]
-[ext_resource type="Script" path="res://Scenes/ui/mainMenu/map_container.gd" id="1_yc64c"]
+[ext_resource type="Script" path="res://ui/mainMenu/map_container.gd" id="1_yc64c"]
 
 [node name="MapContainer" type="PanelContainer"]
 custom_minimum_size = Vector2(120, 80)
