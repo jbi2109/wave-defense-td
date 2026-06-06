@@ -194,10 +194,7 @@ func _process(delta):
 	if is_game_over: return
 	wave_manager.tick(delta, _spawn_single_enemy)
 
-	if Engine.get_process_frames() % 60 == 0:
-		print("DEBUG: Active:", GPUSim.active_count, " InterWave:", wave_manager.is_inter_wave, " Spawning:", wave_manager.is_spawning, " Mana:", Globals.mana)
-
-	if (not wave_manager.is_spawning and 
+	if (not wave_manager.is_spawning and
 		not wave_manager.is_inter_wave and 
 		wave_manager.current_wave > 0 and 
 		GPUSim.active_count == 0):

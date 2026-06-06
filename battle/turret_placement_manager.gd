@@ -284,7 +284,6 @@ func _place_turret(pos: Vector2, cone_center: float, cone_width: float):
 	get_parent().add_child(turret)
 	GlobalEvents.turret_placed.emit(selected_type, pos)
 	SoundManager.play_sfx("build")
-	print("Placed turret: ", selected_type, " at ", pos)
 
 func _on_wave_started(_wave_num: int, _enemy_count: int):
 	cancel_placement()

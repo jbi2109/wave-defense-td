@@ -44,12 +44,6 @@ func _ready():
 		inter_wave_duration = config.inter_wave_duration
 		max_waves = config.max_waves
 		map_config = config
-		print("WaveManager: Loaded custom wave config for map ", map_id, 
-			" | base_enemies_per_wave=", base_enemies_per_wave,
-			" | wave_scaler=", wave_scaler,
-			" | spawn_rate=", spawn_rate,
-			" | inter_wave_duration=", inter_wave_duration,
-			" | max_waves=", max_waves)
 	else:
 		push_warning("WaveManager: No custom wave config found for map %s, using default settings." % map_id)
 
@@ -71,7 +65,6 @@ func start_wave():
 	_spawn_timer     = 0.0
 	GlobalEvents.wave_started.emit(current_wave, enemies_to_spawn)
 	SoundManager.play_sfx("wave_start")
-	print("--- WAVE %d STARTED | Spawning %d enemies ---" % [current_wave, enemies_to_spawn])
 
 func start_inter_wave():
 	is_spawning        = false

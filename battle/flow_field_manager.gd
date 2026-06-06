@@ -304,7 +304,6 @@ func generate_field_for_rect(target_pos: Vector2, extents: Vector2):
 		for y in range(grid_size.y):
 			if grid[x][y] != Vector2.ZERO:
 				active_cells += 1
-	print("[FlowField] Generated field: ", active_cells, " active cells out of ", grid_size.x * grid_size.y)
 
 func generate_field(target_pos: Vector2):
 	_last_target_pos = target_pos
@@ -336,7 +335,6 @@ func generate_field(target_pos: Vector2):
 		for y in range(grid_size.y):
 			if grid[x][y] != Vector2.ZERO:
 				active_cells += 1
-	print("[FlowField] Generated field (point): ", active_cells, " active cells out of ", grid_size.x * grid_size.y)
 
 func generate_field_gpu(target_pos: Vector2):
 	if not rd or not flow_pipeline.is_valid():

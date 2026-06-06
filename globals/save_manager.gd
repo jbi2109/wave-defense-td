@@ -64,10 +64,6 @@ func update_high_score(map_id: String, wave: int):
 		high_scores[map_id] = wave
 		save_game()
 
-func add_gold_collected(amount: int):
-	gold_collected += amount
-	save_game()
-
 func set_setting(key: String, value):
 	settings[key] = value
 	save_game()

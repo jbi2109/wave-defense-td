@@ -45,6 +45,3 @@ func _process(delta):
 	
 	GlobalEvents.aoe_damage_requested.emit(global_position, radius, damage * delta, false)
 	GlobalEvents.aoe_slow_requested.emit(global_position, radius, slow_factor)
-
-func _apply_tick_effects():
-	pass
