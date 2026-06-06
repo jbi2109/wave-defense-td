@@ -6,7 +6,12 @@
 - Get editor state: Use `editor_state` tool via `godot-ai` MCP server.
 
 ## Project Rules & Memories
-- Always use `caveman` skill with `full` intensity for all responses to maximize token efficiency and save quota.
+- **Always use these three skills every session:**
+  - `caveman` (full intensity) — for all responses, to maximize token efficiency and save quota.
+  - `superpowers` — follow its skill-driven workflow (brainstorming, TDD, debugging, etc.).
+  - `andrej-karpathy-skills` (karpathy-guidelines) — surgical changes, surface assumptions, avoid overcomplication.
+- **Always read `docs/ARCHITECTURE.md` BEFORE starting any task** — it is the source of truth for layout, wiring, and where features go.
+- **Always update `docs/ARCHITECTURE.md` when a task is finished** if the work changed structure, wiring, signals, autoloads, or known issues. Keep it accurate.
 - Must use appropriate agents and skills when required.
 - Always follow global rules for this project.
 
