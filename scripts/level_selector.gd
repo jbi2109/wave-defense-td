@@ -29,11 +29,11 @@ func _ready():
 
 func _on_map1_selected():
 	Globals.selected_map = "map1"
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://battle/battle.tscn")
 
 func _on_map2_selected():
 	Globals.selected_map = "map2"
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://battle/battle.tscn")
 
 func _on_settings_pressed():
 	var menu = settings_scene.instantiate()

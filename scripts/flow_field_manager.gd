@@ -20,6 +20,11 @@ var ff_texture: Texture2D
 var obs_texture: ImageTexture
 var density_texture: ImageTexture
 
+var obs_sub: int = 8  # sub-tile pixels per tile edge — hi_res_obs_image is grid_size * obs_sub
+
+var hi_res_obs_image: Image        # 4× resolution obstacle image for GPU physics collision
+var hi_res_obs_texture: ImageTexture  # GPU texture wrapping hi_res_obs_image
+
 # GPU properties
 var use_gpu: bool = true
 var rd: RenderingDevice
@@ -198,10 +203,14 @@ func _init_fields():
 			wall_penalty_field[x].append(0)
 			
 	ff_image = Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_RGBA8)
+	# obs_image stays at tile resolution for the flow field GPU compute
 	obs_image = Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_L8)
+	# hi_res_obs_image is 4× larger for accurate physics wall collision
+	hi_res_obs_image = Image.create(grid_size.x * obs_sub, grid_size.y * obs_sub, false, Image.FORMAT_L8)
 	density_image = Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_L8)
 	ff_texture = ImageTexture.create_from_image(ff_image)
 	obs_texture = ImageTexture.create_from_image(obs_image)
+	hi_res_obs_texture = ImageTexture.create_from_image(hi_res_obs_image)
 	density_texture = ImageTexture.create_from_image(density_image)
 
 func scan_layers():

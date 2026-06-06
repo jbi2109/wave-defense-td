@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://tu22m8f4a2my"
+path="res://.godot/imported/solve_body_body.glsl-9553bb211f7476153db74ca1dfe3c5c1.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/solve_body_body.glsl"
+dest_files=["res://.godot/imported/solve_body_body.glsl-9553bb211f7476153db74ca1dfe3c5c1.res"]
+
+[params]
+

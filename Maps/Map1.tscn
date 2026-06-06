@@ -388,6 +388,10 @@ z_index = -10
 script = ExtResource("7_vnlmj")
 fill_textures = Array[Texture2D]([ExtResource("5_s0hda")])
 
+[sub_resource type="Resource" id="Resource_vcqwa"]
+script = ExtResource("2_b2466")
+position = Vector2(1919.7689, 1081.8538)
+
 [sub_resource type="Resource" id="Resource_wue85"]
 script = ExtResource("2_b2466")
 position = Vector2(1919.7689, 1081.8538)
@@ -395,10 +399,6 @@ position = Vector2(1919.7689, 1081.8538)
 [sub_resource type="Resource" id="Resource_qrewr"]
 script = ExtResource("2_b2466")
 position = Vector2(-0.523468, 1080.7247)
-
-[sub_resource type="Resource" id="Resource_vcqwa"]
-script = ExtResource("2_b2466")
-position = Vector2(1919.7689, 1081.8538)
 
 [sub_resource type="Resource" id="Resource_wdr1j"]
 script = ExtResource("2_b2466")
@@ -461,7 +461,7 @@ _point_order = PackedInt32Array(10, 11, 13, 14, 15, 23, 17, 24, 18, 19, 20, 21, 
 _constraints = {
 Vector2i(10, 0): 15
 }
-_next_key = 25
+_next_key = 26
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_wue85"]
 _surfaces = [{
@@ -492,7 +492,7 @@ _points = SubResource("Resource_lorv3")
 shape_material = SubResource("Resource_3b7u6")
 metadata/_custom_type_script = "uid://dhdc4b8yddyej"
 
-[node name="@ColorRect@19550" type="ColorRect" parent="." unique_id=811747365]
+[node name="@ColorRect@23126" type="ColorRect" parent="." unique_id=1299085616]
 modulate = Color(1, 1, 1, 0)
 offset_left = -2.624237
 offset_top = -1.0963745
@@ -527,5 +527,6 @@ metadata/_custom_type_script = "uid://dhdc4b8yddyej"
 script = ExtResource("1_asi2h")
 _points = SubResource("Resource_xsusm")
 _meshes = Array[ExtResource("4_i006w")]([SubResource("Resource_faw6x")])
+render_edges = false
 shape_material = SubResource("Resource_ls414")
 metadata/_custom_type_script = "uid://dhdc4b8yddyej"

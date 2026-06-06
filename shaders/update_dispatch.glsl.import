@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dq0m2r73wjf53"
+path="res://.godot/imported/update_dispatch.glsl-1fd7e1acdf882240328feb38023f29ae.res"
+
+[deps]
+
+source_file="res://shaders/update_dispatch.glsl"
+dest_files=["res://.godot/imported/update_dispatch.glsl-1fd7e1acdf882240328feb38023f29ae.res"]
+
+[params]
+

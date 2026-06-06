@@ -15,7 +15,6 @@ var total_spent: int    = 0      ## Tracks gold spent (for sell value)
 
 var rotates: bool = true
 
-@onready var enemy_manager: EnemyManager = get_node("/root/Main/EnemyManager")
 var _fire_timer: float = 0.0
 var gpu_idx: int = -1
 var target_pos: Vector2 = Vector2.INF
@@ -94,18 +93,17 @@ func _ready():
 	call_deferred("_register_with_manager")
 
 func _register_with_manager():
-	if is_instance_valid(enemy_manager) and enemy_manager.has_method("add_turret"):
-		enemy_manager.add_turret(self)
+	GPUSim.add_turret(self)
 
 func get_definition() -> Node:
-	var placement_manager = get_node_or_null("/root/Main/TurretPlacementManager")
+	var placement_manager = get_node_or_null("/root/Battle/TurretPlacementManager")
 	if placement_manager and placement_manager.has_method("get_definition"):
 		return placement_manager.get_definition(turret_type)
 	return null
 
 func get_auto_scale(custom_scale: float) -> Vector2:
 	var cell_size_val = 32.0
-	var ff = get_node_or_null("/root/Main/FlowFieldManager")
+	var ff = get_node_or_null("/root/Battle/FlowFieldManager")
 	if ff and "cell_size" in ff:
 		cell_size_val = float(ff.cell_size)
 	var base_width = 819.0
@@ -139,7 +137,7 @@ func _load_stats_from_data():
 #  PROCESS
 # ─────────────────────────────────────────────────────────────
 func _process(delta):
-	var wave_manager = get_node_or_null("/root/Main/WaveManager")
+	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
 	if is_instance_valid(_target_sprite):
 		var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 		_target_sprite.visible = is_build_phase
@@ -168,7 +166,7 @@ func _process(delta):
 			$GunSprite.rotation = cone_center + sweep_phase
 
 func _unhandled_input(event: InputEvent):
-	var wave_manager = get_node_or_null("/root/Main/WaveManager")
+	var wave_manager = get_node_or_null("/root/Battle/WaveManager")
 	var is_build_phase = (wave_manager == null or wave_manager.current_wave == 0 or wave_manager.is_inter_wave)
 	if not is_build_phase:
 		_dragging_target = false
@@ -176,37 +174,43 @@ func _unhandled_input(event: InputEvent):
 		
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			if is_instance_valid(_target_sprite) and _target_sprite.visible:
-				var mouse_pos = get_global_mouse_position()
-				if mouse_pos.distance_to(_target_sprite.global_position) < 24.0:
-					_dragging_target = true
-					get_viewport().set_input_as_handled()
+			_start_drag_target()
 		else:
-			if _dragging_target:
-				_dragging_target = false
-				get_viewport().set_input_as_handled()
-				if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
-					enemy_manager.update_turret(self)
-					
+			_end_drag_target()
 	elif event is InputEventMouseMotion and _dragging_target:
+		_process_drag_target(event)
+
+func _start_drag_target():
+	if is_instance_valid(_target_sprite) and _target_sprite.visible:
 		var mouse_pos = get_global_mouse_position()
-		var to_mouse = mouse_pos - global_position
-		cone_center = to_mouse.angle()
-		target_dist = clamp(to_mouse.length(), 20.0, 100.0)
-		
-		if is_instance_valid(_target_sprite):
-			_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * target_dist
-			
-		_update_cone_width()
-		
-		if has_node("GunSprite"):
-			$GunSprite.rotation = cone_center
-			
-		if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
-			enemy_manager.update_turret(self)
-			
+		if mouse_pos.distance_to(_target_sprite.global_position) < 24.0:
+			_dragging_target = true
+			get_viewport().set_input_as_handled()
+
+func _end_drag_target():
+	if _dragging_target:
+		_dragging_target = false
 		get_viewport().set_input_as_handled()
-		queue_redraw()
+		GlobalEvents.turret_update_requested.emit(self)
+
+func _process_drag_target(_event: InputEventMouseMotion):
+	var mouse_pos = get_global_mouse_position()
+	var to_mouse = mouse_pos - global_position
+	cone_center = to_mouse.angle()
+	target_dist = clamp(to_mouse.length(), 20.0, 100.0)
+	
+	if is_instance_valid(_target_sprite):
+		_target_sprite.global_position = global_position + Vector2.RIGHT.rotated(cone_center) * target_dist
+		
+	_update_cone_width()
+	
+	if has_node("GunSprite"):
+		$GunSprite.rotation = cone_center
+		
+	GlobalEvents.turret_update_requested.emit(self)
+		
+	get_viewport().set_input_as_handled()
+	queue_redraw()
 
 func _draw():
 	if _was_overdriven:
@@ -295,8 +299,7 @@ func _enter_tree():
 		add_to_group("turret")
 
 func _exit_tree():
-	if is_instance_valid(enemy_manager) and enemy_manager.has_method("remove_turret"):
-		enemy_manager.remove_turret(self)
+	GPUSim.remove_turret(self)
 
 # ─────────────────────────────────────────────────────────────
 #  UPGRADE
@@ -327,8 +330,7 @@ func upgrade() -> bool:
 			fire_rate -= t_def.speed_upgrade
 	fire_rate = maxf(fire_rate, 0.03)
 
-	if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
-		enemy_manager.update_turret(self)
+	GlobalEvents.turret_update_requested.emit(self)
 
 	GlobalEvents.turret_upgraded.emit(self)
 	SoundManager.play_sfx("build")

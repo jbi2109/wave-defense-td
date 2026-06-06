@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://7ex265qgq12y"
+path="res://.godot/imported/big_explosion.glsl-81a272bfb898ffea7fa29d583ba9f824.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/big_explosion.glsl"
+dest_files=["res://.godot/imported/big_explosion.glsl-81a272bfb898ffea7fa29d583ba9f824.res"]
+
+[params]
+

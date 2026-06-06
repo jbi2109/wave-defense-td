@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dodpfxmlc17u0"
+path="res://.godot/imported/finalize.glsl-206d20e56f91ceed8d18364f09033c74.res"
+
+[deps]
+
+source_file="res://shaders/world_gen/flow_field/finalize.glsl"
+dest_files=["res://.godot/imported/finalize.glsl-206d20e56f91ceed8d18364f09033c74.res"]
+
+[params]
+

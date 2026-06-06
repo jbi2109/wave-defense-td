@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cli7ta0q42dvw"
+path="res://.godot/imported/apply_deltas.glsl-4cbb2ed7bf49cf062f8719db7c639645.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/apply_deltas.glsl"
+dest_files=["res://.godot/imported/apply_deltas.glsl-4cbb2ed7bf49cf062f8719db7c639645.res"]
+
+[params]
+

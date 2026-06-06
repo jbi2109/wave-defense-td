@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://caqbh2a6i35u"
+path="res://.godot/imported/jump_flood.glsl-c549fe04aaad06ae085097a5f3f47ebe.res"
+
+[deps]
+
+source_file="res://shaders/world_gen/sdf/jump_flood.glsl"
+dest_files=["res://.godot/imported/jump_flood.glsl-c549fe04aaad06ae085097a5f3f47ebe.res"]
+
+[params]
+

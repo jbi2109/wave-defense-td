@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://g1m2ug5vnigm"
+path="res://.godot/imported/draw_fire.glsl-0d402f5dfd09fbe2443bf81e829db575.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/draw_fire.glsl"
+dest_files=["res://.godot/imported/draw_fire.glsl-0d402f5dfd09fbe2443bf81e829db575.res"]
+
+[params]
+

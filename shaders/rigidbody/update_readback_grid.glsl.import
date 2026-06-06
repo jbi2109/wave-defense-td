@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b0xq4lpqp2ibx"
+path="res://.godot/imported/update_readback_grid.glsl-018921b3a4f563c495bb7093e200d12d.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/update_readback_grid.glsl"
+dest_files=["res://.godot/imported/update_readback_grid.glsl-018921b3a4f563c495bb7093e200d12d.res"]
+
+[params]
+

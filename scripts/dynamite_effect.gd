@@ -30,11 +30,10 @@ func _process(delta):
 		explode()
 
 func explode():
-	var em = get_node_or_null("/root/Main/EnemyManager")
-	if em:
-		em.apply_aoe_damage(global_position, radius, damage, false)
+	if GPUSim:
+		GPUSim.apply_aoe_damage(global_position, radius, damage, false)
 	
-	var main_node = get_node_or_null("/root/Main")
+	var main_node = get_node_or_null("/root/Battle")
 	if main_node and main_node.has_method("_spawn_death_particles"):
 		main_node._spawn_death_particles(global_position, 5) # BigBoss explosion
 		

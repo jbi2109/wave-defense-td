@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bir34c2twarwv"
+path="res://.godot/imported/update_velocities_from_positions.glsl-dbf8a7470d5804611dcbaf195bc46d42.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/update_velocities_from_positions.glsl"
+dest_files=["res://.godot/imported/update_velocities_from_positions.glsl-dbf8a7470d5804611dcbaf195bc46d42.res"]
+
+[params]
+

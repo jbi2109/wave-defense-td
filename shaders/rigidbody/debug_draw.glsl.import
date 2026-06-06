@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cje08cgxdcgxm"
+path="res://.godot/imported/debug_draw.glsl-04295cffdc7cc18070d638b10c8b7094.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/debug_draw.glsl"
+dest_files=["res://.godot/imported/debug_draw.glsl-04295cffdc7cc18070d638b10c8b7094.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://wdjb7sgj7ugr"
+path="res://.godot/imported/integrate.glsl-f52455c710958661346359b2e2c80e0c.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/integrate.glsl"
+dest_files=["res://.godot/imported/integrate.glsl-f52455c710958661346359b2e2c80e0c.res"]
+
+[params]
+

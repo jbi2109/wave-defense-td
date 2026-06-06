@@ -4,20 +4,17 @@ var radius: float = 120.0
 var damage_per_sec: float = 15.0
 var duration: float = 4.0
 var slow_factor: float = 0.8
-var enemy_manager: EnemyManager = null
+var damage: float = 0.0
 
 var _timer: float = 0.0
-var _tick_timer: float = 0.0
-var tick_interval: float = 0.25
 var sprite: Sprite2D = null
 
-func init(pos: Vector2, r: float, dmg: float, dur: float, slow: float, em: EnemyManager):
+func init(pos: Vector2, r: float, dmg: float, dur: float, s_factor: float):
 	global_position = pos
 	radius = r
-	damage_per_sec = dmg
+	damage = dmg
 	duration = dur
-	slow_factor = slow
-	enemy_manager = em
+	slow_factor = s_factor
 	
 	if sprite and sprite.texture:
 		var s = (radius * 2.0) / sprite.texture.get_width()
@@ -45,20 +42,9 @@ func _process(delta):
 		
 	if sprite and _timer > duration - 0.5:
 		sprite.modulate.a = lerpf(0.7, 0.0, (_timer - (duration - 0.5)) / 0.5)
-		
-	_tick_timer += delta
-	if _tick_timer >= tick_interval:
-		_tick_timer = 0.0
-		_apply_tick_effects()
+	
+	GlobalEvents.aoe_damage_requested.emit(global_position, radius, damage * delta, false)
+	GlobalEvents.aoe_slow_requested.emit(global_position, radius, slow_factor)
 
 func _apply_tick_effects():
-	if not enemy_manager: return
-	
-	var damage_tick = damage_per_sec * tick_interval
-	enemy_manager.pending_damages.append({
-		"pos": global_position,
-		"radius": radius,
-		"damage": damage_tick,
-		"effect_type": 3,
-		"effect_value": slow_factor
-	})
+	pass

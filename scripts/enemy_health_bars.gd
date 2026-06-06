@@ -1,7 +1,7 @@
 extends Node2D
 class_name EnemyHealthBars
 
-@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
+
 
 var boss_progress_bar: ProgressBar = null
 var boss_label: Label = null

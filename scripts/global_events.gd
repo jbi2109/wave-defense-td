@@ -22,6 +22,16 @@ signal wave_cleared(wave_num: int)
 @warning_ignore("unused_signal")
 signal inter_wave_tick(seconds_remaining: float)
 
+# GPUSim Decoupling
+@warning_ignore("unused_signal")
+signal aoe_damage_requested(pos: Vector2, radius: float, damage: float, is_player_damage: bool)
+@warning_ignore("unused_signal")
+signal aoe_freeze_requested(pos: Vector2, radius: float, duration: float)
+@warning_ignore("unused_signal")
+signal aoe_slow_requested(pos: Vector2, radius: float, slow_factor: float)
+@warning_ignore("unused_signal")
+signal turret_update_requested(turret: Node2D)
+
 # Turrets
 @warning_ignore("unused_signal")
 signal turret_placed(turret_type: String, position: Vector2)

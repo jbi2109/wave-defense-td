@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ch053q7atdn0o"
+path="res://.godot/imported/handle_dead.glsl-5a3e38c3da27418ae56d3e0ab0e26e12.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/handle_dead.glsl"
+dest_files=["res://.godot/imported/handle_dead.glsl-5a3e38c3da27418ae56d3e0ab0e26e12.res"]
+
+[params]
+

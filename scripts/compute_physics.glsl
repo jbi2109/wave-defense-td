@@ -146,39 +146,52 @@ uint get_hash_index(vec2 pos) {
 	return uint(gy * params.hash_width + gx);
 }
 
-void resolve_body_vs_sdf(inout vec2 pos, inout vec2 vel, float radius, sampler2D sdf_tex, sampler2D obstacle_field, vec2 grid_size, float cell_size, vec2 grid_offset) {
-	// Convert world position to UV coordinates
-	vec2 uv = (pos / cell_size - grid_offset) / grid_size;
+// Resolve a circle against the high-resolution obstacle map.
+// The obstacle texture has obs_sub pixels per tile (obs_sub = obs_tex_size / flow_tex_size).
+// Each obs pixel = cell_size/obs_sub world units, giving sub-tile collision precision.
+void resolve_circle_vs_sdf(inout vec2 pos, inout vec2 vel, float radius) {
+	vec2 tex_size  = vec2(textureSize(obstacle_field, 0));
+	vec2 ff_size   = vec2(textureSize(flow_field, 0));
+	float obs_sub  = tex_size.x / ff_size.x;         // e.g. 400/100 = 4
+	float sub_world = params.cell_size / obs_sub;     // world units per obs pixel (e.g. 8)
 	
-	// Sample signed distance
-	float dist = sample_sdf_distance(uv, sdf_tex, obstacle_field, grid_size, cell_size);
-	
-	// If the body intersects the wall (dist < radius)
-	if (dist < radius) {
-		// Estimate gradient to find direction out
-		vec2 eps = 1.0 / grid_size;
-		vec2 grad = estimate_sdf_gradient(uv, eps, sdf_tex, obstacle_field, grid_size, cell_size);
-		
-		float grad_len = length(grad);
-		if (grad_len > 0.0001) {
-			vec2 normal = grad / grad_len;
+	// Pixel-index range that the circle's AABB could touch
+	int min_tx = int(floor((pos.x - radius) / sub_world - params.grid_offset.x * obs_sub));
+	int max_tx = int(floor((pos.x + radius) / sub_world - params.grid_offset.x * obs_sub));
+	int min_ty = int(floor((pos.y - radius) / sub_world - params.grid_offset.y * obs_sub));
+	int max_ty = int(floor((pos.y + radius) / sub_world - params.grid_offset.y * obs_sub));
+
+	for (int ty = min_ty; ty <= max_ty; ty++) {
+		for (int tx = min_tx; tx <= max_tx; tx++) {
+			if (tx < 0 || ty < 0 || tx >= int(tex_size.x) || ty >= int(tex_size.y)) continue;
 			
-			// Push out of the wall
-			float penetration = radius - dist;
-			pos += normal * penetration;
+			// Sample obstacle texture
+			vec2 uv = (vec2(tx, ty) + 0.5) / tex_size;
+			float is_obs = texture(obstacle_field, uv).r;
+			if (is_obs < 0.5) continue;
 			
-			// Project velocity along collision normal (sliding)
-			float v_dot_n = dot(vel, normal);
-			if (v_dot_n < 0.0) {
-				vel = vel - normal * v_dot_n;
+			// AABB of this obs pixel in world space
+			vec2 pixel_world = (vec2(tx, ty) / obs_sub + params.grid_offset) * params.cell_size;
+			vec2 tile_min = pixel_world;
+			vec2 tile_max = pixel_world + vec2(sub_world);
+			
+			// Circle vs AABB
+			vec2 closest = clamp(pos, tile_min, tile_max);
+			vec2 delta = pos - closest;
+			float dist_sq = dot(delta, delta);
+			
+			if (dist_sq < radius * radius && dist_sq > 0.0001) {
+				float dist = sqrt(dist_sq);
+				vec2 normal = delta / dist;
+				pos += normal * (radius - dist);
+				
+				float v_dot_n = dot(vel, normal);
+				if (v_dot_n < 0.0) vel -= normal * v_dot_n;
+			} else if (dist_sq <= 0.0001) {
+				pos.x += radius;
 			}
 		}
 	}
-}
-
-void resolve_circle_vs_sdf(inout vec2 pos, inout vec2 vel, float radius) {
-	vec2 grid_size = vec2(textureSize(sdf_field, 0));
-	resolve_body_vs_sdf(pos, vel, radius, sdf_field, obstacle_field, grid_size, params.cell_size, params.grid_offset);
 }
 
 // === Passes ===
@@ -329,7 +342,6 @@ void pass_separation(uint id) {
 	
 	Agent ag = agents_in[id];
 	if (ag.health <= 0) {
-		agents_out[id] = ag;
 		return;
 	}
 	
@@ -404,7 +416,7 @@ void pass_separation(uint id) {
 		}
 	}
 	pos += push;
-	float radius = my_scale * 10.0;
+	float radius = my_scale * 12.0;
 	
 	// Safe check
 	if (isnan(pos.x) || isnan(pos.y) || isinf(pos.x) || isinf(pos.y)) {
@@ -422,20 +434,15 @@ void pass_separation(uint id) {
 	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
 		ag.pos = vec2(0.0);
 	}
-	if (isnan(ag.vel.x) || isnan(ag.vel.y) || isinf(ag.vel.x) || isinf(ag.vel.y)) {
-		ag.vel = vec2(0.0);
-	}
 	
-	// Write back
+	// Write to agents_out instead of agents_in to prevent race conditions (Jacobi iteration)
 	agents_out[id].pos = pos;
 	agents_out[id].vel = temp_vel;
-	agents_out[id].health = ag.health;
-	agents_out[id].max_speed = ag.max_speed;
-	agents_out[id].scale = ag.scale;
-	agents_out[id].type = ag.type;
-	agents_out[id].freeze_timer = ag.freeze_timer;
-	agents_out[id].flash_amount = ag.flash_amount;
-	agents_out[id].speed_modifier = ag.speed_modifier;
+}
+
+void pass_apply_separation(uint id) {
+	agents_in[id].pos = agents_out[id].pos;
+	agents_in[id].vel = agents_out[id].vel;
 }
 
 void pass_multimesh(uint id) {
@@ -620,10 +627,12 @@ void main() {
 	} else if (params.pass_idx == 3) {
 		pass_separation(id);
 	} else if (params.pass_idx == 4) {
-		pass_multimesh(id);
+		pass_apply_separation(id);
 	} else if (params.pass_idx == 5) {
-		pass_damage(id);
+		pass_multimesh(id);
 	} else if (params.pass_idx == 6) {
+		pass_damage(id);
+	} else if (params.pass_idx == 7) {
 		pass_turret_targeting(id);
 	}
 }

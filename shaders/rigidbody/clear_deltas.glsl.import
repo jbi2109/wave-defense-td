@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ccehqa642v0br"
+path="res://.godot/imported/clear_deltas.glsl-55828817daffe3ccdfc2d3befd2b14dc.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/clear_deltas.glsl"
+dest_files=["res://.godot/imported/clear_deltas.glsl-55828817daffe3ccdfc2d3befd2b14dc.res"]
+
+[params]
+

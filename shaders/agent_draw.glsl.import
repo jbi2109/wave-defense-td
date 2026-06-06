@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cvqer0qo0my7b"
+path="res://.godot/imported/agent_draw.glsl-08d4ff0ac1c8064e806fe68b09b12c2a.res"
+
+[deps]
+
+source_file="res://shaders/agent_draw.glsl"
+dest_files=["res://.godot/imported/agent_draw.glsl-08d4ff0ac1c8064e806fe68b09b12c2a.res"]
+
+[params]
+

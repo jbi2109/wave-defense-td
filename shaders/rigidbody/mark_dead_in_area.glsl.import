@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://d7gc6nlje55m"
+path="res://.godot/imported/mark_dead_in_area.glsl-7b3d95c75c39b79065da8f4b74f2609c.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/mark_dead_in_area.glsl"
+dest_files=["res://.godot/imported/mark_dead_in_area.glsl-7b3d95c75c39b79065da8f4b74f2609c.res"]
+
+[params]
+

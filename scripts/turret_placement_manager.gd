@@ -19,7 +19,7 @@ var _editing_existing_turret: Turret = null
 
 @onready var flow_field: FlowFieldManager = get_node("../FlowFieldManager")
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
-@onready var enemy_manager: EnemyManager = get_node("../EnemyManager")
+
 
 var definitions := {}
 
@@ -183,8 +183,7 @@ func _process(_delta):
 				if _editing_existing_turret:
 					_editing_existing_turret.cone_center = current_cone_center
 					_editing_existing_turret.cone_width = current_cone_width
-					if is_instance_valid(enemy_manager) and enemy_manager.has_method("update_turret"):
-						enemy_manager.update_turret(_editing_existing_turret)
+					GPUSim.update_turret(_editing_existing_turret)
 					
 					_editing_existing_turret = null
 					ghost_instance = null

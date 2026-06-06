@@ -6,11 +6,14 @@ float sample_sdf_distance(vec2 uv, sampler2D sdf_tex, sampler2D obstacle_field, 
     if (nearest_cell.x < -9000.0) {
         return 999999.0;
     }
-    vec2 curr_cell = uv * grid_size;
-    float dist_cells = distance(curr_cell, nearest_cell);
-    float dist_world = dist_cells * cell_size;
-    float is_obs = texture(obstacle_field, uv).r;
-    return (is_obs > 0.5) ? -dist_world : dist_world;
+    vec2 p = uv * grid_size * cell_size;
+    vec2 center = nearest_cell * grid_size * cell_size;
+    
+    // Distance to AABB of the cell (positive outside, negative inside)
+    vec2 d = abs(p - center) - vec2(cell_size / 2.0);
+    float dist_world = length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0);
+    
+    return dist_world;
 }
 
 vec2 estimate_sdf_gradient(vec2 uv, vec2 eps, sampler2D sdf_tex, sampler2D obstacle_field, vec2 grid_size, float cell_size) {

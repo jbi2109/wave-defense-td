@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bgysuwkreajb6"
+path="res://.godot/imported/extend.glsl-84a3cad865432433174cd045d682db8c.res"
+
+[deps]
+
+source_file="res://shaders/world_gen/flow_field/extend.glsl"
+dest_files=["res://.godot/imported/extend.glsl-84a3cad865432433174cd045d682db8c.res"]
+
+[params]
+

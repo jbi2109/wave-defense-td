@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://wuuhtktf4go5"
+path="res://.godot/imported/draw_corpses.glsl-76c3c7322ac795fc093e469451df6691.res"
+
+[deps]
+
+source_file="res://shaders/rigidbody/draw_corpses.glsl"
+dest_files=["res://.godot/imported/draw_corpses.glsl-76c3c7322ac795fc093e469451df6691.res"]
+
+[params]
+
