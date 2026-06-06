@@ -42,7 +42,7 @@ var abilities = []
 var active_ability_index: int = -1
 var aoe_ring: Node2D = null
 
-const RangeIndicatorScript = preload("res://scripts/range_indicator.gd")
+const RangeIndicatorScript = preload("res://fx/range_indicator.gd")
 
 func _ready():
 	GlobalEvents.mana_changed.connect(_on_mana_changed)

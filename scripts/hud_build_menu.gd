@@ -15,7 +15,7 @@ var upgrade_btn: Button
 var sell_btn: Button
 var target_mode_option: OptionButton
 
-const RangeIndicatorScript = preload("res://scripts/range_indicator.gd")
+const RangeIndicatorScript = preload("res://fx/range_indicator.gd")
 
 var selected_turret: Turret = null
 var selection_indicator: Node2D = null

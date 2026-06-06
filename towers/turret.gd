@@ -257,7 +257,7 @@ func on_gpu_fire(p_target_pos: Vector2):
 			tween.tween_property($GunSprite, "position", original_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 			
 	# Spawn visual tracer
-	var tracer_scene = load("res://scripts/bullet_tracer.gd")
+	var tracer_scene = load("res://fx/bullet_tracer.gd")
 	var tracer = Node2D.new()
 	tracer.set_script(tracer_scene)
 	
