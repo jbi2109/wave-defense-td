@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dugwa3g8iq6sq"]
 
-[ext_resource type="Script" uid="uid://csfgagdsq0p0b" path="res://scripts/nexus.gd" id="1_cg0o0"]
-[ext_resource type="Shape2D" uid="uid://dypkm8nw8gx0a" path="res://prefabs/nexus_shape.tres" id="2_qg3sh"]
+[ext_resource type="Script" uid="uid://csfgagdsq0p0b" path="res://battle/nexus.gd" id="1_cg0o0"]
+[ext_resource type="Shape2D" uid="uid://dypkm8nw8gx0a" path="res://battle/nexus_shape.tres" id="2_qg3sh"]
 
 [node name="Nexus" type="StaticBody2D" unique_id=1081137368]
 script = ExtResource("1_cg0o0")
