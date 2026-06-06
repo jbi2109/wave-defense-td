@@ -30,7 +30,7 @@ const enemies := {
 			"goldYield": 10.0,
 			},
 		"difficulty": 1.0,
-		"sprite": "res://Assets/enemies/dino1.png",
+		"sprite": "res://enemies/art/dino1.png",
 	},
 	"blueDino": {
 		"stats": {
@@ -40,7 +40,7 @@ const enemies := {
 			"goldYield": 10.0,
 			},
 		"difficulty": 2.0,
-		"sprite": "res://Assets/enemies/dino2.png",
+		"sprite": "res://enemies/art/dino2.png",
 	},
 	"yellowDino": {
 		"stats": {
@@ -50,7 +50,7 @@ const enemies := {
 			"goldYield": 10.0,
 			},
 		"difficulty": 3.0,
-		"sprite": "res://Assets/enemies/dino3.png",
+		"sprite": "res://enemies/art/dino3.png",
 	},
 	"greenDino": {
 		"stats": {
@@ -60,7 +60,7 @@ const enemies := {
 			"goldYield": 10.0,
 			},
 		"difficulty": 4.0,
-		"sprite": "res://Assets/enemies/dino4.png",
+		"sprite": "res://enemies/art/dino4.png",
 	}
 }
 

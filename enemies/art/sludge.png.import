@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dc41kt452krmy"
-path="res://.godot/imported/hound.png-d88a9d6017d6b8f8bdb53ed78e8ca7c2.ctex"
+uid="uid://2354ojtn8qph"
+path="res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/hound.png"
-dest_files=["res://.godot/imported/hound.png-d88a9d6017d6b8f8bdb53ed78e8ca7c2.ctex"]
+source_file="res://enemies/art/sludge.png"
+dest_files=["res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"]
 
 [params]
 

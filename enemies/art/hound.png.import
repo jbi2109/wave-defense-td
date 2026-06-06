@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bid4tvol0mgrm"
-path="res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"
+uid="uid://dc41kt452krmy"
+path="res://.godot/imported/hound.png-d88a9d6017d6b8f8bdb53ed78e8ca7c2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/abomination.png"
-dest_files=["res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"]
+source_file="res://enemies/art/hound.png"
+dest_files=["res://.godot/imported/hound.png-d88a9d6017d6b8f8bdb53ed78e8ca7c2.ctex"]
 
 [params]
 

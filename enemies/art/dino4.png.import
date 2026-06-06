@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2354ojtn8qph"
-path="res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"
+uid="uid://djtmaxxn506w8"
+path="res://.godot/imported/dino4.png-8da7929830f9a02b52e703dae1dc14e8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/sludge.png"
-dest_files=["res://.godot/imported/sludge.png-ef21dededdf311e0b32854d67288d0cc.ctex"]
+source_file="res://enemies/art/dino4.png"
+dest_files=["res://.godot/imported/dino4.png-8da7929830f9a02b52e703dae1dc14e8.ctex"]
 
 [params]
 

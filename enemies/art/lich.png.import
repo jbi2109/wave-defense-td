@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cg6xdngfk0va5"
-path="res://.godot/imported/dullahan.png-4fbe791eb50a248552d2487b269d7fe9.ctex"
+uid="uid://cvdgpnpwtp6t2"
+path="res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/dullahan.png"
-dest_files=["res://.godot/imported/dullahan.png-4fbe791eb50a248552d2487b269d7fe9.ctex"]
+source_file="res://enemies/art/lich.png"
+dest_files=["res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"]
 
 [params]
 

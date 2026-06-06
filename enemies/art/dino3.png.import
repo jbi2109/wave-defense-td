@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvdgpnpwtp6t2"
-path="res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"
+uid="uid://bkgqxpaijfebf"
+path="res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/lich.png"
-dest_files=["res://.godot/imported/lich.png-fb9132bdafab0896296dfb803dbc8c22.ctex"]
+source_file="res://enemies/art/dino3.png"
+dest_files=["res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"]
 
 [params]
 

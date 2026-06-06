@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://assets/enemies/ghoul.png"
+source_file="res://enemies/art/ghoul.png"
 dest_files=["res://.godot/imported/ghoul.png-abc395845578cb56eb2dc2d24f6ce4ff.ctex"]
 
 [params]

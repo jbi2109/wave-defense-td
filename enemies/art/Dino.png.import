@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://drn0ht73s0v3l"
-path="res://.godot/imported/banshee.png-14a3724aeaf79a119d1ae624b1c44f5b.ctex"
+uid="uid://dfjn6r5mhd7s"
+path="res://.godot/imported/Dino.png-9b99340a1929bcc4da187d2117e4a294.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/banshee.png"
-dest_files=["res://.godot/imported/banshee.png-14a3724aeaf79a119d1ae624b1c44f5b.ctex"]
+source_file="res://enemies/art/Dino.png"
+dest_files=["res://.godot/imported/Dino.png-9b99340a1929bcc4da187d2117e4a294.ctex"]
 
 [params]
 

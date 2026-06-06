@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coyrukwdu81ac"
-path="res://.godot/imported/dino2.png-f268192df6c29b4281cf8d0e20cbf14b.ctex"
+uid="uid://bo15s5cbetm7d"
+path="res://.godot/imported/draugr.png-db3bfceccdf8744b1ffa70edbb387122.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/dino2.png"
-dest_files=["res://.godot/imported/dino2.png-f268192df6c29b4281cf8d0e20cbf14b.ctex"]
+source_file="res://enemies/art/draugr.png"
+dest_files=["res://.godot/imported/draugr.png-db3bfceccdf8744b1ffa70edbb387122.ctex"]
 
 [params]
 

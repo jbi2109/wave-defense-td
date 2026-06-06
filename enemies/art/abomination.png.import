@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkgqxpaijfebf"
-path="res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"
+uid="uid://bid4tvol0mgrm"
+path="res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/dino3.png"
-dest_files=["res://.godot/imported/dino3.png-8d04266fe7c0d602079441a5d4b359c0.ctex"]
+source_file="res://enemies/art/abomination.png"
+dest_files=["res://.godot/imported/abomination.png-c21b52a0cd6777fa850e5a69b69a391e.ctex"]
 
 [params]
 

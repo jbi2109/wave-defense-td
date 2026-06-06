@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djtmaxxn506w8"
-path="res://.godot/imported/dino4.png-8da7929830f9a02b52e703dae1dc14e8.ctex"
+uid="uid://cg6xdngfk0va5"
+path="res://.godot/imported/dullahan.png-4fbe791eb50a248552d2487b269d7fe9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/dino4.png"
-dest_files=["res://.godot/imported/dino4.png-8da7929830f9a02b52e703dae1dc14e8.ctex"]
+source_file="res://enemies/art/dullahan.png"
+dest_files=["res://.godot/imported/dullahan.png-4fbe791eb50a248552d2487b269d7fe9.ctex"]
 
 [params]
 
