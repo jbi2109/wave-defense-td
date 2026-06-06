@@ -74,7 +74,7 @@ func _notification(what):
 
 func _init_gpu_resources():
 	rd = RenderingServer.get_rendering_device()
-	var shader_file = load("res://scripts/compute_flow_field.glsl")
+	var shader_file = load("res://shaders/compute_flow_field.glsl")
 	var spirv = shader_file.get_spirv()
 	flow_shader = rd.shader_create_from_spirv(spirv)
 	flow_pipeline = rd.compute_pipeline_create(flow_shader)

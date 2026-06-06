@@ -1,4 +1,4 @@
-// scripts/sdf_solver.gdshaderinc
+// shaders/sdf_solver.gdshaderinc
 // Central differences gradient estimation for sampler2D JFA textures
 
 float sample_sdf_distance(vec2 uv, sampler2D sdf_tex, sampler2D obstacle_field, vec2 grid_size, float cell_size) {

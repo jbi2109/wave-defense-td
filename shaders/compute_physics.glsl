@@ -80,7 +80,7 @@ layout(set = 0, binding = 5, rgba32f) restrict writeonly uniform image2D agent_d
 // Binding 12: SDF JFA Texture
 layout(set = 0, binding = 12) uniform sampler2D sdf_field;
 
-#include "res://scripts/sdf_solver.gdshaderinc"
+#include "res://shaders/sdf_solver.gdshaderinc"
 
 // Binding 6: Dead Enemies
 layout(set = 0, binding = 6, std430) buffer DeadEnemiesBuffer {

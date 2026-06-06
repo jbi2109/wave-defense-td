@@ -131,7 +131,7 @@ func _init_buffers():
 	damage_events_buffer_rid = GPU.create_storage_buffer(rd, dmg_bytes, "damage_events")
 
 func _init_compute():
-	var shader_file = load("res://scripts/compute_physics.glsl")
+	var shader_file = load("res://shaders/compute_physics.glsl")
 	push_attributes.clear()
 	push_attributes.append(GPU.PushAttribute.create_dynamic(func(_p_push: PackedByteArray, _offset: int): pass, 96))
 	
