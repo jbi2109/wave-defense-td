@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k25k15ec477s"
-path="res://.godot/imported/dynamite-pack.png-47df38a0627abf527042482201c96326.ctex"
+uid="uid://ddctkqd7llbjf"
+path="res://.godot/imported/reallaser.png-3cdf74eac459cd726ddd9706bb07ce03.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/turrets/dynamite-pack.png"
-dest_files=["res://.godot/imported/dynamite-pack.png-47df38a0627abf527042482201c96326.ctex"]
+source_file="res://towers/art/reallaser.png"
+dest_files=["res://.godot/imported/reallaser.png-3cdf74eac459cd726ddd9706bb07ce03.ctex"]
 
 [params]
 

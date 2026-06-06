@@ -14,7 +14,7 @@ func init(pos: Vector2, d: float, r: float, dur: float):
 	duration = dur
 	timer = dur
 	
-	sprite.texture = load("res://assets/turrets/dynamite.png")
+	sprite.texture = load("res://towers/art/dynamite.png")
 	sprite.scale = Vector2(0.6, 0.6)
 	add_child(sprite)
 

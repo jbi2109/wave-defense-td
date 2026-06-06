@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1yfqsfiqe6tt"
-path="res://.godot/imported/frost_turret.png-83db9e8db9317a70458a3b730fbafaec.ctex"
+uid="uid://b3ywchbrytbba"
+path="res://.godot/imported/move_indicator.png-74401b7e1a4d9322ac5398bd8f765a48.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/turrets/frost_turret.png"
-dest_files=["res://.godot/imported/frost_turret.png-83db9e8db9317a70458a3b730fbafaec.ctex"]
+source_file="res://towers/art/move_indicator.png"
+dest_files=["res://.godot/imported/move_indicator.png-74401b7e1a4d9322ac5398bd8f765a48.ctex"]
 
 [params]
 

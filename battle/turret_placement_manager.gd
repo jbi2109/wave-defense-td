@@ -1,7 +1,7 @@
 extends Node2D
 class_name TurretPlacementManager
 
-const TURRET_PREFAB = preload("res://prefabs/turret.tscn")
+const TURRET_PREFAB = preload("res://towers/turret.tscn")
 
 @export var gridless_placement: bool = false
 
@@ -62,7 +62,7 @@ func start_placement(type: String):
 	ghost_instance.z_index = 10
 	
 	var base_sprite = Sprite2D.new()
-	base_sprite.texture = load("res://assets/turrets/base.png")
+	base_sprite.texture = load("res://towers/art/base.png")
 	var cell_size_val = 32.0
 	if is_instance_valid(flow_field) and "cell_size" in flow_field:
 		cell_size_val = float(flow_field.cell_size)

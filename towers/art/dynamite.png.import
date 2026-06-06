@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3ywchbrytbba"
-path="res://.godot/imported/move_indicator.png-74401b7e1a4d9322ac5398bd8f765a48.ctex"
+uid="uid://bctkraga5bk16"
+path="res://.godot/imported/dynamite.png-05761fd9f6452fa9c7beb1ae15c4759d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/turrets/move_indicator.png"
-dest_files=["res://.godot/imported/move_indicator.png-74401b7e1a4d9322ac5398bd8f765a48.ctex"]
+source_file="res://towers/art/dynamite.png"
+dest_files=["res://.godot/imported/dynamite.png-05761fd9f6452fa9c7beb1ae15c4759d.ctex"]
 
 [params]
 

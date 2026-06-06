@@ -71,7 +71,7 @@ func _ready():
 	_load_stats_from_data()
 	
 	_target_sprite = Sprite2D.new()
-	_target_sprite.texture = load("res://assets/turrets/target.png")
+	_target_sprite.texture = load("res://towers/art/target.png")
 	_target_sprite.z_index = 5
 	_target_sprite.top_level = true
 	add_child(_target_sprite)
@@ -126,7 +126,7 @@ func _load_stats_from_data():
 		if tex_path.begins_with("res://Assets"):
 			tex_path = tex_path.replace("res://Assets", "res://assets")
 		if tex_path != "":
-			texture = preload("res://assets/turrets/base.png")
+			texture = preload("res://towers/art/base.png")
 			if has_node("GunSprite"):
 				$GunSprite.texture = load(tex_path)
 		if turret_type == "slow":
