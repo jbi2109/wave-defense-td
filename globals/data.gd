@@ -68,7 +68,7 @@ const maps := {
 	"map1": {
 		"name": "Map 1 (Winding Corners)",
 		"bg": "",
-		"scene": "res://Maps/Map2.tscn",
+		"scene": "res://levels/map_2.tscn",
 		"baseHp": 10,
 		"startingGold": 100,
 		"spawner_settings":
@@ -82,7 +82,7 @@ const maps := {
 	"map2": {
 		"name": "Map 2 (Serpentine)",
 		"bg": "",
-		"scene": "res://Maps/Map1.tscn",
+		"scene": "res://levels/map_1.tscn",
 		"baseHp": 10,
 		"startingGold": 100,
 		"spawner_settings":
