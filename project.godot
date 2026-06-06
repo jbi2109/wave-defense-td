@@ -22,11 +22,11 @@ config/icon="res://icon.svg"
 [autoload]
 
 GPUSim="*res://gpu_sim/gpu_sim.gd"
-GlobalEvents="*res://scripts/global_events.gd"
-Globals="*res://scripts/Globals.gd"
-Data="*res://scripts/Data.gd"
-SoundManager="*res://scripts/sound_manager.gd"
-SaveManager="*res://scripts/save_manager.gd"
+GlobalEvents="*res://globals/global_events.gd"
+Globals="*res://globals/globals.gd"
+Data="*res://globals/data.gd"
+SoundManager="*res://globals/sound_manager.gd"
+SaveManager="*res://globals/save_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
