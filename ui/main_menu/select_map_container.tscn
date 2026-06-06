@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://i2phf2rir44j"]
 
-[ext_resource type="Script" path="res://ui/mainMenu/select_map_container.gd" id="1_32sip"]
+[ext_resource type="Script" path="res://ui/main_menu/select_map_container.gd" id="1_32sip"]
 
 [node name="SelectMapContainer" type="PanelContainer"]
 custom_minimum_size = Vector2(250, 300)

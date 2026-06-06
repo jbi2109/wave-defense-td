@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://dunjwx3q7asjq"]
 
-[ext_resource type="Script" path="res://ui/turretUI/turret_details.gd" id="1_0x613"]
+[ext_resource type="Script" path="res://ui/turret_ui/turret_details.gd" id="1_0x613"]
 [ext_resource type="Texture2D" uid="uid://83kim8fm0f2s" path="res://towers/art/technoturret.png" id="1_1lsyn"]
-[ext_resource type="PackedScene" uid="uid://bg1le57woay1j" path="res://ui/turretUI/stat_label.tscn" id="3_bd6mv"]
+[ext_resource type="PackedScene" uid="uid://bg1le57woay1j" path="res://ui/turret_ui/stat_label.tscn" id="3_bd6mv"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vopfk"]
 

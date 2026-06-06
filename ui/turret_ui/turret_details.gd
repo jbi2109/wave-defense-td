@@ -23,7 +23,7 @@ func set_props():
 	%SellButton.text = "Sell for "+str(get_sell_price())
 	for c in %Stats.get_children():
 		c.queue_free()
-	var statLabelScene := preload("res://ui/turretUI/stat_label.tscn")
+	var statLabelScene := preload("res://ui/turret_ui/stat_label.tscn")
 	for stat in Data.turrets[turret.turret_type]["stats"].keys():
 		var statLabel := statLabelScene.instantiate()
 		statLabel.text = Data.stats[stat]["name"]+" "+str(round(turret.get(stat)))

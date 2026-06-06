@@ -6,7 +6,7 @@ func _ready():
 func populate_turret_containers():
 	for c in $Turrets.get_children():
 		c.queue_free()
-	var panelScene := preload("res://ui/turretUI/turret_buy_container.tscn")
+	var panelScene := preload("res://ui/turret_ui/turret_buy_container.tscn")
 	for turret in Data.turrets.keys():
 		var newPanel := panelScene.instantiate()
 		$Turrets.add_child(newPanel)

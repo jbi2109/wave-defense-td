@@ -7,7 +7,7 @@ func _on_quit_button_pressed():
 
 func _on_start_button_pressed():
 	if not mapSelectContainer:
-		var mscScene := preload("res://ui/mainMenu/select_map_container.tscn")
+		var mscScene := preload("res://ui/main_menu/select_map_container.tscn")
 		var msc := mscScene.instantiate()
 		mapSelectContainer = msc
 		add_child(msc)

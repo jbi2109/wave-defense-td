@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d0otd33ubv3hq"]
 
-[ext_resource type="Script" path="res://ui/turretUI/turret_buy_container.gd" id="1_7686v"]
-[ext_resource type="Script" path="res://ui/turretUI/turret_drag_texture.gd" id="2_8yuvs"]
+[ext_resource type="Script" path="res://ui/turret_ui/turret_buy_container.gd" id="1_7686v"]
+[ext_resource type="Script" path="res://ui/turret_ui/turret_drag_texture.gd" id="2_8yuvs"]
 
 [node name="TurretBuyContainer" type="PanelContainer"]
 custom_minimum_size = Vector2(64, 64)

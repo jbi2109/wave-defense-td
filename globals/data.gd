@@ -14,10 +14,10 @@ const stats := {
 
 const bullets := {
 	"fire": {
-		"frames": "res://Assets/bullets/bullet1.tres",
+		"frames": "res://assets/bullets/bullet1.tres",
 	},
 	"laser": {
-		"frames": "res://Assets/bullets/bullet2.tres",
+		"frames": "res://assets/bullets/bullet2.tres",
 	}
 }
 
