@@ -5,9 +5,11 @@
 [ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="2_tex"]
 [ext_resource type="Texture2D" uid="uid://djvertw8l0foc" path="res://assets/shader/Dirt_texture.png" id="3_bg_tex"]
 [ext_resource type="Script" uid="uid://cehu6rwxuh4j2" path="res://levels/placement_marker.gd" id="4_marker"]
+[ext_resource type="Resource" path="res://levels/map_1_config.tres" id="5_cfg"]
 
 [node name="Map1" type="Node2D" unique_id=1013766100]
 script = ExtResource("0_gen")
+config = ExtResource("5_cfg")
 
 [node name="Background" type="Polygon2D" parent="." unique_id=1681783058]
 z_index = -20

@@ -29,8 +29,8 @@ layout(push_constant, std430) uniform Params {
 	float nexus_radius;
 	uint nexus_valid;
 	
-	// Type damage map (up to 6 types)
-	uint type_nexus_dmg[6];
+	// Per-type nexus damage (index = enemy type index, 8 types)
+	uint type_nexus_dmg[8];
 
 	// Nexus arrival box half-extents (world units). Agents arrive/damage anywhere in
 	// this rect, matching the flow target seed (whole bar), not just a centre circle.
@@ -290,7 +290,7 @@ void pass_kinematics(uint id) {
 			ld.y <= params.nexus_extents.y + arrive_margin) {
 			ag.health = 0;
 			uint dmg = 0;
-			if (ag.type < 6) {
+			if (ag.type < 8u) {
 				dmg = params.type_nexus_dmg[ag.type];
 			}
 			atomicAdd(nexus_damage_values[nexus_last_write], dmg);

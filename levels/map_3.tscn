@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d1dr1qcee0l45" path="res://levels/kit_map.gd" id="kit_map"]
 [ext_resource type="Script" uid="uid://cehu6rwxuh4j2" path="res://levels/placement_marker.gd" id="placement_marker"]
+[ext_resource type="Resource" path="res://levels/map_3_config.tres" id="map_cfg"]
 [ext_resource type="PackedScene" path="res://levels/pieces/cap.tscn" id="ps_cap"]
 [ext_resource type="PackedScene" path="res://levels/pieces/chamber.tscn" id="ps_chamber"]
 [ext_resource type="PackedScene" path="res://levels/pieces/corner.tscn" id="ps_corner"]
@@ -12,6 +13,7 @@
 
 [node name="Map3" type="Node2D" unique_id=121440545]
 script = ExtResource("kit_map")
+config = ExtResource("map_cfg")
 
 [node name="Background" type="Polygon2D" parent="." unique_id=1016716453]
 z_index = -20

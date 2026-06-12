@@ -13,6 +13,12 @@ var _max_health: int = 1000
 
 func _ready():
 	_max_health = health
+
+## Called by battle.gd with the map's MapConfig.base_hp.
+func set_base_hp(hp: int) -> void:
+	health = hp
+	_max_health = hp
+	Globals.baseHpChanged.emit(health, _max_health)
 	if not Engine.is_editor_hint():
 		GlobalEvents.nexus_damaged.connect(_on_damaged)
 	if Engine.is_editor_hint():

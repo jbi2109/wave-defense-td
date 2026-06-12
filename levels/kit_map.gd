@@ -10,6 +10,9 @@ class_name KitMap
 # SpawnMarker/NexusMarker children. Build a map by dragging pieces from levels/pieces/ onto
 # the 160-unit grid and rotating them in 90° steps so corridors line up.
 
+# Per-map gameplay config (waves, base HP, starting gold) — read by battle.gd.
+@export var config: MapConfig
+
 @export var world_size: Vector2 = Vector2(3840, 1786):
 	set(value):
 		world_size = value

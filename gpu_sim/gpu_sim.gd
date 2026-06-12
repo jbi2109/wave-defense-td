@@ -287,13 +287,15 @@ func dispatch_physics(_delta: float, _current_ms: float, _flow_field_data: Dicti
 	push.encode_float(64, _nexus_data.get("radius", 64.0))
 	push.encode_u32(68, _nexus_data.get("valid", 1))
 	
-	for i in range(6):
-		push.encode_u32(72 + i * 4, 100) # Base nexus dmg
+	# Per-type nexus damage (from EnemyDefinition.nexus_damage via set_enemy_type_data).
+	for i in range(8):
+		var dmg: int = _type_nexus_dmg[i] if i < _type_nexus_dmg.size() else 1
+		push.encode_u32(72 + i * 4, dmg)
 
 	# Nexus arrival box half-extents (world units) — agents arrive anywhere in the rect.
 	var nex_ext: Vector2 = _nexus_data.get("extents", Vector2(10.0, 130.0))
-	push.encode_float(96, nex_ext.x)
-	push.encode_float(100, nex_ext.y)
+	push.encode_float(104, nex_ext.x)
+	push.encode_float(108, nex_ext.y)
 
 	# Serialize pending AOE events into the damage_events buffer layout.
 	# Header: event_count (u32) + 12 bytes pad. Each DamageEvent = 32 bytes.

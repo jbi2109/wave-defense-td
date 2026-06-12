@@ -17,7 +17,6 @@
 [ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="15_tdef"]
 [ext_resource type="Script" uid="uid://b5nld5uki3dr0" path="res://fx/damage_text_manager.gd" id="16_dmgtx"]
 [ext_resource type="Script" uid="uid://c47nmdsg5j8y1" path="res://abilities/ability_manager.gd" id="17_abmgr"]
-[ext_resource type="Script" path="res://battle/map_wave_config.gd" id="18_wconf"]
 [ext_resource type="Resource" path="res://enemies/definitions/swarmer.tres" id="20_eswarm"]
 [ext_resource type="Resource" path="res://enemies/definitions/tank.tres" id="21_etank"]
 [ext_resource type="Resource" path="res://enemies/definitions/runner.tres" id="22_erun"]
@@ -39,26 +38,6 @@ script = ExtResource("1_tbgi4")
 
 [node name="WaveManager" type="Node" parent="." unique_id=484738291]
 script = ExtResource("9_wavem")
-base_enemies_per_wave = 10000
-spawn_rate = 0.01
-
-[node name="map1" type="Node" parent="WaveManager" unique_id=942912224]
-script = ExtResource("18_wconf")
-spawn_rate = 0.05
-max_waves = 5
-
-[node name="map2" type="Node" parent="WaveManager" unique_id=786662830]
-script = ExtResource("18_wconf")
-base_enemies_per_wave = 10000
-wave_scaler = 1.2
-spawn_rate = 0.05
-max_waves = 10
-
-[node name="map3" type="Node" parent="WaveManager" unique_id=786662831]
-script = ExtResource("18_wconf")
-base_enemies_per_wave = 10000
-wave_scaler = 1.3
-spawn_rate = 0.05
 
 [node name="FlowFieldManager" type="Node2D" parent="." unique_id=563588492]
 script = ExtResource("2_s8xa3")

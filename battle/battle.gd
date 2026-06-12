@@ -93,6 +93,17 @@ func _ready():
 # are unaffected). Larger maps (map3) ship a bigger world_size + relocated
 # spawn/nexus, and the camera zooms out to fit.
 func _apply_map_config(map_root: Node) -> void:
+	# Gameplay config (waves, base HP, starting gold) travels WITH the map scene
+	# as a MapConfig resource on its root — battle.tscn needs no per-map edits.
+	var cfg = map_root.get("config")
+	if not (cfg is MapConfig):
+		cfg = MapConfig.new()
+		push_warning("BATTLE: map '%s' has no MapConfig — using defaults." % map_root.name)
+	wave_manager.apply_config(cfg)
+	Globals.starting_gold = cfg.starting_gold
+	if nexus and nexus.has_method("set_base_hp"):
+		nexus.set_base_hp(cfg.base_hp)
+
 	var ws = map_root.get("world_size")
 	if ws is Vector2 and ws.x > 0.0 and ws.y > 0.0:
 		map_world_size = ws

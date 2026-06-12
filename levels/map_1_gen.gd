@@ -30,6 +30,9 @@ static var ROUTE := PackedVector2Array([
 
 # Path to the baked mask. battle.gd calls get_mask_image() to drive the
 # obstacle/SDF/flow pipeline — white = walkable.
+# Per-map gameplay config (waves, base HP, starting gold) - read by battle.gd.
+@export var config: MapConfig
+
 @export var mask_path: String = MASK_PATH
 
 # Load the walkable mask as an Image. Prefers the imported Texture2D (export-safe);

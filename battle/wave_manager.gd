@@ -23,38 +23,24 @@ var _spawn_timer: float      = 0.0
 var _inter_wave_timer: float = 0.0
 
 # ─────────────────────────────────────────────────────────────
-#  Dependencies (set by Main after ready)
+#  Dependencies (set by Battle after the map scene loads)
 # ─────────────────────────────────────────────────────────────
 var enemy_config: EnemyConfig = null
-var map_config: MapWaveConfig = null
+var map_config: MapConfig = null
 
-# ─────────────────────────────────────────────────────────────
-#  Ready
-# ─────────────────────────────────────────────────────────────
-func _ready() -> void:
-	var map_id: String = Globals.selected_map
-	if map_id == "":
-		map_id = "map1" # default to map1
-	
-	var config := get_node_or_null(map_id) as MapWaveConfig
-	if config:
-		base_enemies_per_wave = config.base_enemies_per_wave
-		wave_scaler = config.wave_scaler
-		spawn_rate = config.spawn_rate
-		inter_wave_duration = config.inter_wave_duration
-		max_waves = config.max_waves
-		map_config = config
-	else:
-		push_warning("WaveManager: No custom wave config found for map %s, using default settings." % map_id)
-		var fallback := MapWaveConfig.new()
-		fallback.base_enemies_per_wave = base_enemies_per_wave
-		fallback.wave_scaler = wave_scaler
-		fallback.spawn_rate = spawn_rate
-		fallback.inter_wave_duration = inter_wave_duration
-		fallback.max_waves = max_waves
-		fallback.name = "FallbackWaveConfig"
-		add_child(fallback)
-		map_config = fallback
+## Called by battle.gd::_apply_map_config with the loaded map's MapConfig
+## resource (the map root's `config` export). Must run before the first
+## start_wave().
+func apply_config(cfg: MapConfig) -> void:
+	if cfg == null:
+		push_warning("WaveManager: map has no MapConfig — using defaults.")
+		cfg = MapConfig.new()
+	base_enemies_per_wave = cfg.base_enemies_per_wave
+	wave_scaler = cfg.wave_scaler
+	spawn_rate = cfg.spawn_rate
+	inter_wave_duration = cfg.inter_wave_duration
+	max_waves = cfg.max_waves
+	map_config = cfg
 
 # ─────────────────────────────────────────────────────────────
 #  Public API
