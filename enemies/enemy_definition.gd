@@ -1,4 +1,4 @@
-extends Node
+extends Resource
 class_name EnemyDefinition
 
 @export var enemy_name: String    = "Swarmer"

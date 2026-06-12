@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://bmy3m4ecxxct4"]
+
+[ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://enemies/enemy_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_name = "Mini Boss"
+texture_path = "res://enemies/art/dino2.png"
+scale = 2.5
+speed = 40.0
+health = 500.0
+spawn_weight = 0.0
+gold_yield = 100
+armor = 0.2
+nexus_damage = 5
+is_boss = true
+min_wave = 5

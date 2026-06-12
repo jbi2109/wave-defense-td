@@ -1,7 +1,12 @@
 extends Node2D
 class_name EnemyConfig
 
-var enemy_types: Array[Node] = []
+# The enemy roster. ARRAY ORDER IS THE TYPE INDEX — GPU buffers, split_type_index
+# and the boss overrides in battle.gd reference enemies by index. Canonical order:
+# 0 Swarmer, 1 Tank, 2 Runner, 3 Armored, 4 MiniBoss, 5 BigBoss, 6 Flyer, 7 Splitter.
+@export var definitions: Array[EnemyDefinition] = []
+
+var enemy_types: Array[EnemyDefinition] = []
 var type_scales: Array[float] = []
 var type_speeds: Array[float] = []
 var type_healths: Array[float] = []
@@ -11,13 +16,15 @@ var type_golds: Array[int] = []
 var type_nexus_dmg: Array[int] = []
 
 func _ready():
-	for child in get_children():
-		if child.get_script() != null and "enemy_definition" in child.get_script().resource_path:
-			enemy_types.append(child)
-			type_scales.append(child.scale if "scale" in child else 1.0)
-			type_speeds.append(child.speed if "speed" in child else 100.0)
-			type_healths.append(child.health if "health" in child else 10.0)
-			type_split_count.append(child.split_count if "split_count" in child else 0)
-			type_split_type.append(child.split_type_index if "split_type_index" in child else 0)
-			type_golds.append(child.gold_yield if "gold_yield" in child else 0)
-			type_nexus_dmg.append(child.nexus_damage if "nexus_damage" in child else 1)
+	for d in definitions:
+		if d is EnemyDefinition:
+			enemy_types.append(d)
+			type_scales.append(d.scale)
+			type_speeds.append(d.speed)
+			type_healths.append(d.health)
+			type_split_count.append(d.split_count)
+			type_split_type.append(d.split_type_index)
+			type_golds.append(d.gold_yield)
+			type_nexus_dmg.append(d.nexus_damage)
+	if enemy_types.is_empty():
+		push_warning("EnemyConfig: no enemy definitions assigned!")

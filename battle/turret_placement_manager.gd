@@ -21,15 +21,20 @@ var _editing_existing_turret: Turret = null
 @onready var wave_manager: WaveManager = get_node("../WaveManager")
 
 
+# The turret roster, keyed into `definitions` by turret_type at _ready.
+@export var definition_resources: Array[TurretDefinition] = []
+
 var definitions := {}
 
 func _ready():
 	GlobalEvents.wave_started.connect(_on_wave_started)
-	for child in get_children():
-		if child.get_script() != null and "turret_definition" in child.get_script().resource_path:
-			definitions[child.turret_type] = child
+	for d in definition_resources:
+		if d is TurretDefinition:
+			definitions[d.turret_type] = d
+	if definitions.is_empty():
+		push_warning("TurretPlacementManager: no turret definitions assigned!")
 
-func get_definition(type: String) -> Node:
+func get_definition(type: String) -> TurretDefinition:
 	return definitions.get(type, null)
 
 func get_turret_cost(type: String) -> int:

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TurretDefinition" load_steps=2 format=3 uid="uid://ce0r6vir4v8fs"]
+
+[ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+turret_name = "Frost Tower"
+turret_type = "slow"
+damage = 0.2
+attack_range = 180.0
+fire_rate = 0.8
+scale = 0.4
+cost = 60
+upgrade_cost = 45
+rotates = false
+sprite_path = "res://towers/art/laserturret.png"
+damage_upgrade = 0.1
+speed_upgrade = 1.3

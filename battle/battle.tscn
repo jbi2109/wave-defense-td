@@ -18,6 +18,19 @@
 [ext_resource type="Script" uid="uid://b5nld5uki3dr0" path="res://fx/damage_text_manager.gd" id="16_dmgtx"]
 [ext_resource type="Script" uid="uid://c47nmdsg5j8y1" path="res://abilities/ability_manager.gd" id="17_abmgr"]
 [ext_resource type="Script" path="res://battle/map_wave_config.gd" id="18_wconf"]
+[ext_resource type="Resource" path="res://enemies/definitions/swarmer.tres" id="20_eswarm"]
+[ext_resource type="Resource" path="res://enemies/definitions/tank.tres" id="21_etank"]
+[ext_resource type="Resource" path="res://enemies/definitions/runner.tres" id="22_erun"]
+[ext_resource type="Resource" path="res://enemies/definitions/armored.tres" id="23_earmr"]
+[ext_resource type="Resource" path="res://enemies/definitions/mini_boss.tres" id="24_emini"]
+[ext_resource type="Resource" path="res://enemies/definitions/big_boss.tres" id="25_ebig"]
+[ext_resource type="Resource" path="res://enemies/definitions/flyer.tres" id="26_eflyr"]
+[ext_resource type="Resource" path="res://enemies/definitions/splitter.tres" id="27_esplt"]
+[ext_resource type="Resource" path="res://towers/definitions/gatling_gun.tres" id="30_tgatl"]
+[ext_resource type="Resource" path="res://towers/definitions/flamethrower.tres" id="31_tflam"]
+[ext_resource type="Resource" path="res://towers/definitions/raygun.tres" id="32_trayg"]
+[ext_resource type="Resource" path="res://towers/definitions/explosive.tres" id="33_texpl"]
+[ext_resource type="Resource" path="res://towers/definitions/frost_tower.tres" id="34_tfrst"]
 
 
 
@@ -53,161 +66,14 @@ script = ExtResource("2_s8xa3")
 [node name="TurretPlacementManager" type="Node2D" parent="." unique_id=987654321]
 script = ExtResource("11_plcmt")
 gridless_placement = true
-
-[node name="GatlingGun" type="Node" parent="TurretPlacementManager" unique_id=-1294967295]
-script = ExtResource("15_tdef")
-turret_name = "Gatling Gun"
-turret_type = "gatling"
-damage = 10.0
-attack_range = 200.0
-fire_rate = 0.5
-scale = 2.0
-max_level = 2
-sprite_path = "res://towers/art/technoturret.png"
-
-[node name="Flamethrower" type="Node" parent="TurretPlacementManager" unique_id=-1294967294]
-script = ExtResource("15_tdef")
-turret_name = "Flamethrower"
-turret_type = "laser"
-damage = 0.5
-attack_range = 250.0
-fire_rate = 0.05
-scale = 2.0
-cost = 70
-rotates = false
-sprite_path = "res://towers/art/laserturret.png"
-
-[node name="Raygun" type="Node" parent="TurretPlacementManager" unique_id=-1294967293]
-script = ExtResource("15_tdef")
-turret_name = "Raygun"
-turret_type = "ray"
-damage = 0.5
-fire_rate = 2.0
-scale = 0.28
-cost = 30
-sprite_path = "res://towers/art/reallaser.png"
-damage_upgrade = 1.0
-
-[node name="Explosive" type="Node" parent="TurretPlacementManager" unique_id=-1294967292]
-script = ExtResource("15_tdef")
-turret_name = "Explosive"
-turret_type = "melee"
-attack_range = 100.0
-fire_rate = 1.0
-cost = 70
-rotates = false
-sprite_path = "res://towers/art/dynamite.png"
-
-[node name="FrostTower" type="Node" parent="TurretPlacementManager" unique_id=-1294967291]
-script = ExtResource("15_tdef")
-turret_name = "Frost Tower"
-turret_type = "slow"
-damage = 0.2
-attack_range = 180.0
-fire_rate = 0.8
-scale = 0.4
-cost = 60
-upgrade_cost = 45
-rotates = false
-sprite_path = "res://towers/art/laserturret.png"
-damage_upgrade = 0.1
-speed_upgrade = 1.3
+definition_resources = Array[ExtResource("15_tdef")]([ExtResource("30_tgatl"), ExtResource("31_tflam"), ExtResource("32_trayg"), ExtResource("33_texpl"), ExtResource("34_tfrst")])
 
 [node name="EnemyHealthBars" type="Node2D" parent="." unique_id=987654322]
 script = ExtResource("13_hlthb")
 
 [node name="EnemyManager" type="Node2D" parent="." unique_id=1662791410]
 script = ExtResource("7_enemy")
-
-[node name="Swarmer" type="Node" parent="EnemyManager" unique_id=2000000001]
-script = ExtResource("10_edef")
-scale = 1.4
-gold_yield = 3
-
-[node name="Tank" type="Node" parent="EnemyManager" unique_id=2000000002]
-script = ExtResource("10_edef")
-enemy_name = "Tank"
-texture_path = "res://enemies/art/dino2.png"
-scale = 1.4
-speed = 60.0
-health = 50.0
-spawn_weight = 0.5
-gold_yield = 10
-armor = 0.3
-min_wave = 3
-
-[node name="Runner" type="Node" parent="EnemyManager" unique_id=2000000003]
-script = ExtResource("10_edef")
-enemy_name = "Runner"
-texture_path = "res://enemies/art/dino3.png"
-scale = 1.4
-speed = 200.0
-health = 8.0
-spawn_weight = 3.0
-min_wave = 6
-
-[node name="Armored" type="Node" parent="EnemyManager" unique_id=2000000004]
-script = ExtResource("10_edef")
-enemy_name = "Armored"
-texture_path = "res://enemies/art/dino4.png"
-scale = 1.4
-speed = 70.0
-health = 80.0
-spawn_weight = 2.0
-gold_yield = 15
-armor = 0.6
-min_wave = 8
-
-[node name="MiniBoss" type="Node" parent="EnemyManager" unique_id=2000000005]
-script = ExtResource("10_edef")
-enemy_name = "Mini Boss"
-texture_path = "res://enemies/art/dino2.png"
-scale = 2.5
-speed = 40.0
-health = 500.0
-spawn_weight = 0.0
-gold_yield = 100
-armor = 0.2
-nexus_damage = 5
-is_boss = true
-min_wave = 5
-
-[node name="BigBoss" type="Node" parent="EnemyManager" unique_id=2000000006]
-script = ExtResource("10_edef")
-enemy_name = "Big Boss"
-scale = 3.5
-speed = 25.0
-health = 2000.0
-spawn_weight = 0.0
-gold_yield = 500
-armor = 0.4
-nexus_damage = 10
-is_boss = true
-min_wave = 15
-
-[node name="Flyer" type="Node" parent="EnemyManager" unique_id=2000000007]
-script = ExtResource("10_edef")
-enemy_name = "Flyer"
-texture_path = "res://enemies/art/dino3.png"
-scale = 1.4
-speed = 150.0
-health = 15.0
-spawn_weight = 1.5
-gold_yield = 8
-min_wave = 11
-
-[node name="Splitter" type="Node" parent="EnemyManager" unique_id=2000000008]
-script = ExtResource("10_edef")
-enemy_name = "Splitter"
-texture_path = "res://enemies/art/dino2.png"
-scale = 1.4
-speed = 50.0
-health = 120.0
-spawn_weight = 1.0
-gold_yield = 20
-min_wave = 13
-split_count = 3
-split_type_index = 0
+definitions = Array[ExtResource("10_edef")]([ExtResource("20_eswarm"), ExtResource("21_etank"), ExtResource("22_erun"), ExtResource("23_earmr"), ExtResource("24_emini"), ExtResource("25_ebig"), ExtResource("26_eflyr"), ExtResource("27_esplt")])
 
 [node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_2rs0q")]
 position = Vector2(1913.4543, 323.39142)

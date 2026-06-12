@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://b200tql52jehf"]
+
+[ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://enemies/enemy_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_name = "Splitter"
+texture_path = "res://enemies/art/dino2.png"
+scale = 1.4
+speed = 50.0
+health = 120.0
+spawn_weight = 1.0
+gold_yield = 20
+min_wave = 13
+split_count = 3
+split_type_index = 0

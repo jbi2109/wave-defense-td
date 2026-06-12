@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TurretDefinition" load_steps=2 format=3 uid="uid://cdm4sfbh1wjyd"]
+
+[ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+turret_name = "Explosive"
+turret_type = "melee"
+attack_range = 100.0
+fire_rate = 1.0
+cost = 70
+rotates = false
+sprite_path = "res://towers/art/dynamite.png"

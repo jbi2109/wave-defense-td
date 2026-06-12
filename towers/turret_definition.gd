@@ -1,4 +1,4 @@
-extends Node
+extends Resource
 class_name TurretDefinition
 
 @export var turret_name: String = ""

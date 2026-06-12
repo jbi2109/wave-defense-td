@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TurretDefinition" load_steps=2 format=3 uid="uid://51jfhysasfpj"]
+
+[ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+turret_name = "Flamethrower"
+turret_type = "laser"
+damage = 0.5
+attack_range = 250.0
+fire_rate = 0.05
+scale = 2.0
+cost = 70
+rotates = false
+sprite_path = "res://towers/art/laserturret.png"

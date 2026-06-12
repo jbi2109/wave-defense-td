@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://dhaitgbgebxsc"]
+
+[ext_resource type="Script" uid="uid://bgelyqhcn888g" path="res://enemies/enemy_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_name = "Armored"
+texture_path = "res://enemies/art/dino4.png"
+scale = 1.4
+speed = 70.0
+health = 80.0
+spawn_weight = 2.0
+gold_yield = 15
+armor = 0.6
+min_wave = 8

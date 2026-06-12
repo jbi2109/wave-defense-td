@@ -95,7 +95,7 @@ func _ready():
 func _register_with_manager():
 	GPUSim.add_turret(self)
 
-func get_definition() -> Node:
+func get_definition() -> TurretDefinition:
 	var placement_manager = get_tree().current_scene.get_node_or_null("TurretPlacementManager")
 	if placement_manager and placement_manager.has_method("get_definition"):
 		return placement_manager.get_definition(turret_type)

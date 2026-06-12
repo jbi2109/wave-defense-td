@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TurretDefinition" load_steps=2 format=3 uid="uid://dr27m5ovlqfg1"]
+
+[ext_resource type="Script" uid="uid://bk2pyeopuwcjy" path="res://towers/turret_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+turret_name = "Gatling Gun"
+turret_type = "gatling"
+damage = 10.0
+attack_range = 200.0
+fire_rate = 0.5
+scale = 2.0
+max_level = 2
+sprite_path = "res://towers/art/technoturret.png"
