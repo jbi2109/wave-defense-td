@@ -1,0 +1,111 @@
+[gd_scene load_steps=4 format=3 uid="uid://prefabloopsection"]
+
+[ext_resource type="PackedScene" path="res://levels/pieces/cross.tscn" id="ps_cross"]
+[ext_resource type="PackedScene" path="res://levels/pieces/straight.tscn" id="ps_straight"]
+[ext_resource type="PackedScene" path="res://levels/pieces/corner.tscn" id="ps_corner"]
+
+[node name="PrefabLoopSection" type="Node2D"]
+
+[node name="Center" type="Node2D" parent="."]
+
+[node name="Cross_1" parent="Center" instance=ExtResource("ps_cross")]
+position = Vector2(-480, 0)
+
+[node name="Straight_1" parent="Center" instance=ExtResource("ps_straight")]
+position = Vector2(-320, 0)
+
+[node name="Straight_2" parent="Center" instance=ExtResource("ps_straight")]
+position = Vector2(-160, 0)
+
+[node name="Straight_3" parent="Center" instance=ExtResource("ps_straight")]
+position = Vector2(0, 0)
+
+[node name="Straight_4" parent="Center" instance=ExtResource("ps_straight")]
+position = Vector2(160, 0)
+
+[node name="Straight_5" parent="Center" instance=ExtResource("ps_straight")]
+position = Vector2(320, 0)
+
+[node name="Cross_2" parent="Center" instance=ExtResource("ps_cross")]
+position = Vector2(480, 0)
+
+[node name="TopHalf" type="Node2D" parent="."]
+
+[node name="Straight_6" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-480, -160)
+rotation = 1.57080
+
+[node name="Straight_7" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-480, -320)
+rotation = 1.57080
+
+[node name="Corner_1" parent="TopHalf" instance=ExtResource("ps_corner")]
+position = Vector2(-480, -480)
+rotation = -1.57080
+
+[node name="Straight_8" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-320, -480)
+
+[node name="Straight_9" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-160, -480)
+
+[node name="Straight_10" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(0, -480)
+
+[node name="Straight_11" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(160, -480)
+
+[node name="Straight_12" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(320, -480)
+
+[node name="Corner_2" parent="TopHalf" instance=ExtResource("ps_corner")]
+position = Vector2(480, -480)
+
+[node name="Straight_13" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(480, -320)
+rotation = 1.57080
+
+[node name="Straight_14" parent="TopHalf" instance=ExtResource("ps_straight")]
+position = Vector2(480, -160)
+rotation = 1.57080
+
+[node name="BottomHalf" type="Node2D" parent="."]
+scale = Vector2(1, -1)
+
+[node name="Straight_15" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-480, -160)
+rotation = 1.57080
+
+[node name="Straight_16" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-480, -320)
+rotation = 1.57080
+
+[node name="Corner_3" parent="BottomHalf" instance=ExtResource("ps_corner")]
+position = Vector2(-480, -480)
+rotation = -1.57080
+
+[node name="Straight_17" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-320, -480)
+
+[node name="Straight_18" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(-160, -480)
+
+[node name="Straight_19" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(0, -480)
+
+[node name="Straight_20" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(160, -480)
+
+[node name="Straight_21" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(320, -480)
+
+[node name="Corner_4" parent="BottomHalf" instance=ExtResource("ps_corner")]
+position = Vector2(480, -480)
+
+[node name="Straight_22" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(480, -320)
+rotation = 1.57080
+
+[node name="Straight_23" parent="BottomHalf" instance=ExtResource("ps_straight")]
+position = Vector2(480, -160)
+rotation = 1.57080

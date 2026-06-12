@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://kitpiececorner"]
+
+[ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="1_tex"]
+
+[node name="Corner" type="Polygon2D" groups=["map_path"]]
+z_index = -10
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(-94, -80, -94, 80, -80.2, 80, -80, 94, 80, 94, 79.2, -10.8, 72.8, -33.2, 59.2, -53.8, 38.2, -70.2, 14, -78.8)

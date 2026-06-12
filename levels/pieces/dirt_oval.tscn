@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://chrenf7wil4tn"]
+
+[ext_resource type="Texture2D" uid="uid://djvertw8l0foc" path="res://assets/shader/Dirt_texture.png" id="1_tex"]
+
+[node name="DirtOval" type="Polygon2D" groups=["map_wall"]]
+z_index = -9
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(-159.5, -8.2, -159.5, 8.2, -153.8, 24.8, -140.2, 43.2, -123, 57.5, -101.2, 69.8, -79.5, 78.2, -42, 87, -15.5, 89.8, 26, 89, 55.2, 84.5, 81, 77.8, 113, 64, 132, 50.8, 145.2, 37.8, 155, 22.2, 160, 1.8, 157.5, -16, 150, -31.2, 137.8, -45.8, 113, -64, 92, -73.8, 68.8, -81.2, 40.5, -87.2, 15.5, -89.8, -15.5, -89.8, -42, -87, -79.5, -78.2, -101.2, -69.8, -123, -57.5, -140.2, -43.2, -153.8, -24.8)

@@ -44,6 +44,13 @@ var aoe_ring: Node2D = null
 
 const RangeIndicatorScript = preload("res://fx/range_indicator.gd")
 
+# World-space VFX go on EffectsLayer (CanvasLayer above the agent overlay,
+# follow_viewport_enabled) so effects render on top of the GPU-drawn enemies.
+# Falls back to the parent node if the layer is missing.
+func _vfx_parent() -> Node:
+	var layer = get_tree().current_scene.get_node_or_null("EffectsLayer")
+	return layer if layer else get_parent()
+
 func _ready():
 	GlobalEvents.mana_changed.connect(_on_mana_changed)
 	GlobalEvents.wave_started.connect(_on_wave_started)
@@ -187,7 +194,7 @@ func _do_orbital_strike(pos: Vector2, radius: float, damage: float):
 	if beam_script:
 		var beam = Node2D.new()
 		beam.set_script(beam_script)
-		get_parent().add_child(beam)
+		_vfx_parent().add_child(beam)
 		beam.init(pos, radius)
 		
 	SoundManager.play_sfx("shoot_mortar")
@@ -204,7 +211,7 @@ func _do_frost_nova(pos: Vector2, radius: float, duration: float):
 	if fn_script:
 		var fn = Node2D.new()
 		fn.set_script(fn_script)
-		get_parent().add_child(fn)
+		_vfx_parent().add_child(fn)
 		fn.init(pos, radius)
 		
 	SoundManager.play_sfx("shoot_laser")
@@ -268,7 +275,7 @@ func _do_chain_lightning(pos: Vector2, damage: float, bounces: int, bounce_range
 		if cl_script:
 			var cl = Node2D.new()
 			cl.set_script(cl_script)
-			get_parent().add_child(cl)
+			_vfx_parent().add_child(cl)
 			var hit_positions: Array[Vector2] = []
 			for idx in hit_indices:
 				hit_positions.append(positions[idx])
@@ -302,7 +309,7 @@ func _do_acid_pool(pos: Vector2, radius: float, damage: float, duration: float, 
 	if pool_script:
 		var pool = Node2D.new()
 		pool.set_script(pool_script)
-		get_parent().add_child(pool)
+		_vfx_parent().add_child(pool)
 		pool.init(pos, radius, damage, duration, slow_factor, )
 		
 	SoundManager.play_sfx("shoot_plasma")
@@ -312,7 +319,7 @@ func _do_dynamite(pos: Vector2, damage: float, radius: float, duration: float):
 	if dyn_script:
 		var dyn = Node2D.new()
 		dyn.set_script(dyn_script)
-		get_parent().add_child(dyn)
+		_vfx_parent().add_child(dyn)
 		dyn.init(pos, damage, radius, duration)
 		
 	SoundManager.play_sfx("sell") # placement sound
@@ -331,7 +338,7 @@ func _show_aoe_ring(ability: Dictionary):
 	aoe_ring.fill_color = Color(1.0, 0.8, 0.2, 0.1)
 	aoe_ring.line_color = Color(1.0, 0.8, 0.2, 0.5)
 	aoe_ring.z_index = 11
-	get_parent().add_child(aoe_ring)
+	_vfx_parent().add_child(aoe_ring)
 
 func _update_aoe_ring_position():
 	if aoe_ring and active_ability_index != -1:

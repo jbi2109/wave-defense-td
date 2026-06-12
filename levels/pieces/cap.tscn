@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://kitpiececap"]
+
+[ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="1_tex"]
+
+[node name="Cap" type="Polygon2D" groups=["map_path"]]
+z_index = -10
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(-61, -51.8, -70.2, -38.2, -76.8, -22.5, -79.5, -8.8, -79.8, 6.2, -76.8, 22.5, -70.2, 38.2, -61, 51.8, -51.8, 61, -33.2, 72.8, -10.8, 79.2, 94, 80, 94, -80, -14, -78.8, -40, -69.2)

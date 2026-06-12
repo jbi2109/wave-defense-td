@@ -12,7 +12,8 @@ var settings = {
 
 var high_scores = {
 	"map1": 0,
-	"map2": 0
+	"map2": 0,
+	"map3": 0
 }
 
 var gold_collected: int = 0

@@ -1,0 +1,190 @@
+[gd_scene format=3 uid="uid://uebq615thdyu"]
+
+[ext_resource type="Script" uid="uid://d1dr1qcee0l45" path="res://levels/kit_map.gd" id="kit_map"]
+[ext_resource type="Script" uid="uid://cehu6rwxuh4j2" path="res://levels/placement_marker.gd" id="placement_marker"]
+[ext_resource type="PackedScene" path="res://levels/pieces/cap.tscn" id="ps_cap"]
+[ext_resource type="PackedScene" path="res://levels/pieces/chamber.tscn" id="ps_chamber"]
+[ext_resource type="PackedScene" path="res://levels/pieces/corner.tscn" id="ps_corner"]
+[ext_resource type="PackedScene" path="res://levels/pieces/cross.tscn" id="ps_cross"]
+[ext_resource type="PackedScene" path="res://levels/pieces/dirt_mound.tscn" id="ps_dirt_mound"]
+[ext_resource type="PackedScene" path="res://levels/pieces/straight.tscn" id="ps_straight"]
+[ext_resource type="Texture2D" uid="uid://djvertw8l0foc" path="res://assets/shader/Dirt_texture.png" id="tex_dirt"]
+
+[node name="Map3" type="Node2D" unique_id=121440545]
+script = ExtResource("kit_map")
+
+[node name="Background" type="Polygon2D" parent="." unique_id=1016716453]
+z_index = -20
+texture_repeat = 2
+texture = ExtResource("tex_dirt")
+polygon = PackedVector2Array(0, 0, 3840, 0, 3840, 1786, 0, 1786)
+
+[node name="Center" type="Node2D" parent="." unique_id=367890448]
+
+[node name="Cap_1" parent="Center" unique_id=1151267769 instance=ExtResource("ps_cap")]
+position = Vector2(0, 893)
+
+[node name="Straight_1" parent="Center" unique_id=652968394 instance=ExtResource("ps_straight")]
+position = Vector2(160, 893)
+
+[node name="Straight_2" parent="Center" unique_id=144249340 instance=ExtResource("ps_straight")]
+position = Vector2(320, 893)
+
+[node name="Straight_3" parent="Center" unique_id=697564916 instance=ExtResource("ps_straight")]
+position = Vector2(480, 893)
+
+[node name="Straight_4" parent="Center" unique_id=618893506 instance=ExtResource("ps_straight")]
+position = Vector2(640, 893)
+
+[node name="Cross_1" parent="Center" unique_id=1048821767 instance=ExtResource("ps_cross")]
+position = Vector2(800, 893)
+
+[node name="Straight_5" parent="Center" unique_id=1876375245 instance=ExtResource("ps_straight")]
+position = Vector2(960, 893)
+
+[node name="Straight_6" parent="Center" unique_id=1298297323 instance=ExtResource("ps_straight")]
+position = Vector2(1120, 893)
+
+[node name="Chamber_1" parent="Center" unique_id=1787604835 instance=ExtResource("ps_chamber")]
+position = Vector2(1280, 893)
+
+[node name="DirtMound_1" parent="Center" unique_id=847208760 instance=ExtResource("ps_dirt_mound")]
+position = Vector2(1280, 893)
+scale = Vector2(0.5, 0.5)
+
+[node name="Straight_7" parent="Center" unique_id=839117052 instance=ExtResource("ps_straight")]
+position = Vector2(1600, 893)
+
+[node name="Cross_2" parent="Center" unique_id=468095544 instance=ExtResource("ps_cross")]
+position = Vector2(1760, 893)
+
+[node name="Straight_8" parent="Center" unique_id=877944599 instance=ExtResource("ps_straight")]
+position = Vector2(1920, 893)
+
+[node name="Straight_9" parent="Center" unique_id=1075884818 instance=ExtResource("ps_straight")]
+position = Vector2(2080, 893)
+
+[node name="Straight_10" parent="Center" unique_id=1484663627 instance=ExtResource("ps_straight")]
+position = Vector2(2240, 893)
+
+[node name="Straight_11" parent="Center" unique_id=1943119552 instance=ExtResource("ps_straight")]
+position = Vector2(2400, 893)
+
+[node name="Chamber_2" parent="Center" unique_id=1518886092 instance=ExtResource("ps_chamber")]
+position = Vector2(2720, 893)
+
+[node name="DirtMound_2" parent="Center" unique_id=2013544416 instance=ExtResource("ps_dirt_mound")]
+position = Vector2(2720, 893)
+scale = Vector2(0.6, 0.6)
+
+[node name="Straight_12" parent="Center" unique_id=1377828843 instance=ExtResource("ps_straight")]
+position = Vector2(3040, 893)
+
+[node name="Straight_13" parent="Center" unique_id=1310375530 instance=ExtResource("ps_straight")]
+position = Vector2(3200, 893)
+
+[node name="Straight_14" parent="Center" unique_id=183898978 instance=ExtResource("ps_straight")]
+position = Vector2(3360, 893)
+
+[node name="Straight_15" parent="Center" unique_id=1135833192 instance=ExtResource("ps_straight")]
+position = Vector2(3520, 893)
+
+[node name="Straight_16" parent="Center" unique_id=1531403585 instance=ExtResource("ps_straight")]
+position = Vector2(3680, 893)
+
+[node name="Cap_2" parent="Center" unique_id=1375887671 instance=ExtResource("ps_cap")]
+position = Vector2(3840, 893)
+rotation = 3.14159
+
+[node name="TopHalf" type="Node2D" parent="." unique_id=50665910]
+
+[node name="Straight_17" parent="TopHalf" unique_id=1929674298 instance=ExtResource("ps_straight")]
+position = Vector2(800, 733)
+rotation = 1.5708
+
+[node name="Straight_18" parent="TopHalf" unique_id=1413203306 instance=ExtResource("ps_straight")]
+position = Vector2(800, 573)
+rotation = 1.5708
+
+[node name="Corner_1" parent="TopHalf" unique_id=573584767 instance=ExtResource("ps_corner")]
+position = Vector2(800, 413)
+rotation = -1.5708
+
+[node name="Straight_19" parent="TopHalf" unique_id=151065257 instance=ExtResource("ps_straight")]
+position = Vector2(960, 413)
+
+[node name="Straight_20" parent="TopHalf" unique_id=417265068 instance=ExtResource("ps_straight")]
+position = Vector2(1120, 413)
+
+[node name="Straight_21" parent="TopHalf" unique_id=1811649366 instance=ExtResource("ps_straight")]
+position = Vector2(1280, 413)
+
+[node name="Straight_22" parent="TopHalf" unique_id=356930441 instance=ExtResource("ps_straight")]
+position = Vector2(1440, 413)
+
+[node name="Straight_23" parent="TopHalf" unique_id=1241469477 instance=ExtResource("ps_straight")]
+position = Vector2(1600, 413)
+
+[node name="Corner_2" parent="TopHalf" unique_id=1649841111 instance=ExtResource("ps_corner")]
+position = Vector2(1760, 413)
+
+[node name="Straight_24" parent="TopHalf" unique_id=238625085 instance=ExtResource("ps_straight")]
+position = Vector2(1760, 573)
+rotation = 1.5708
+
+[node name="Straight_25" parent="TopHalf" unique_id=116829674 instance=ExtResource("ps_straight")]
+position = Vector2(1760, 733)
+rotation = 1.5708
+
+[node name="BottomHalf" type="Node2D" parent="." unique_id=1111777593]
+position = Vector2(0, 1786)
+scale = Vector2(1, -1)
+
+[node name="Straight_26" parent="BottomHalf" unique_id=1451555739 instance=ExtResource("ps_straight")]
+position = Vector2(800, 733)
+rotation = 1.5708
+
+[node name="Straight_27" parent="BottomHalf" unique_id=282498831 instance=ExtResource("ps_straight")]
+position = Vector2(800, 573)
+rotation = 1.5708
+
+[node name="Corner_3" parent="BottomHalf" unique_id=586807228 instance=ExtResource("ps_corner")]
+position = Vector2(800, 413)
+rotation = -1.5708
+
+[node name="Straight_28" parent="BottomHalf" unique_id=692721942 instance=ExtResource("ps_straight")]
+position = Vector2(960, 413)
+
+[node name="Straight_29" parent="BottomHalf" unique_id=824776323 instance=ExtResource("ps_straight")]
+position = Vector2(1120, 413)
+
+[node name="Straight_30" parent="BottomHalf" unique_id=1113262403 instance=ExtResource("ps_straight")]
+position = Vector2(1280, 413)
+
+[node name="Straight_31" parent="BottomHalf" unique_id=1904890301 instance=ExtResource("ps_straight")]
+position = Vector2(1440, 413)
+
+[node name="Straight_32" parent="BottomHalf" unique_id=1539118577 instance=ExtResource("ps_straight")]
+position = Vector2(1600, 413)
+
+[node name="Corner_4" parent="BottomHalf" unique_id=1711659341 instance=ExtResource("ps_corner")]
+position = Vector2(1760, 413)
+
+[node name="Straight_33" parent="BottomHalf" unique_id=481363816 instance=ExtResource("ps_straight")]
+position = Vector2(1760, 573)
+rotation = 1.5708
+
+[node name="Straight_34" parent="BottomHalf" unique_id=1186362195 instance=ExtResource("ps_straight")]
+position = Vector2(1760, 733)
+rotation = 1.5708
+
+[node name="SpawnMarker" type="Marker2D" parent="." unique_id=1791993669]
+position = Vector2(10, 893)
+script = ExtResource("placement_marker")
+extents = Vector2(5, 70)
+
+[node name="NexusMarker" type="Marker2D" parent="." unique_id=410923017]
+position = Vector2(3830, 893)
+script = ExtResource("placement_marker")
+kind = "nexus"
+extents = Vector2(5, 70)

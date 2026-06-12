@@ -31,12 +31,12 @@ var map_config: MapWaveConfig = null
 # ─────────────────────────────────────────────────────────────
 #  Ready
 # ─────────────────────────────────────────────────────────────
-func _ready():
-	var map_id = Globals.selected_map
+func _ready() -> void:
+	var map_id: String = Globals.selected_map
 	if map_id == "":
 		map_id = "map1" # default to map1
 	
-	var config = get_node_or_null(map_id) as MapWaveConfig
+	var config := get_node_or_null(map_id) as MapWaveConfig
 	if config:
 		base_enemies_per_wave = config.base_enemies_per_wave
 		wave_scaler = config.wave_scaler
@@ -46,6 +46,15 @@ func _ready():
 		map_config = config
 	else:
 		push_warning("WaveManager: No custom wave config found for map %s, using default settings." % map_id)
+		var fallback := MapWaveConfig.new()
+		fallback.base_enemies_per_wave = base_enemies_per_wave
+		fallback.wave_scaler = wave_scaler
+		fallback.spawn_rate = spawn_rate
+		fallback.inter_wave_duration = inter_wave_duration
+		fallback.max_waves = max_waves
+		fallback.name = "FallbackWaveConfig"
+		add_child(fallback)
+		map_config = fallback
 
 # ─────────────────────────────────────────────────────────────
 #  Public API

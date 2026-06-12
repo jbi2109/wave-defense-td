@@ -1,0 +1,179 @@
+# Map3 widen/smooth/irregular-circles + hybrid per-agent route splitting
+
+## Context
+Map3 plays but the user wants four things:
+1. **Widen all corridors ~2×** (currently ~64wu, some 32wu pinches → ~130wu).
+2. **Smooth/straighten edges** — straight runs must be straight (not jagged),
+   ONLY corners/turns rounded. Corridors keep straight edges.
+3. **Both circles → irregular but smooth shapes** (not perfect discs), keep size.
+4. **Dynamic pathing actually spreads the crowd** across parallel routes — enemies
+   are NOT choosing open/empty lanes, they shove into packed ones. Two rounds of
+   single-flow-field density tuning haven't satisfied it.
+
+### Diagnosis of the pathing failure (why tuning alone can't fix it)
+- The map DOES have parallel routes: the two circles have top/bottom arc
+  alternatives, and the right "comb" is a continuous spine with finger-detours.
+- Geodesic nexus→spawn is only **1496 fine cells** (cap 6000) → the field fully
+  converges; convergence is not the bug.
+- The congestion repath is **wired and live** (confirmed in code, NOT a dead path):
+  `battle.gd:370` runs `tick_flow_rebuild()` every frame; `battle.gd:390-392`
+  calls `update_density()` + `start_flow_rebuild()` every ~2s when idle (gated by
+  the `_dbg_timer >= 2.0` async readback). So the failure is not "the mechanism
+  never runs" — it runs and still clumps.
+- Root cause is fundamental: **one shared shortest-path flow field assigns each
+  cell a single direction (argmin)** — it routes the whole crowd one way, so it
+  floods the spine or flips everyone to a finger. With the live density penalty
+  this becomes an **oscillation**: crowd flips to the empty lane → that lane
+  re-congests → next rebuild flips everyone back. It cannot produce a smooth,
+  *simultaneous* split.
+- **User chose: Hybrid** — per-agent route split (stable, persistent spread) +
+  congestion penalty (live adaptation). The static split is what ends the
+  oscillation; tuning alone cannot. **Width: ~2× (≈130wu).**
+- Verified safe: dilating walkable by +64wu keeps all 4 enclosed wall regions
+  (no parallel lanes merge) — RE-VERIFY after switching the widen method (below).
+
+### Code facts (verified against the live files)
+- Flow result is one **RGBA8** texture; finalize writes direction in **RG**, B=0
+  A=1 (`compute_flow_field.glsl:207-214`). The image is declared
+  `rgba8 ... writeonly` (`:34`) — to pack a 2nd variant in BA the finalize must
+  `imageLoad` the texel, so **`writeonly` must be removed**.
+- Physics samples it in `sample_flow_dir(pos)` (`compute_physics.glsl:226-234`,
+  `texelFetch(...).xy*2-1`), called once at `:337` inside
+  `pass_kinematics(uint id)` — the agent `id` is already in scope at the call.
+- → Pack **variant 0 dir in RG, variant 1 dir in BA**; physics picks channels by
+  `id & 1`. **No GPUSim binding change** → minimal risk to the tuned sim.
+- Push constant is **already 64 bytes** in GDScript (`flow_field_manager.gd`
+  `push.resize(64)`, every `set_push_constant(cl, push, 64)`); GLSL `Params`
+  fields end at offset 56 (`density_cap`). Adding `variant`+`route_bias` grows it
+  to 72 (see B1/B2).
+- Density penalty + amortized rebuild already exist (`flow_field_manager.gd`
+  `update_density`/`start_flow_rebuild`/`tick_flow_rebuild`, shader
+  `density_scale`/`density_cap` push at offsets 52/56). The baker already runs a
+  `box_blur_threshold(radius=3, passes=2)` (`gen_map_3_mask.py:281`) — that is the
+  exact smoothing the user says still looks jagged, so the fix below replaces it.
+
+---
+
+## Approach
+
+### A. Baker: widen + smooth + irregular circles (`tools/gen_map_3_mask.py`)
+The current "hard dilate + uniform box-blur" is what produces jagged straights
+(box-blur smears a staircase into a wobble instead of a clean line). Replace it
+with a **distance-transform widen that is inherently smooth**, then a morphological
+close — straight runs stay straight, only corners round.
+
+New pipeline order (mask 960×446, 4wu/px; optionally 2× supersample = 1920×892,
+2wu/px, downsampled at the end so staircase steps are half-size):
+1. trace → repairs (widen `REPAIR_RECTS` to the ~130wu band) → small-hole fill.
+2. **Widen via a (near-)exact Euclidean distance transform** of distance-to-
+   walkable (exact EDT, or chamfer **5/7/11** for isotropy — NOT 3/4); set
+   walkable where `dist_to_walkable ≤ r`, `r ≈ 32wu` for the ~+64wu (~2×) widen.
+   Thresholding an EDT **keeps straight walls straight and rounds only convex
+   corners at radius r** — exactly "only corners curved", and it removes the need
+   for a heavy blur. Pinches gone, corridors ≈130wu.
+3. **Stamp irregular-but-smooth circles** (replaces the perfect-disc `CIRCLES`
+   loop), AFTER widening so they keep intended size: profile
+   `r(θ) = R·(1 + Σ aₖ·sin(kθ + φₖ))`, low harmonics `k ∈ {2,3,5}`,
+   `aₖ ≈ 0.08–0.14`, distinct `φ` per circle; stamp by radial point-in-profile
+   test. Keep the **existing radii**: chamber **R365**, small **R130**.
+4. **Carve irregular island** (existing `ISLAND_BLOBS`, keep) inside the chamber.
+5. **Smooth corners with a morphological _close_** (dilate then erode by a small
+   disc, `r2 ≈ 6–10wu`): rounds concave corners + the lobed circle outlines and
+   kills any residual trace/threshold staircase, WITHOUT the straight-edge wobble
+   box-blur causes. Keep at most ONE light `box_blur_threshold(radius=1–2,
+   passes=1)` and only if speckle remains — drop the radius-3 pass.
+6. spawn-component filter → spawn→nexus connectivity assert (unchanged).
+- **Re-verify** the "4 enclosed wall regions, no parallel-lane merge" property
+  after the EDT widen (it fills corners differently than chamfer-3/4); if two
+  parallel lanes merge, reduce `r`.
+- Re-bake, eyeball full-size, reimport `levels/map_3_mask.png`. Spawn/nexus
+  unchanged (still on widened corridors); bump `nexus_pos`/extents only if assert
+  needs it.
+
+### B. Hybrid pathing — per-agent K=2 route variants (all maps)
+
+**B1. `shaders/compute_flow_field.glsl`** — variant-aware build:
+- **Remove `writeonly`** from `flow_result_tex` (`:34`,
+  `rgba8 ... uniform restrict image2D`) so finalize can `imageLoad` it.
+- Push: add `uint variant;` (offset 60) + `float route_bias;` (offset 64) → grow
+  push block from 64 to **72 bytes**.
+- `pass_extend_flow`: add a **structured VERTICAL bias** so the two variants prefer
+  opposite sides at every up/down choice (splits the circle arcs + comb fingers):
+  `penalty += route_bias * (variant==0 ? +1.0 : -1.0) * (float(gid.y)/grid_height - 0.5)`
+  (small `route_bias`, ~6–10). The bias is on the y-axis → splits TOP/BOTTOM
+  parallel routes (correct for map3's geometry); lanes separated left/right would
+  not split by this term (assumption to revisit for future maps). Density penalty
+  still applies to BOTH variants (shared `density_tex`) → both adapt to congestion.
+- `pass_finalize_flow`: `imageLoad` the result texel, write the **variant's
+  channel pair** (variant 0 → RG, variant 1 → BA), preserve the other pair;
+  obstacle case writes (0.5,0.5) into the variant's pair only.
+
+**B2. `battle/flow_field_manager.gd`** — build both variants:
+- Widen the push everywhere: `push.resize(72)` and `set_push_constant(..., 72)` at
+  **every** call site — passes 0/1/2/3/4 in `generate_field_gpu` AND passes 2/3/4
+  in `tick_flow_rebuild`. Encode `variant` (offset 60) + `route_bias` (offset 64,
+  new export `route_split_bias := 8.0`) per build.
+- `generate_field_gpu` (load): JFA once, then seed→extend→finalize for **variant 0**
+  (writes RG), then seed→extend→finalize for **variant 1** (writes BA), reusing the
+  same `flow_ping/pong` cost buffers (sequential, barrier-separated) and the shared
+  `density_tex`. Reuse `_sdf_set_for_flow`.
+- Amortized rebuild (`tick_flow_rebuild`): the state machine currently tracks one
+  pass set (`_rebuild_remaining`, `_rebuild_seeded`, `_rebuild_flow_set_is_ping`).
+  Add a **`_rebuild_variant`** field: converge variant 0, and on its finalize
+  **re-seed and converge variant 1**; only set `_rebuild_active = false` after
+  variant 1 finalizes. Only each variant's finalize writes its channel pair, so
+  agents keep the old field until both are done.
+
+**B3. `shaders/compute_physics.glsl`** — per-agent variant pick (only change to the
+sim): `sample_flow_dir(vec2 pos, uint id)` →
+`vec2 raw = ((id & 1u)==0u) ? f.xy : f.zw; return raw*2.0-1.0;`; call site `:337`
+passes `id`. Kinematics/separation/SDF steering untouched.
+
+**B4. Tuning** — keep the round-2 congestion values (`density_penalty_scale=15`,
+`cap=100`, EMA `0.65`); `route_split_bias=8` is the new static-spread knob.
+
+### C. Docs
+`docs/ARCHITECTURE.md`: map3 baker gained EDT-widen + morphological-close smoothing
++ irregular circle/island stamps; flow field is now **2-variant** (RG/BA, agent
+`id&1`) for per-agent route splitting, layered with the congestion penalty
+(hybrid). Note the new export `route_split_bias`.
+
+## Critical files
+- `tools/gen_map_3_mask.py` — EDT widen, irregular circles (R365/R130), close.
+- `levels/map_3_mask.png` — regenerated.
+- `shaders/compute_flow_field.glsl` — drop `writeonly`, variant bias + RG/BA
+  finalize + push 72.
+- `battle/flow_field_manager.gd` — 2-variant build (load both + rebuild state
+  machine with `_rebuild_variant`), push 72 at all sites, `route_split_bias` export.
+- `shaders/compute_physics.glsl` — `sample_flow_dir(pos, id)` channel pick.
+- `docs/ARCHITECTURE.md`.
+
+## Verification
+1. **Bake**: assert passes; mask eyeball — corridors ~2× wide, **straight corridor
+   walls visibly straight (not wavy)**, only corners/turns rounded, both circles
+   irregular-but-smooth, island present.
+2. **map3** (temp `selected_map="map3"`, run, big wave ~60s untouched): one
+   `editor_screenshot(source=game)` mid-wave — the **emptier of two parallel lanes
+   actually takes traffic** (crowd uses BOTH arcs of each circle and fills
+   upper+lower comb fingers simultaneously, not one packed lane beside an empty
+   one). Take a **second screenshot ~10s later** and confirm **no lane-flip
+   oscillation** + steady `stuck` count. `logs_read`: drain (`active>alive` grows),
+   stuck transient; `game_eval Engine.get_frames_per_second()` ≈60 (2 builds at
+   load is the only added cost — confirm no load stall > a few s).
+3. **map1** quick run: enemies split across the corridor / no regression, FPS fine,
+   no straggler regression (watch stuck count).
+4. Stop, revert `selected_map`, update docs.
+
+## Notes / risks
+- 2-variant doubles flow-build cost (load + each rebuild). Geodesic 1496 ≪ 6000
+  cap, fine flow ~1120×608 — ~0.8s amortized rebuild for both; load ~2× the
+  existing few-second hitch. If load stalls badly, lower the 6000 cap (1496 is the
+  real need) — but keep margin.
+- If `id&1` variant flips when the GPU buffer compacts on death, an agent just
+  switches to the other valid field mid-route (harmless). Verify no jitter.
+- `route_split_bias` too high distorts shortest paths (agents drift up/down);
+  start 8, lower if the spine route bends oddly. Too low → no visible split.
+- EDT widen `r` too high can merge adjacent parallel lanes (kills the split the
+  pathing fix relies on) — re-run the region-count/connectivity check after baking.
+- Physics change is one line in `sample_flow_dir`; does NOT touch the tuned
+  kinematics/separation/SDF steering (§10).

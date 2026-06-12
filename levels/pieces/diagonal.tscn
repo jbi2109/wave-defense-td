@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://kitpiecediagonal"]
+
+[ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="1_tex"]
+
+[node name="Diagonal" type="Polygon2D" groups=["map_path"]]
+z_index = -10
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(-123.5, -236.5, -236.5, -123.5, 123.5, 236.5, 236.5, 123.5)

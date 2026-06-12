@@ -12,6 +12,7 @@ var grid_counts_rid: RID
 var grid_cells_rid: RID
 var dummy_ff_rid: RID
 var dummy_obs_rid: RID
+var wall_sdf_rid: RID
 var last_ff_rd: RID
 var last_obs_rd: RID
 var linear_sampler_rid: RID
@@ -36,6 +37,11 @@ const AGENT_STRUCT_SIZE = 48
 const HASH_WIDTH = 128
 const HASH_HEIGHT = 128
 const HASH_CELLS = HASH_WIDTH * HASH_HEIGHT
+# Agent-agent separation is an iterative solver (like the studio reference's 6-pass
+# impulse solver): each iteration re-bins the updated positions and relaxes overlaps,
+# so crowd pressure dissipates smoothly instead of one capped nudge pinning lone
+# agents against walls (the straggler cause). Lower this if narrow corridors block.
+const SEPARATION_ITERATIONS = 6
 
 var active_count: int = 0
 var push_attributes: Array[GPU.PushAttribute] = []
@@ -133,7 +139,7 @@ func _init_buffers():
 func _init_compute():
 	var shader_file = load("res://shaders/compute_physics.glsl")
 	push_attributes.clear()
-	push_attributes.append(GPU.PushAttribute.create_dynamic(func(_p_push: PackedByteArray, _offset: int): pass, 96))
+	push_attributes.append(GPU.PushAttribute.create_dynamic(func(_p_push: PackedByteArray, _offset: int): pass, 112))
 	
 	var uniforms = GPU.UniformsArray.new([
 		GPU.create_storage_buffer_uniform(0, agent_buffer_rid),
@@ -161,13 +167,17 @@ func _init_compute():
 	agent_draw = GPU.SimpleDraw.new(rd, "agent_draw", draw_shader_file, draw_framebuffer, {0: draw_uniforms}, [draw_push])
 
 func dispatch_physics(_delta: float, _current_ms: float, _flow_field_data: Dictionary, _nexus_data: Dictionary, _t_data: Dictionary):
-	if active_count <= 0: return
-	
+	if active_count <= 0:
+		pending_damages.clear()
+		return
+
 	var push = PackedByteArray()
-	push.resize(96)
+	push.resize(112) # 104 bytes of data, padded to a 16-byte multiple for the push constant
 	
-	var hw = 256
-	var hh = 256
+	# Must match the allocated hash buffers (grid_counts/grid_cells sized for HASH_CELLS).
+	# Hardcoding 256 here while buffers are 128² indexes out of bounds on taller/wider maps.
+	var hw = HASH_WIDTH
+	var hh = HASH_HEIGHT
 	var hc = 32.0
 	
 	push.encode_u32(4, active_count)
@@ -196,13 +206,42 @@ func dispatch_physics(_delta: float, _current_ms: float, _flow_field_data: Dicti
 	for i in range(6):
 		push.encode_u32(72 + i * 4, 100) # Base nexus dmg
 
+	# Nexus arrival box half-extents (world units) — agents arrive anywhere in the rect.
+	var nex_ext: Vector2 = _nexus_data.get("extents", Vector2(10.0, 130.0))
+	push.encode_float(96, nex_ext.x)
+	push.encode_float(100, nex_ext.y)
+
+	# Serialize pending AOE events into the damage_events buffer layout.
+	# Header: event_count (u32) + 12 bytes pad. Each DamageEvent = 32 bytes.
+	var event_count = min(pending_damages.size(), 1024)
+	var dmg_bytes = PackedByteArray()
+	dmg_bytes.resize(16 + event_count * 32)
+	dmg_bytes.encode_u32(0, event_count)
+	for i in range(event_count):
+		var ev = pending_damages[i]
+		var base = 16 + i * 32
+		var ev_pos: Vector2 = ev.get("pos", Vector2.ZERO)
+		dmg_bytes.encode_float(base + 0, ev_pos.x)
+		dmg_bytes.encode_float(base + 4, ev_pos.y)
+		dmg_bytes.encode_float(base + 8, ev.get("radius", 0.0))
+		dmg_bytes.encode_float(base + 12, ev.get("damage", 0.0))
+		dmg_bytes.encode_u32(base + 16, ev.get("effect_type", 0))
+		dmg_bytes.encode_float(base + 20, ev.get("effect_value", 0.0))
+		dmg_bytes.encode_u32(base + 24, 0)
+		dmg_bytes.encode_u32(base + 28, 0)
+	pending_damages.clear()
+
 	RenderingServer.call_on_render_thread(func():
 		if not compute_physics: return
+		if damage_events_buffer_rid.is_valid():
+			rd.buffer_update(damage_events_buffer_rid, 0, dmg_bytes.size(), dmg_bytes)
 		var cl = rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(cl, compute_physics.pipeline)
 		compute_physics.bind_uniform_sets(cl)
 		
-		for p in range(8):
+		# Passes: 0 clear-grid, 1 kinematics(move), 2 binning, 3 separation,
+		# 4 apply-separation, 5 multimesh, 6 damage, 7 turret-targeting.
+		var dispatch_pass := func(p: int):
 			push.encode_u32(0, p)
 			compute_physics.push_attributes[0].static_data = push
 			compute_physics.update_push(cl)
@@ -214,30 +253,52 @@ func dispatch_physics(_delta: float, _current_ms: float, _flow_field_data: Dicti
 					rd.compute_list_dispatch(cl, int(ceil(float(t_count) / 256.0)), 1, 1)
 			else:
 				rd.compute_list_dispatch(cl, int(ceil(float(active_count) / 256.0)), 1, 1)
-			
 			rd.compute_list_add_barrier(cl)
+
+		# Move once, then iterate {clear-grid, re-bin, separate, apply} so crowd
+		# overlaps relax over several passes (orc-parity), then finalize.
+		dispatch_pass.call(0) # clear grid
+		dispatch_pass.call(1) # kinematics (move along flow)
+		dispatch_pass.call(2) # binning
+		dispatch_pass.call(3) # separation
+		dispatch_pass.call(4) # apply separation
+		for _it in range(SEPARATION_ITERATIONS - 1):
+			dispatch_pass.call(0) # clear grid
+			dispatch_pass.call(2) # re-bin updated positions
+			dispatch_pass.call(3) # separation
+			dispatch_pass.call(4) # apply separation
+		dispatch_pass.call(5) # multimesh write
+		dispatch_pass.call(6) # damage events
+		dispatch_pass.call(7) # turret targeting
 		
 		rd.compute_list_end()
 	)
 
-func update_flow_field_textures(ff_tex: Texture2D, obs_tex: Texture2D, external_sdf_rd: RID = RID()):
+func update_flow_field_textures(ff_tex: Texture2D, obs_tex: Texture2D, sdf_tex: Texture2D = null):
 	if not ff_tex or not obs_tex: return
-	
+
 	# Extract image data outside render thread to avoid stalling
 	var ff_img = ff_tex.get_image() if (ff_tex is ImageTexture) else null
 	var obs_img = obs_tex.get_image() if (obs_tex is ImageTexture) else null
-	
+	var sdf_img = sdf_tex.get_image() if (sdf_tex is ImageTexture) else null
+
 	RenderingServer.call_on_render_thread(func():
 		if not compute_physics: return
-		
+
 		var ff_rd = RenderingServer.texture_get_rd_texture(ff_tex.get_rid())
 		if not ff_rd.is_valid() and "texture_rd_rid" in ff_tex:
 			ff_rd = ff_tex.texture_rd_rid
-			
+
 		var obs_rd = RenderingServer.texture_get_rd_texture(obs_tex.get_rid())
 		if not obs_rd.is_valid() and "texture_rd_rid" in obs_tex:
 			obs_rd = obs_tex.texture_rd_rid
-			
+
+		var sdf_rd = RID()
+		if sdf_tex:
+			sdf_rd = RenderingServer.texture_get_rd_texture(sdf_tex.get_rid())
+			if not sdf_rd.is_valid() and "texture_rd_rid" in sdf_tex:
+				sdf_rd = sdf_tex.texture_rd_rid
+
 		if not ff_rd.is_valid() and ff_img != null:
 			var tf = RDTextureFormat.new()
 			# ff_img from CPU is FORMAT_RGBA8
@@ -258,9 +319,21 @@ func update_flow_field_textures(ff_tex: Texture2D, obs_tex: Texture2D, external_
 			if dummy_obs_rid.is_valid(): rd.free_rid(dummy_obs_rid)
 			dummy_obs_rid = GPU.texture_create(rd, "obs_tex", tf, RDTextureView.new(), [obs_img.get_data()])
 			obs_rd = dummy_obs_rid
-			
+
+		# Fine wall-SDF (FORMAT_RF → R32_SFLOAT). Build the RD texture once; the SDF
+		# is static (map load), so reuse the cached rid on later frames.
+		if not sdf_rd.is_valid() and sdf_img != null and not wall_sdf_rid.is_valid():
+			var tf = RDTextureFormat.new()
+			tf.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
+			tf.width = sdf_img.get_width()
+			tf.height = sdf_img.get_height()
+			tf.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
+			wall_sdf_rid = GPU.texture_create(rd, "wall_sdf_tex", tf, RDTextureView.new(), [sdf_img.get_data()])
+		if not sdf_rd.is_valid() and wall_sdf_rid.is_valid():
+			sdf_rd = wall_sdf_rid
+
 		if ff_rd.is_valid() and obs_rd.is_valid():
-			var sdf_rd_to_bind = external_sdf_rd if external_sdf_rd.is_valid() else obs_rd
+			var sdf_rd_to_bind = sdf_rd if sdf_rd.is_valid() else obs_rd
 			
 			var new_uniforms = GPU.UniformsArray.new([
 				GPU.create_storage_buffer_uniform(0, agent_buffer_rid),
@@ -281,6 +354,23 @@ func update_flow_field_textures(ff_tex: Texture2D, obs_tex: Texture2D, external_
 			if old_set.is_valid():
 				rd.free_rid(old_set)
 			compute_physics.uniform_sets[0] = rd.uniform_set_create(new_uniforms.array, compute_physics.shader, 0)
+	)
+
+# Free the physics uniform set, which binds the per-battle flow-field textures. battle.gd
+# calls this from _exit_tree() on scene teardown, BEFORE the flow field frees those textures
+# — otherwise freeing a bound texture auto-invalidates this set and the next free double-frees
+# it ("Attempted to free invalid ID"). GPUSim is an autoload, so it must drop scene-scoped
+# bindings itself; the next battle rebuilds the set on its first update_flow_field_textures.
+func release_flow_bindings() -> void:
+	if not rd or not compute_physics:
+		return
+	RenderingServer.call_on_render_thread(func():
+		if not compute_physics:
+			return
+		var s = compute_physics.uniform_sets.get(0, RID())
+		if s.is_valid():
+			rd.free_rid(s)
+		compute_physics.uniform_sets.erase(0)
 	)
 
 func draw_agents(camera_pos: Vector2, viewport_size: Vector2, zoom: float):
@@ -455,6 +545,7 @@ func _exit_tree():
 	GPU.rid_safe_free(rd, damage_events_buffer_rid)
 	GPU.rid_safe_free(rd, dummy_ff_rid)
 	GPU.rid_safe_free(rd, dummy_obs_rid)
+	GPU.rid_safe_free(rd, wall_sdf_rid)
 	GPU.rid_safe_free(rd, texture_rd_rid)
 	GPU.rid_safe_free(rd, draw_texture_rid)
 	GPU.rid_safe_free(rd, dispatch_buffer)

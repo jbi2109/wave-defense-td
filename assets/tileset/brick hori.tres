@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://jplxavs0rvdx"]
 
-[ext_resource type="Texture2D" uid="uid://djd2mxrucs8g4" path="res://assets/Brick Dual Hori Flat - 64x48.png" id="1_ivcv5"]
+[ext_resource type="Texture2D" uid="uid://djd2mxrucs8g4" path="res://assets/tileset/Brick Dual Hori Flat - 64x48.png" id="1_ivcv5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qjrc4"]
 texture = ExtResource("1_ivcv5")

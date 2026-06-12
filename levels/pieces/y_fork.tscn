@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cr0ycahvt0w81"]
+
+[ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="1_tex"]
+
+[node name="YFork" type="Polygon2D" groups=["map_path"]]
+z_index = -10
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(73.5, -186.5, -33, -80, -94, -80, -94, 80, -33, 80, 73.5, 186.5, 186.5, 73.5, 113, 0, 186.5, -73.5)

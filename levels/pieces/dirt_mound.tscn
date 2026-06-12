@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://kitpiecedirtmound"]
+
+[ext_resource type="Texture2D" uid="uid://djvertw8l0foc" path="res://assets/shader/Dirt_texture.png" id="1_tex"]
+
+[node name="DirtMound" type="Polygon2D" groups=["map_wall"]]
+z_index = -9
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(0, -130, -24, -127.8, -47.5, -121, -69.2, -110, -89, -94.8, -106, -75.2, -119.2, -51.8, -127, -27.8, -130, 0, -127.8, 24, -121, 47.5, -110, 69.2, -94.8, 89, -75.2, 106, -51.8, 119.2, -27.8, 127, 0, 130, 24, 127.8, 47.5, 121, 69.2, 110, 89, 94.8, 106, 75.2, 119.2, 51.8, 127, 27.8, 130, 0, 127.8, -24, 121, -47.5, 110, -69.2, 94.8, -89, 75.2, -106, 51.8, -119.2, 27.8, -127)

@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://0ix2bcfli7qv"]
 
-[ext_resource type="Texture2D" uid="uid://0i6y8vo4yv57" path="res://assets/Hex Dual Hori Flat - 64x48tri 64x64hex.png" id="1_54qsn"]
+[ext_resource type="Texture2D" uid="uid://0i6y8vo4yv57" path="res://assets/tileset/Hex Dual Hori Flat - 64x48tri 64x64hex.png" id="1_54qsn"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d65qn"]
 texture = ExtResource("1_54qsn")

@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://2rjhwxxm2d76"]
+
+[ext_resource type="Texture2D" uid="uid://b6cjmch52s2x0" path="res://assets/shader/shader-texture_2.png" id="1_tex"]
+
+[node name="ChamberHex" type="Polygon2D" groups=["map_path"]]
+z_index = -10
+texture_repeat = 2
+texture = ExtResource("1_tex")
+polygon = PackedVector2Array(-120, -207.8, -240, -0.1, -120, 207.9, 120, 207.9, 239.2, 1.4, 235.5, -8.1, 120, -207.8)

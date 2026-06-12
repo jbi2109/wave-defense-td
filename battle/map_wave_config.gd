@@ -6,4 +6,3 @@ class_name MapWaveConfig
 @export var spawn_rate: float = 0.001
 @export var inter_wave_duration: float = 30.0
 @export var max_waves: int = 15
-

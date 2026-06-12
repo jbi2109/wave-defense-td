@@ -31,6 +31,10 @@ layout(push_constant, std430) uniform Params {
 	
 	// Type damage map (up to 6 types)
 	uint type_nexus_dmg[6];
+
+	// Nexus arrival box half-extents (world units). Agents arrive/damage anywhere in
+	// this rect, matching the flow target seed (whole bar), not just a centre circle.
+	vec2 nexus_extents;
 } params;
 
 // === Data Structures ===
@@ -139,6 +143,13 @@ layout(set = 0, binding = 10, std430) buffer TurretFireEventsBuffer {
 };
 
 
+// Hi-res obstacle/SDF subdivision: fine pixels per coarse flow cell.
+// Mirrors FlowFieldManager.obs_sub (= 8) → 4 world units per obstacle pixel at
+// cell_size 32. The flow field is now built at this same fine resolution, so we can
+// no longer derive this ratio from textureSize(obstacle)/textureSize(flow) (== 1);
+// keep it as a constant tied to the GDScript obs_sub.
+const float OBS_SUB = 8.0;
+
 // === Helper Functions ===
 uint get_hash_index(vec2 pos) {
 	int gx = clamp(int(floor(pos.x * params.inv_hash_cell_size)), 0, int(params.hash_width) - 1);
@@ -151,9 +162,8 @@ uint get_hash_index(vec2 pos) {
 // Each obs pixel = cell_size/obs_sub world units, giving sub-tile collision precision.
 void resolve_circle_vs_sdf(inout vec2 pos, inout vec2 vel, float radius) {
 	vec2 tex_size  = vec2(textureSize(obstacle_field, 0));
-	vec2 ff_size   = vec2(textureSize(flow_field, 0));
-	float obs_sub  = tex_size.x / ff_size.x;         // e.g. 400/100 = 4
-	float sub_world = params.cell_size / obs_sub;     // world units per obs pixel (e.g. 8)
+	float obs_sub  = OBS_SUB;
+	float sub_world = params.cell_size / obs_sub;     // world units per obs pixel (e.g. 4)
 	
 	// Pixel-index range that the circle's AABB could touch
 	int min_tx = int(floor((pos.x - radius) / sub_world - params.grid_offset.x * obs_sub));
@@ -194,6 +204,46 @@ void resolve_circle_vs_sdf(inout vec2 pos, inout vec2 vel, float radius) {
 	}
 }
 
+// Sample the fine wall-SDF (binding 12) at a world position. Returns the world-unit
+// distance to the nearest wall (the field was baked in world units on the CPU). The
+// SDF shares the obstacle texture's resolution/world mapping.
+float sample_wall_dist(vec2 pos) {
+	vec2 tex_size = vec2(textureSize(sdf_field, 0));
+	float obs_sub = OBS_SUB;
+	float sub_world = params.cell_size / obs_sub;
+	vec2 pix = pos / sub_world - params.grid_offset * obs_sub;
+	vec2 uv = (pix + 0.5) / tex_size;
+	return texture(sdf_field, uv).r;
+}
+
+// Sample the fine flow field (built at obstacle resolution) at a world position.
+// NEAREST (texelFetch on the agent's own fine cell), like the studio reference's
+// per-pixel flow: a walkable fine cell always carries valid flow. Bilinear was tried
+// and rejected — at grass/wall corners the 2x2 tap blends in wall texels (encoded as
+// zero direction), weakening flow to ~0 so corner agents fall back to straight-line
+// nexus steering and pin on the wall (~12 stragglers). Returns a (non-normalized)
+// direction; (0,0) only if the cell is out of bounds.
+// Per-agent variant: even-id agents (id&1==0) read direction from RG channels
+// (variant 0, upper-route bias); odd-id agents read from BA (variant 1, lower-route
+// bias). Agents assigned by id — the split is stable and persistent across frames.
+vec2 sample_flow_dir(vec2 pos, uint id) {
+	ivec2 tex_size = textureSize(flow_field, 0);
+	float sub_world = params.cell_size / OBS_SUB;
+	vec2 pix = pos / sub_world - params.grid_offset * OBS_SUB;
+	ivec2 cell = ivec2(floor(pix));
+	if (cell.x < 0 || cell.y < 0 || cell.x >= tex_size.x || cell.y >= tex_size.y) return vec2(0.0);
+	vec4 f = texelFetch(flow_field, cell, 0);
+	vec2 raw = ((id & 1u) == 0u) ? f.xy : f.zw;
+	return raw * 2.0 - 1.0;
+}
+
+// Gradient of the wall-SDF (central differences) — points away from the nearest wall.
+vec2 wall_gradient(vec2 pos, float eps) {
+	float dx = sample_wall_dist(pos + vec2(eps, 0.0)) - sample_wall_dist(pos - vec2(eps, 0.0));
+	float dy = sample_wall_dist(pos + vec2(0.0, eps)) - sample_wall_dist(pos - vec2(0.0, eps));
+	return vec2(dx, dy) / (2.0 * eps);
+}
+
 // === Passes ===
 
 void pass_clear_grid(uint id) {
@@ -231,8 +281,13 @@ void pass_kinematics(uint id) {
 	}
 	
 	if (params.nexus_valid > 0u && ag.health > 0) {
-		vec2 d = ag.pos - params.nexus_pos;
-		if (dot(d, d) <= params.nexus_radius * params.nexus_radius) {
+		// Arrive anywhere inside the nexus box (+ agent radius), not just within a
+		// centre circle — so agents reaching the tall bar's top/edges register instead
+		// of milling and overflowing into the corners.
+		float arrive_margin = ag.scale * 10.0;
+		vec2 ld = abs(ag.pos - params.nexus_pos);
+		if (ld.x <= params.nexus_extents.x + arrive_margin &&
+			ld.y <= params.nexus_extents.y + arrive_margin) {
 			ag.health = 0;
 			uint dmg = 0;
 			if (ag.type < 6) {
@@ -282,15 +337,8 @@ void pass_kinematics(uint id) {
 	if (isnan(ag.vel.x) || isnan(ag.vel.y) || isinf(ag.vel.x) || isinf(ag.vel.y)) { ag.vel = vec2(0.0); }
 	if (isnan(ag.scale) || isinf(ag.scale) || ag.scale <= 0.001) { ag.scale = 1.0; }
 	
-	vec2 ff_pos = (ag.pos / params.cell_size) - params.grid_offset;
-	ivec2 tex_size = textureSize(flow_field, 0);
-	ivec2 ff_cell = ivec2(floor(ff_pos));
-	
-	vec2 t_dir = vec2(0.0);
-	if (ff_cell.x >= 0 && ff_cell.x < tex_size.x && ff_cell.y >= 0 && ff_cell.y < tex_size.y) {
-		vec4 f_val = texelFetch(flow_field, ff_cell, 0);
-		t_dir = f_val.xy * 2.0 - 1.0; 
-	}
+	// Fine flow sample — per-agent variant pick: even id → RG (variant 0), odd → BA (variant 1).
+	vec2 t_dir = sample_flow_dir(ag.pos, id);
 	
 	if (length(t_dir) > 0.01) {
 		t_dir = normalize(t_dir);
@@ -300,8 +348,49 @@ void pass_kinematics(uint id) {
 		float py = ag.pos.y * freq - t;
 		vec2 curl = vec2(-sin(px) * sin(py), -cos(px) * cos(py));
 		t_dir = normalize(t_dir + 0.15 * curl);
+	} else if (params.nexus_valid > 0u) {
+		// Zero-flow cell (no converged flow here). Steer toward the nexus, but bend the
+		// direction along the wall-SDF gradient so a stranded agent rounds walls toward
+		// open space instead of driving straight into a corner and pinning.
+		vec2 to_nexus = params.nexus_pos - ag.pos;
+		if (length(to_nexus) > 0.01) {
+			t_dir = normalize(to_nexus);
+			float wd = sample_wall_dist(ag.pos);
+			float av = ag.scale * 10.0 + 16.0;
+			if (wd < av) {
+				vec2 g = wall_gradient(ag.pos, params.cell_size / OBS_SUB);
+				if (length(g) > 0.001) {
+					float ww = clamp((av - wd) / av, 0.0, 1.0);
+					vec2 bent = t_dir + normalize(g) * (ww * 1.5);
+					if (length(bent) > 0.001) t_dir = normalize(bent);
+				}
+			}
+		}
 	}
-	
+
+	// Wall-avoidance + track-centering via the fine wall-SDF gradient (points away from
+	// the nearest wall; on a corridor the SDF ridge is the centerline, where the two
+	// opposite-wall gradients cancel). Two layered terms: a STRONG shove when hugging a
+	// wall (keeps agents off edges/corners), plus a WEAK, wider nudge so agents PREFER
+	// the middle of the track — a preference, not a rail. Flow still dominates and the
+	// separation pass spreads agents across the width.
+	{
+		float wdist = sample_wall_dist(ag.pos);
+		vec2 grad = wall_gradient(ag.pos, params.cell_size / OBS_SUB);
+		if (length(grad) > 0.001) {
+			grad = normalize(grad);
+			float avoid = ag.scale * 10.0 + 16.0;   // tight wall-hug band (strong)
+			float center_range = 96.0;              // soft centering band (gentle)
+			float avoid_w  = clamp((avoid - wdist) / avoid, 0.0, 1.0) * 1.5;
+			float center_w = clamp((center_range - wdist) / center_range, 0.0, 1.0) * 0.35;
+			vec2 steered = t_dir + grad * (avoid_w + center_w);
+			if (length(steered) > 0.001) {
+				t_dir = normalize(steered);
+			}
+		}
+	}
+
+
 	float sm = float(ag.speed_modifier) / 1000.0;
 	float current_speed = ag.max_speed * sm;
 	vec2 vel = ag.vel;
@@ -309,13 +398,14 @@ void pass_kinematics(uint id) {
 	float lf = 6.0 * params.delta;
 	vel = vel + (t_dir * current_speed - vel) * lf;
 	
-	vec2 target_pos = ag.pos + vel * params.delta;
+	vec2 desired_step = vel * params.delta;
+	vec2 target_pos = ag.pos + desired_step;
 	float radius = ag.scale * 10.0;
 	resolve_circle_vs_sdf(target_pos, vel, radius);
-	
+
 	if (isnan(target_pos.x) || isnan(target_pos.y)) { target_pos = vec2(0.0); }
 	if (isnan(vel.x) || isnan(vel.y)) { vel = vec2(0.0); }
-	
+
 	agents_in[id].pos = target_pos;
 	agents_in[id].vel = vel;
 	agents_in[id].health = ag.health;
@@ -344,7 +434,16 @@ void pass_separation(uint id) {
 	if (ag.health <= 0) {
 		return;
 	}
-	
+
+	// Ghosting agents (kinematics is marching them collisionlessly toward the nexus to
+	// escape a stuck pocket) bypass separation entirely — otherwise its wall resolve
+	// would eject them back out of the wall and undo the phasing. Pass pos/vel through.
+	if ((ag.pad0 & 0x80000000u) != 0u) {
+		agents_out[id].pos = ag.pos;
+		agents_out[id].vel = ag.vel;
+		return;
+	}
+
 	if (isnan(ag.pos.x) || isnan(ag.pos.y) || isinf(ag.pos.x) || isinf(ag.pos.y)) {
 		ag.pos = vec2(0.0);
 	}
@@ -354,7 +453,7 @@ void pass_separation(uint id) {
 	if (isnan(ag.scale) || isinf(ag.scale) || ag.scale <= 0.001) {
 		ag.scale = 1.0;
 	}
-	
+
 	vec2 pos = ag.pos;
 	float my_scale = ag.scale;
 	

@@ -103,6 +103,11 @@ func _can_place() -> bool:
 		return true
 	return wave_manager.current_wave == 0 or wave_manager.is_inter_wave
 
+# True while the player is mid-placement (ghost active) or editing an existing turret's
+# cone. battle.gd checks this so left-drag camera panning never steals a placement click.
+func is_placing() -> bool:
+	return selected_type != "" or current_state != PlacementState.NONE
+
 func _process(_delta):
 	var ability_mgr = get_tree().current_scene.get_node_or_null("AbilityManager")
 	if ability_mgr and ability_mgr.active_ability_index != -1:
@@ -115,7 +120,9 @@ func _process(_delta):
 	_left_mouse_was_down = left_mouse_down
 	
 	if selected_type == "" or current_state == PlacementState.NONE:
-		if left_mouse_just_pressed and _can_place() and mouse_pos.y < 900:
+		# HUD-exclusion guard must be SCREEN-space (the camera can pan/zoom, so
+		# world y is no longer tied to the bottom HUD band).
+		if left_mouse_just_pressed and _can_place() and get_viewport().get_mouse_position().y < 900:
 			var turrets = get_tree().get_nodes_in_group("turret")
 			for t in turrets:
 				if is_instance_valid(t) and t.global_position.distance_squared_to(mouse_pos) < 28.0 * 28.0:
@@ -257,15 +264,13 @@ func _is_position_valid(pos: Vector2) -> bool:
 		return false
 		
 	if gridless_placement:
-		var turret_poly = PackedVector2Array([
-			pos + Vector2(-16, -16),
-			pos + Vector2(16, -16),
-			pos + Vector2(16, 16),
-			pos + Vector2(-16, 16)
-		])
-		var path_poly = _get_grass_path_polygon()
-		if not path_poly.is_empty() and not Geometry2D.intersect_polygons(turret_poly, path_poly).is_empty():
-			return false
+		# Mask-based: forbid placing on / overlapping the walkable path. Samples the
+		# obstacle image (white = wall = OK, black = walkable = blocked), accurate for
+		# any map shape — mazes, loops, islands — unlike the single Grass_Path polygon.
+		# Checks the turret footprint centre + corners.
+		for off in [Vector2.ZERO, Vector2(-16, -16), Vector2(16, -16), Vector2(16, 16), Vector2(-16, 16)]:
+			if _is_walkable_cell(pos + off):
+				return false
 	elif not flow_field.obstacle_field[tx][ty]:
 		return false
 			
@@ -287,3 +292,15 @@ func _place_turret(pos: Vector2, cone_center: float, cone_width: float):
 
 func _on_wave_started(_wave_num: int, _enemy_count: int):
 	cancel_placement()
+
+# True if the world point falls in a walkable (path) cell of the obstacle image.
+# obs_image: white = wall, black = walkable. Keeps turrets off the paths.
+func _is_walkable_cell(p: Vector2) -> bool:
+	if not flow_field or not flow_field.obs_image:
+		return false
+	var cs := float(flow_field.cell_size)
+	var gx := int(floor(p.x / cs)) - flow_field.grid_offset.x
+	var gy := int(floor(p.y / cs)) - flow_field.grid_offset.y
+	if gx < 0 or gx >= flow_field.grid_size.x or gy < 0 or gy >= flow_field.grid_size.y:
+		return false
+	return flow_field.obs_image.get_pixel(gx, gy).r < 0.5

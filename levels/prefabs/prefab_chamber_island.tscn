@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://prefabchamberisland"]
+
+[ext_resource type="PackedScene" path="res://levels/pieces/chamber.tscn" id="ps_chamber"]
+[ext_resource type="PackedScene" path="res://levels/pieces/dirt_mound_map2.tscn" id="ps_dirt_mound_map2"]
+
+[node name="PrefabChamberIsland" type="Node2D"]
+
+[node name="Chamber_1" parent="." instance=ExtResource("ps_chamber")]
+position = Vector2(0, 0)
+
+[node name="DirtMoundMap2_1" parent="." instance=ExtResource("ps_dirt_mound_map2")]
+position = Vector2(0, 0)
+scale = Vector2(0.55, 0.55)
