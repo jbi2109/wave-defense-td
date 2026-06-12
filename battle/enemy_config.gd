@@ -7,6 +7,8 @@ var type_speeds: Array[float] = []
 var type_healths: Array[float] = []
 var type_split_count: Array[int] = []
 var type_split_type: Array[int] = []
+var type_golds: Array[int] = []
+var type_nexus_dmg: Array[int] = []
 
 func _ready():
 	for child in get_children():
@@ -17,3 +19,5 @@ func _ready():
 			type_healths.append(child.health if "health" in child else 10.0)
 			type_split_count.append(child.split_count if "split_count" in child else 0)
 			type_split_type.append(child.split_type_index if "split_type_index" in child else 0)
+			type_golds.append(child.gold_yield if "gold_yield" in child else 0)
+			type_nexus_dmg.append(child.nexus_damage if "nexus_damage" in child else 1)

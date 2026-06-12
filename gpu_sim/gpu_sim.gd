@@ -43,18 +43,102 @@ const HASH_CELLS = HASH_WIDTH * HASH_HEIGHT
 # agents against walls (the straggler cause). Lower this if narrow corridors block.
 const SEPARATION_ITERATIONS = 6
 
-var active_count: int = 0
+var active_count: int = 0   # Highest used agent slot this wave (GPU buffer occupancy; never shrinks mid-wave).
+var alive_count: int = 0    # Agents actually alive (decremented by the death readback).
 var push_attributes: Array[GPU.PushAttribute] = []
+
+# Per-type tables fed by EnemyConfig at battle start (index = enemy type index).
+var _type_golds: PackedInt32Array = PackedInt32Array()
+var _type_nexus_dmg: PackedInt32Array = PackedInt32Array()
+
+# Death/nexus-damage readback cadence. The GPU records every death (and nexus hit)
+# into ReadbackBuffer segments; we drain them on a timer and emit gameplay signals.
+const READBACK_INTERVAL := 0.2
+const DEAD_SEGMENT_CAP := 4095  # shader drops records past this (atomic count keeps rising)
+var _readback_timer: float = 0.0
+var _readback_inflight: bool = false
+var _readback_inflight_ms: int = 0
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
 	_init_buffers()
 	_init_compute()
-	
+
 	GlobalEvents.aoe_damage_requested.connect(apply_aoe_damage)
 	GlobalEvents.aoe_freeze_requested.connect(apply_aoe_freeze)
 	GlobalEvents.aoe_slow_requested.connect(apply_aoe_slow)
 	GlobalEvents.turret_update_requested.connect(update_turret)
+
+func _process(delta: float) -> void:
+	# Watchdog: a readback callback that never fired (e.g. device teardown) must not
+	# block draining forever.
+	if _readback_inflight and Time.get_ticks_msec() - _readback_inflight_ms > 2000:
+		_readback_inflight = false
+	_readback_timer += delta
+	if _readback_timer < READBACK_INTERVAL:
+		return
+	_readback_timer = 0.0
+	if active_count <= 0 or _readback_inflight:
+		return
+	if dead_enemies_buffer == null or nexus_damage_buffer == null:
+		return
+	_readback_inflight = true
+	_readback_inflight_ms = Time.get_ticks_msec()
+	RenderingServer.call_on_render_thread(func():
+		if not dead_enemies_buffer.data_buffer.is_valid() or not nexus_damage_buffer.buffer.is_valid():
+			call_deferred("_clear_readback_inflight")
+			return
+		# ORDER MATTERS: enqueue the async read FIRST, then rotate the write segment.
+		# The snapshot then contains everything written so far (including the current
+		# segment) and compute submitted after the header update writes the fresh
+		# segment — no events lost, none double-read. Incrementing first would zero a
+		# segment that was never read.
+		dead_enemies_buffer.read_counted_async(func(count: int, bytes: PackedByteArray):
+			call_deferred("_on_dead_events", count, bytes)
+		)
+		dead_enemies_buffer.increment_write()
+		nexus_damage_buffer.read_accumulated_async(func(total: int):
+			call_deferred("_on_nexus_damage_readback", total)
+		)
+		nexus_damage_buffer.increment_write()
+	)
+
+func _clear_readback_inflight() -> void:
+	_readback_inflight = false
+
+func _on_dead_events(count: int, bytes: PackedByteArray) -> void:
+	# Record layout (16 bytes): [id | 0x80000000 if nexus arrival, type, pos.x bits, pos.y bits].
+	# The atomic count can exceed the segment capacity when records were dropped — clamp.
+	count = mini(count, mini(DEAD_SEGMENT_CAP, bytes.size() / 16))
+	for i in range(count):
+		var off := i * 16
+		var id_field := bytes.decode_u32(off)
+		var type := bytes.decode_u32(off + 4)
+		var is_arrival := (id_field & 0x80000000) != 0
+		if not is_arrival:
+			var pos := Vector2(bytes.decode_float(off + 8), bytes.decode_float(off + 12))
+			var gold: int = _type_golds[type] if type < _type_golds.size() else 0
+			GlobalEvents.enemy_killed.emit(type, pos, gold)
+	# Decrement AFTER the emits: a dying Splitter's children spawn synchronously in
+	# the enemy_killed handler and must be counted before any wave-clear check runs.
+	alive_count = maxi(0, alive_count - count)
+
+func _on_nexus_damage_readback(total: int) -> void:
+	# This callback always fires (even with 0 damage) and is enqueued after the dead
+	# read, so it doubles as the end-of-drain marker.
+	_readback_inflight = false
+	if total > 0:
+		GlobalEvents.nexus_damaged.emit(total)
+
+func set_enemy_type_data(golds: Array, nexus_dmg: Array) -> void:
+	_type_golds = PackedInt32Array(golds)
+	_type_nexus_dmg = PackedInt32Array(nexus_dmg)
+
+func reset_wave_slots() -> void:
+	# Safe only when nothing is alive: dead slots are health-gated in every shader
+	# pass and get overwritten by buffer_update on respawn.
+	active_count = 0
+	alive_count = 0
 
 func _init_buffers():
 	var agent_data_byte_array = PackedByteArray()
@@ -416,6 +500,7 @@ func spawn_enemy(pos: Vector2, type_index: int, type_speeds: Array, type_scales:
 			rd.buffer_update(agent_buffer_rid_2, idx * AGENT_STRUCT_SIZE, AGENT_STRUCT_SIZE, bytes)
 	)
 	active_count += 1
+	alive_count += 1
 
 var turrets: Array = []
 var turrets_by_id: Dictionary = {}

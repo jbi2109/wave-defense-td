@@ -26,8 +26,14 @@ var _last_wave: int = -1
 var _last_enemy_count: int = -1
 var _dbg_timer: float = 0.0
 var _dbg_last_pos: PackedVector2Array = PackedVector2Array()
+var _drift_zero_samples: int = 0
 
 func _ready():
+	# GPUSim is an autoload: agents from a previous battle survive the scene change.
+	# Zero the slot counters so the new battle starts empty (stale slots are inert —
+	# nothing processes ids >= active_count — and get overwritten by new spawns).
+	GPUSim.reset_wave_slots()
+
 	var map_id = Globals.selected_map
 	if map_id == "":
 		map_id = "map1"
@@ -56,6 +62,10 @@ func _ready():
 
 	# Wire wave manager dependency
 	wave_manager.enemy_config = enemy_config
+
+	# Feed per-type gold/nexus-damage tables to the GPU sim (used by the death
+	# readback to award kill gold and by the nexus push constants).
+	GPUSim.set_enemy_type_data(enemy_config.type_golds, enemy_config.type_nexus_dmg)
 
 	# Signals
 	GlobalEvents.nexus_destroyed.connect(_on_nexus_destroyed)
@@ -473,7 +483,18 @@ func _process(delta):
 					if dbg_prev.size() > i and positions[i].distance_to(dbg_prev[i]) < 2.0 and positions[i].distance_to(dbg_nexus_pos) > 100.0:
 						stuck += 1
 			_dbg_last_pos = positions
-			print("[DBG] alive=%d stuck=%d active=%d spawning=%s" % [alive, stuck, GPUSim.active_count, str(wave_manager.is_spawning)])
+			print("[DBG] alive=%d stuck=%d counter=%d active=%d spawning=%s" % [alive, stuck, GPUSim.alive_count, GPUSim.active_count, str(wave_manager.is_spawning)])
+			# Drift valve: if the exact readback says everything is dead but the
+			# incremental counter disagrees (dead-record segment overflowed), force it
+			# after two consecutive samples so the wave can clear.
+			if alive == 0 and GPUSim.alive_count > 0 and not wave_manager.is_spawning:
+				_drift_zero_samples += 1
+				if _drift_zero_samples >= 2:
+					push_warning("BATTLE: alive_count drift (counter=%d, actual=0) — forcing 0" % GPUSim.alive_count)
+					GPUSim.alive_count = 0
+					_drift_zero_samples = 0
+			else:
+				_drift_zero_samples = 0
 			# Congestion repath (piggybacks on this readback): refresh the density
 			# texture from live agents and kick an amortized flow rebuild so the
 			# field steers new traffic around crowded lanes.
@@ -486,10 +507,11 @@ func _process(delta):
 	wave_manager.tick(delta, _spawn_single_enemy)
 
 	if (not wave_manager.is_spawning and
-		not wave_manager.is_inter_wave and 
-		wave_manager.current_wave > 0 and 
-		GPUSim.active_count == 0):
-		
+		not wave_manager.is_inter_wave and
+		wave_manager.current_wave > 0 and
+		GPUSim.alive_count == 0):
+
+		GPUSim.reset_wave_slots()
 		if wave_manager.current_wave == wave_manager.max_waves:
 			_on_victory()
 		else:
@@ -526,8 +548,8 @@ func _update_hud() -> void:
 		if has_node("HUD/Overlay/WaveLabel"):
 			$HUD/Overlay/WaveLabel.text = "Wave: %d" % _last_wave
 			
-	if GPUSim.active_count != _last_enemy_count:
-		_last_enemy_count = GPUSim.active_count
+	if GPUSim.alive_count != _last_enemy_count:
+		_last_enemy_count = GPUSim.alive_count
 		if has_node("HUD/Overlay/EnemyCountLabel"):
 			$HUD/Overlay/EnemyCountLabel.text = "Enemies: %d" % _last_enemy_count
 

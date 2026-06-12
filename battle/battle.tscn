@@ -206,6 +206,8 @@ health = 120.0
 spawn_weight = 1.0
 gold_yield = 20
 min_wave = 13
+split_count = 3
+split_type_index = 0
 
 [node name="Nexus" parent="." unique_id=334875872 instance=ExtResource("3_2rs0q")]
 position = Vector2(1913.4543, 323.39142)
