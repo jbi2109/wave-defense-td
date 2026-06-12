@@ -104,9 +104,18 @@ func _notification(what):
 				flow_ping, flow_pong,
 				flow_result_tex, linear_sampler
 			]
-			for r in rids:
-				if r and r.is_valid():
-					rd.free_rid(r)
+			# Marshal the frees onto the render thread: this PREDELETE fires on the
+			# main thread mid scene-change while in-flight compute/draw still uses
+			# these textures — a direct free_rid here races the render thread and
+			# hard-crashes the process (no log). On the render thread the frees are
+			# ordered after all already-enqueued GPU work. (Lambda must not capture
+			# self: it grabs locals only, since the node is being destructed.)
+			var device := rd
+			RenderingServer.call_on_render_thread(func():
+				for r in rids:
+					if r and r.is_valid():
+						device.free_rid(r)
+			)
 
 func _init_gpu_resources():
 	rd = RenderingServer.get_rendering_device()

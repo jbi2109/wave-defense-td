@@ -27,6 +27,7 @@ var _last_enemy_count: int = -1
 var _dbg_timer: float = 0.0
 var _dbg_last_pos: PackedVector2Array = PackedVector2Array()
 var _drift_zero_samples: int = 0
+var _exiting: bool = false
 
 func _ready():
 	# GPUSim is an autoload: agents from a previous battle survive the scene change.
@@ -76,11 +77,9 @@ func _ready():
 		$HUD/Overlay/NextWaveButton.pressed.connect(_on_next_wave_pressed)
 		$HUD/Overlay/NextWaveButton.visible = true
 	if has_node("HUD/Overlay/GameOverContainer/RestartButton"):
-		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(
-			func(): get_tree().change_scene_to_file("res://ui/level_selector.tscn"))
+		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(exit_to_selector)
 	if has_node("HUD/Overlay/VictoryContainer/PlayAgainButton"):
-		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(
-			func(): get_tree().change_scene_to_file("res://ui/level_selector.tscn"))
+		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(exit_to_selector)
 
 	Globals.reset_gold()
 	if Globals.auto_test_active:
@@ -204,7 +203,25 @@ func _is_placing_turret() -> bool:
 	var tpm = get_node_or_null("TurretPlacementManager")
 	return tpm != null and tpm.has_method("is_placing") and tpm.is_placing()
 
+# The ONLY safe way to leave a battle. Changing scene while the GPU sim is
+# dispatching segfaults the process (signal 11 inside compute_list_dispatch —
+# the queued compute races the scene teardown freeing the flow textures), so
+# stop our per-frame GPU work, let one frame drain, then change scene.
+func exit_to_selector() -> void:
+	if _exiting:
+		return
+	_exiting = true
+	set_process(false)
+	await get_tree().process_frame
+	get_tree().change_scene_to_file("res://ui/level_selector.tscn")
+
 func _exit_tree() -> void:
+	set_process(false)
+	# Drain in-flight render work first: dispatch/draw lambdas queued this frame
+	# still reference this battle's flow-field textures, and the scene teardown
+	# frees those textures concurrently — executing the queued compute after the
+	# free segfaults the process (signal 11 in compute_list_dispatch).
+	RenderingServer.force_sync()
 	# GPUSim (autoload) binds this battle's flow-field textures in its physics uniform set.
 	# Release that set now, before the flow field frees those textures on teardown, to avoid
 	# a double-free of an auto-invalidated RID.
