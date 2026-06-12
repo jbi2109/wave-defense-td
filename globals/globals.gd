@@ -12,11 +12,7 @@ signal enemyDestroyed(remain)
 
 var selected_map  := ""
 var auto_test_active: bool = true
-var mainNode      : Node2D
-var turretsNode   : Node2D
-var projectilesNode: Node2D
 var currentMap    : Node2D
-var hud           : Control
 
 # ─── Economy ───────────────────────────────────────────────
 var gold: int          = 150
@@ -58,12 +54,3 @@ func reset_gold():
 	GlobalEvents.gold_changed.emit(gold)
 	mana = max_mana
 	GlobalEvents.mana_changed.emit(mana, max_mana)
-
-# ─── Scene restart ─────────────────────────────────────────
-func restart_current_level():
-	var currentLevelScene := load(currentMap.scene_file_path)
-	currentMap.queue_free()
-	var newMap = currentLevelScene.instantiate()
-	newMap.map_type = selected_map
-	mainNode.add_child(newMap)
-	hud.reset()
