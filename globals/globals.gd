@@ -1,14 +1,4 @@
 extends Node
-@warning_ignore("unused_signal")
-signal goldChanged(newGold)
-@warning_ignore("unused_signal")
-signal baseHpChanged(newHp, maxHp)
-@warning_ignore("unused_signal")
-signal waveStarted(wave_count, enemy_count)
-@warning_ignore("unused_signal")
-signal waveCleared(wait_time)
-@warning_ignore("unused_signal")
-signal enemyDestroyed(remain)
 
 var selected_map  := ""
 var auto_test_active: bool = true

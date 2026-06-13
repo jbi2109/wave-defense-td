@@ -13,6 +13,7 @@ var map_world_size := Vector2(1920, 1080)
 
 @onready var rb_texture_rect: TextureRect = $AgentLayer/RigidbodiesDebug/RigidbodiesTexture
 @onready var camera: Camera2D = $Camera2D
+@onready var hud: BattleHUD = $HUD
 
 var is_game_over: bool = false
 var _min_zoom: float = 1.0  # cover-fit zoom; camera may zoom in but never out past it
@@ -21,9 +22,6 @@ var _lmb_down: bool = false      # left button held (candidate for drag-pan)
 var _lmb_pan: bool = false       # left-drag pan engaged (moved past threshold)
 var _lmb_press: Vector2 = Vector2.ZERO
 const PAN_DRAG_THRESHOLD: float = 6.0  # px the cursor must move before a left-drag pans
-var _last_gold: int = -1
-var _last_wave: int = -1
-var _last_enemy_count: int = -1
 var _dbg_timer: float = 0.0
 var _dbg_last_pos: PackedVector2Array = PackedVector2Array()
 var _drift_zero_samples: int = 0
@@ -72,14 +70,9 @@ func _ready():
 	GlobalEvents.nexus_destroyed.connect(_on_nexus_destroyed)
 	GlobalEvents.enemy_killed.connect(_on_enemy_killed)
 
-	# HUD buttons
-	if has_node("HUD/Overlay/NextWaveButton"):
-		$HUD/Overlay/NextWaveButton.pressed.connect(_on_next_wave_pressed)
-		$HUD/Overlay/NextWaveButton.visible = true
-	if has_node("HUD/Overlay/GameOverContainer/RestartButton"):
-		$HUD/Overlay/GameOverContainer/RestartButton.pressed.connect(exit_to_selector)
-	if has_node("HUD/Overlay/VictoryContainer/PlayAgainButton"):
-		$HUD/Overlay/VictoryContainer/PlayAgainButton.pressed.connect(exit_to_selector)
+	# HUD intent signals (the BattleHUD scene drives its own labels/buttons)
+	hud.next_wave_pressed.connect(_on_next_wave_pressed)
+	hud.exit_requested.connect(exit_to_selector)
 
 	Globals.reset_gold()
 	if Globals.auto_test_active:
@@ -462,8 +455,7 @@ func _process(delta):
 	# and the GPU dispatch are invalid once we've left the tree.
 	if not is_inside_tree():
 		return
-	_update_hud()
-	
+
 	# Execute GPU logic
 	var current_ms = Time.get_ticks_msec()
 	var ff_data = {
@@ -545,41 +537,6 @@ func _process(delta):
 		else:
 			wave_manager.start_inter_wave()
 
-	var next_btn = get_node_or_null("HUD/Overlay/NextWaveButton")
-	var count_lbl = get_node_or_null("HUD/Overlay/CountdownLabel")
-	
-	if next_btn:
-		if wave_manager.current_wave == 0:
-			next_btn.visible = true
-			next_btn.text = "Start Game"
-		elif wave_manager.is_inter_wave:
-			next_btn.visible = true
-			next_btn.text = "Start Early"
-		else:
-			next_btn.visible = false
-			
-	if count_lbl:
-		if wave_manager.is_inter_wave:
-			count_lbl.visible = true
-			count_lbl.text = "Next Wave in: %ds" % ceil(wave_manager._inter_wave_timer)
-		else:
-			count_lbl.visible = false
-
-func _update_hud() -> void:
-	if Globals.gold != _last_gold:
-		_last_gold = Globals.gold
-		if has_node("HUD/Overlay/GoldLabel"):
-			$HUD/Overlay/GoldLabel.text = "Gold: %d" % _last_gold
-			
-	if wave_manager.current_wave != _last_wave:
-		_last_wave = wave_manager.current_wave
-		if has_node("HUD/Overlay/WaveLabel"):
-			$HUD/Overlay/WaveLabel.text = "Wave: %d" % _last_wave
-			
-	if GPUSim.alive_count != _last_enemy_count:
-		_last_enemy_count = GPUSim.alive_count
-		if has_node("HUD/Overlay/EnemyCountLabel"):
-			$HUD/Overlay/EnemyCountLabel.text = "Enemies: %d" % _last_enemy_count
 
 func _spawn_single_enemy():
 	var spawners = get_tree().get_nodes_in_group("spawner")
@@ -666,20 +623,13 @@ func _spawn_death_particles(_pos: Vector2, _type_idx: int) -> void:
 func _on_nexus_destroyed():
 	is_game_over = true
 	SaveManager.update_high_score(Globals.selected_map, wave_manager.current_wave - 1)
-	if has_node("HUD/Overlay/GameOverContainer"):
-		$HUD/Overlay/GameOverContainer.visible = true
-	if has_node("HUD/Overlay/NextWaveButton"):
-		$HUD/Overlay/NextWaveButton.visible = false
+	hud.show_game_over()
 
 func _on_victory():
 	is_game_over = true
-	SaveManager.update_high_score(Globals.selected_map, 15)
-	if has_node("HUD/Overlay/VictoryContainer"):
-		$HUD/Overlay/VictoryContainer.visible = true
-	if has_node("HUD/Overlay/NextWaveButton"):
-		$HUD/Overlay/NextWaveButton.visible = false
-	if has_node("HUD/Overlay/CountdownLabel"):
-		$HUD/Overlay/CountdownLabel.visible = false
+	# Record the map's own wave count (was hardcoded 15 before per-map configs).
+	SaveManager.update_high_score(Globals.selected_map, wave_manager.max_waves)
+	hud.show_victory()
 
 func _run_auto_test_gameplay():
 	await get_tree().create_timer(2.0).timeout

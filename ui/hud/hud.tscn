@@ -1,0 +1,254 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/hud/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://ui/hud/hud_build_menu.gd" id="2_buildm"]
+[ext_resource type="Script" uid="uid://di5usepgfvpyg" path="res://fx/wave_announcement.gd" id="3_wnnce"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 3
+script = ExtResource("1_hud")
+
+[node name="Overlay" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="EnemyCountLabel" type="Label" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 50.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Enemies: 0"
+horizontal_alignment = 2
+
+[node name="GoldLabel" type="Label" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 55.0
+offset_right = -20.0
+offset_bottom = 85.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Gold: 0"
+horizontal_alignment = 2
+
+[node name="WaveLabel" type="Label" parent="Overlay"]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 40.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Wave: 0"
+
+[node name="HPLabel" type="Label" parent="Overlay"]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 45.0
+offset_right = 240.0
+offset_bottom = 75.0
+theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Base HP: -"
+
+[node name="HUDBuildMenu" type="Control" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_buildm")
+
+[node name="NextWaveButton" type="Button" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -145.0
+offset_right = 80.0
+offset_bottom = -110.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Start Next Wave"
+
+[node name="GameOverContainer" type="VBoxContainer" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -126.5
+offset_top = -29.0
+offset_right = 126.5
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameOverLabel" type="Label" parent="Overlay/GameOverContainer"]
+layout_mode = 2
+text = "GAME OVER - NEXUS DESTROYED"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="Overlay/GameOverContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Restart Game"
+
+[node name="VictoryContainer" type="VBoxContainer" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -126.5
+offset_top = -29.0
+offset_right = 126.5
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryLabel" type="Label" parent="Overlay/VictoryContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 32
+text = "VICTORY! BIG BOSS DEFEATED!"
+horizontal_alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="Overlay/VictoryContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Play Again"
+
+[node name="CountdownLabel" type="Label" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -185.0
+offset_right = 150.0
+offset_bottom = -155.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Next Wave in: 30s"
+horizontal_alignment = 1
+
+[node name="BossLabel" type="Label" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 15.0
+offset_right = 200.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "BOSS"
+horizontal_alignment = 1
+
+[node name="BossProgressBar" type="ProgressBar" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 45.0
+offset_right = 250.0
+offset_bottom = 65.0
+grow_horizontal = 2
+value = 100.0
+
+[node name="WaveAnnouncement" type="Control" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(300, 100)
+mouse_filter = 2
+script = ExtResource("3_wnnce")
+
+[node name="Label" type="Label" parent="Overlay/WaveAnnouncement"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 48
+text = "WAVE 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ManaBar" type="ProgressBar" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = -20.0
+grow_vertical = 0
+value = 100.0
+
+[node name="AbilityContainer" type="HBoxContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -80.0
+offset_right = 520.0
+offset_bottom = -45.0
+grow_vertical = 0

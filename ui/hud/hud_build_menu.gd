@@ -1,8 +1,10 @@
 extends Control
 class_name HUDBuildMenu
 
-@onready var placement_manager: TurretPlacementManager = get_node("../../../TurretPlacementManager")
-@onready var wave_manager: WaveManager = get_node("../../../WaveManager")
+# Resolved from the battle scene root, not relative paths — the HUD is a
+# standalone scene and must not depend on where it gets instanced.
+@onready var placement_manager: TurretPlacementManager = get_tree().current_scene.get_node_or_null("TurretPlacementManager")
+@onready var wave_manager: WaveManager = get_tree().current_scene.get_node_or_null("WaveManager")
 
 # --- UI References ---
 var build_bar: PanelContainer

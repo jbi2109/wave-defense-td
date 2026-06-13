@@ -5,6 +5,8 @@ extends Node
 signal nexus_damaged(amount: int)
 @warning_ignore("unused_signal")
 signal nexus_destroyed
+@warning_ignore("unused_signal")
+signal base_hp_changed(hp: int, max_hp: int)
 
 # Economy
 @warning_ignore("unused_signal")

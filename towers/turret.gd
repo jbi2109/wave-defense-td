@@ -310,10 +310,7 @@ func upgrade() -> bool:
 	if current_level >= t_def.max_level: return false
 
 	var cost = t_def.upgrade_cost
-	if Globals.gold < cost: return false
-
-	Globals.gold -= cost
-	GlobalEvents.gold_changed.emit(Globals.gold)
+	if not Globals.spend_gold(cost): return false
 	total_spent += cost
 	current_level += 1
 
@@ -339,8 +336,7 @@ func upgrade() -> bool:
 func sell() -> int:
 	SoundManager.play_sfx("sell")
 	var refund = int(total_spent * 0.6)
-	Globals.gold += refund
-	GlobalEvents.gold_changed.emit(Globals.gold)
+	Globals.add_gold(refund)
 	GlobalEvents.turret_sold.emit(self)
 	queue_free()
 	return refund

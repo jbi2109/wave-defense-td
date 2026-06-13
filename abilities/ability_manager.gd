@@ -1,8 +1,15 @@
 extends Node2D
 class_name AbilityManager
 
-@onready var mana_bar: ProgressBar = get_tree().current_scene.get_node_or_null("HUD/Overlay/ManaBar")
-@onready var ability_container: HBoxContainer = get_tree().current_scene.get_node_or_null("HUD/Overlay/AbilityContainer")
+# The HUD is a standalone scene found via its group, not a hardcoded node path.
+@onready var mana_bar: ProgressBar = _hud_node("mana_bar")
+@onready var ability_container: HBoxContainer = _hud_node("ability_container")
+
+func _hud_node(accessor: String) -> Control:
+	var hud = get_tree().get_first_node_in_group("battle_hud")
+	if hud != null:
+		return hud.get(accessor)
+	return null
 
 
 @export var ability_configs: Array[AbilityConfig] = []

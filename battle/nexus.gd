@@ -18,7 +18,7 @@ func _ready():
 func set_base_hp(hp: int) -> void:
 	health = hp
 	_max_health = hp
-	Globals.baseHpChanged.emit(health, _max_health)
+	GlobalEvents.base_hp_changed.emit(health, _max_health)
 	if not Engine.is_editor_hint():
 		GlobalEvents.nexus_damaged.connect(_on_damaged)
 	if Engine.is_editor_hint():
@@ -36,8 +36,7 @@ func has_point(point: Vector2) -> bool:
 func _on_damaged(amount: int):
 	health -= amount
 	health  = maxi(health, 0)
-	# Emit to HUD via Globals signal
-	Globals.baseHpChanged.emit(health, _max_health)
+	GlobalEvents.base_hp_changed.emit(health, _max_health)
 	if health <= 0:
 		SoundManager.play_sfx("defeat")
 		GlobalEvents.nexus_destroyed.emit()
