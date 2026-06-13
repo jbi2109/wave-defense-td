@@ -28,14 +28,17 @@ const maps := {
 	"map1": {
 		"name": "Map 1 (Winding Corners)",
 		"scene": "res://levels/map_1.tscn",
+		"description": "Zig-zagging path layout.\nMax Waves: 5\nDifficulty: Easy",
 	},
 	"map2": {
 		"name": "Map 2 (Serpentine)",
 		"scene": "res://levels/map_2.tscn",
+		"description": "Classic grassland route.\nMax Waves: 10\nDifficulty: Medium",
 	},
 	"map3": {
 		"name": "Map 3 (Labyrinth)",
 		"scene": "res://levels/map_3.tscn",
+		"description": "Sprawling branching maze.\nMax Waves: 15\nDifficulty: Hard",
 	},
 }
 

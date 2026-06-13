@@ -1,35 +1,33 @@
 extends Control
 
-@onready var map1_score_label: Label = $CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox/HighScoreLabel
-@onready var map2_score_label: Label = $CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox/HighScoreLabel
-@onready var map3_score_label: Label = $CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox/HighScoreLabel
+## Entry screen. Builds one map card per Data.maps entry from the in-scene
+## CardTemplate — registering a new map needs no selector edits.
 
-@onready var btn_map1: Button = $CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox/PlayButton
-@onready var btn_map2: Button = $CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox/PlayButton
-@onready var btn_map3: Button = $CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox/PlayButton
+@onready var cards_container: HBoxContainer = $CenterContainer/VBoxContainer/CardsContainer
+@onready var card_template: PanelContainer = $CenterContainer/VBoxContainer/CardsContainer/CardTemplate
 @onready var btn_settings: Button = $CenterContainer/VBoxContainer/BottomButtons/SettingsButton
 @onready var btn_quit: Button = $CenterContainer/VBoxContainer/BottomButtons/QuitButton
 
 var settings_scene: PackedScene = preload("res://ui/settings_menu.tscn")
 
 func _ready() -> void:
-	# Load high scores
-	var score1: int = SaveManager.high_scores.get("map1", 0)
-	var score2: int = SaveManager.high_scores.get("map2", 0)
-	var score3: int = SaveManager.high_scores.get("map3", 0)
+	card_template.visible = false
+	var ids := Data.maps.keys()
+	ids.sort()
+	for id in ids:
+		var entry: Dictionary = Data.maps[id]
+		var card := card_template.duplicate() as PanelContainer
+		card.name = "Card_" + id
+		card.visible = true
+		card.get_node("VBox/NameLabel").text = entry.get("name", id)
+		card.get_node("VBox/DescriptionLabel").text = entry.get("description", "")
+		card.get_node("VBox/HighScoreLabel").text = "High Score: Wave %d" % SaveManager.high_scores.get(id, 0)
+		card.get_node("VBox/PlayButton").pressed.connect(_on_map_selected.bind(id))
+		cards_container.add_child(card)
 
-	map1_score_label.text = "High Score: Wave %d" % score1
-	map2_score_label.text = "High Score: Wave %d" % score2
-	map3_score_label.text = "High Score: Wave %d" % score3
-
-	# Connect buttons
-	btn_map1.pressed.connect(_on_map_selected.bind("map1"))
-	btn_map2.pressed.connect(_on_map_selected.bind("map2"))
-	btn_map3.pressed.connect(_on_map_selected.bind("map3"))
 	btn_settings.pressed.connect(_on_settings_pressed)
 	if btn_quit:
 		btn_quit.pressed.connect(_on_quit_pressed)
-
 
 func _on_map_selected(map_id: String) -> void:
 	Globals.selected_map = map_id
@@ -41,4 +39,3 @@ func _on_settings_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
-

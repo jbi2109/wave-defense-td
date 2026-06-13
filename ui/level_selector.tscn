@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://level_selector"]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://ui/level_selector.gd" id="1_script"]
 
@@ -39,7 +39,7 @@ shadow_offset = Vector2(0, 10)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
-	anchor_bottom = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
@@ -88,159 +88,54 @@ layout_mode = 2
 theme_override_constants/separation = 60
 alignment = 1
 
-[node name="CardMap1" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
+[node name="CardTemplate" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
+visible = false
 custom_minimum_size = Vector2(350, 420)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1"]
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="EmptyPadding" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="EmptyPadding" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1.0)
 theme_override_font_sizes/font_size = 26
-text = "Winding Corners"
+text = "Map Name"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="DescriptionLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1.0)
 theme_override_font_sizes/font_size = 16
-text = "Zig-zagging path layout.
-Max Waves: 10
-Difficulty: Easy"
+text = "Description"
 horizontal_alignment = 1
 
-[node name="HighScoreLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="HighScoreLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.85, 0.3, 1.0)
 theme_override_font_sizes/font_size = 18
 text = "High Score: Wave 0"
 horizontal_alignment = 1
 
-[node name="EmptyPadding2" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="EmptyPadding2" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
+[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "Defend Map"
 
-[node name="EmptyPadding3" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap1/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="CardMap2" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
-custom_minimum_size = Vector2(350, 420)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
-
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2"]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="EmptyPadding" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1.0)
-theme_override_font_sizes/font_size = 26
-text = "Serpentine"
-horizontal_alignment = 1
-
-[node name="DescriptionLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1.0)
-theme_override_font_sizes/font_size = 16
-text = "Classic grassland route.
-Max Waves: 15
-Difficulty: Medium"
-horizontal_alignment = 1
-
-[node name="HighScoreLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.85, 0.3, 1.0)
-theme_override_font_sizes/font_size = 18
-text = "High Score: Wave 0"
-horizontal_alignment = 1
-
-[node name="EmptyPadding2" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
-text = "Defend Map"
-
-[node name="EmptyPadding3" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap2/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="CardMap3" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
-custom_minimum_size = Vector2(350, 420)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
-
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3"]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="EmptyPadding" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1.0)
-theme_override_font_sizes/font_size = 26
-text = "Labyrinth"
-horizontal_alignment = 1
-
-[node name="DescriptionLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1.0)
-theme_override_font_sizes/font_size = 16
-text = "Sprawling branching maze.
-Max Waves: 20
-Difficulty: Hard"
-horizontal_alignment = 1
-
-[node name="HighScoreLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.85, 0.3, 1.0)
-theme_override_font_sizes/font_size = 18
-text = "High Score: Wave 0"
-horizontal_alignment = 1
-
-[node name="EmptyPadding2" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
-text = "Defend Map"
-
-[node name="EmptyPadding3" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardMap3/VBox"]
+[node name="EmptyPadding3" type="Control" parent="CenterContainer/VBoxContainer/CardsContainer/CardTemplate/VBox"]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
