@@ -25,17 +25,22 @@ emitting **AOE request signals** that `GPUSim` consumes and applies on the GPU. 
 
 ```
 project.godot main_scene
-   └─ ui/level_selector.tscn         (entry; lists maps + high scores)
+   └─ ui/level_selector.tscn         (entry; builds one card per Data.maps entry)
         └─ pick a map → sets Globals.selected_map
              └─ change_scene_to_file("res://battle/battle.tscn")
-                  └─ Battle._ready(): loads the map scene from Data.maps[selected_map].scene,
+                  └─ Battle._ready(): resets GPU agent slots, loads the map scene from
+                     Data.maps[selected_map].scene, applies the map's MapConfig (waves/HP/gold),
                      builds the flow field, wires signals, resets gold.
                      If Globals.auto_test_active == true → auto-starts wave 1 after ~2s.
-   Game over / victory → button → back to ui/level_selector.tscn
+   Game over / victory → HUD exit_requested → Battle.exit_to_selector()
 ```
 
-- Map selection UI lives in `ui/main_menu/` (`map_container`, `select_map_container`) and `ui/level_selector.*`.
-- Restart and "play again" both `change_scene_to_file("res://ui/level_selector.tscn")` (see `battle/battle.gd:54-59`).
+- The selector is **data-driven**: it duplicates an in-scene `CardTemplate` per `Data.maps`
+  entry (name/description/high score). New maps need no selector edits.
+- **Leaving a battle goes through `Battle.exit_to_selector()`** — it stops the per-frame GPU
+  dispatch and drains a frame before `change_scene` (changing scene mid-dispatch segfaults;
+  see §10). The HUD's Restart/PlayAgain buttons emit `exit_requested`, which battle connects
+  to `exit_to_selector`.
 
 ---
 
@@ -46,10 +51,10 @@ Init order is the order in `project.godot`; `GPUSim` first, helpers, then state 
 
 | Symbol | File | Responsibility |
 |---|---|---|
-| `GPUSim` | `gpu_sim/gpu_sim.gd` | The GPU enemy simulation. Public API: `spawn_enemy(pos, type_index, type_speeds, type_scales, hp, wave_scale)`, `dispatch_physics(delta, ms, ff_data, nexus_data, t_data)`, `update_flow_field_textures(ff_tex, obs_tex, sdf)`, `draw_agents(cam_pos, viewport, zoom)`, `apply_aoe_damage/slow/freeze(...)`. Props: `active_count`, `draw_texture`. Helper class `GPU` lives in `gpu_sim/gpu.gd`. |
-| `GlobalEvents` | `globals/global_events.gd` | **Signal bus** — the decoupling spine (snake_case signals). See §4. |
-| `Globals` | `globals/globals.gd` | Mutable run state: economy (`gold`, `spend_gold()`, `add_gold()`, `reset_gold()`), mana (`mana`, `spend_mana()`), `equipped_abilities`, `selected_map`, `auto_test_active`, scene refs (`mainNode`, `hud`, `currentMap`). Also declares UI-facing **camelCase** signals (see §4). |
-| `Data` | `globals/data.gd` | Static config dict: `maps` (live — name/scene/baseHp/startingGold/spawner_settings), `bullets`, `stats`. The `enemies` dino dict is **unused** (see §10). |
+| `GPUSim` | `gpu_sim/gpu_sim.gd` | The GPU enemy simulation. Public API: `spawn_enemy(pos, type_index, type_speeds, type_scales, hp, wave_scale)`, `dispatch_physics(delta, ms, ff_data, nexus_data, t_data)`, `update_flow_field_textures(ff_tex, obs_tex, sdf)`, `draw_agents(cam_pos, viewport, zoom)`, `apply_aoe_damage/slow/freeze(...)`, `set_enemy_type_data(golds, nexus_dmg)`, `reset_wave_slots()`. Props: `active_count` (slot occupancy), `alive_count` (live agents — what gameplay reads), `draw_texture`. **Death/nexus readback**: every 0.2s `_process` drains the GPU `DeadEnemiesBuffer`/`NexusDamageBuffer` and emits `enemy_killed` (skipping nexus arrivals) + `nexus_damaged`. The drain is read-then-increment in one render-thread block (see the comment in `_process` — reversing the order silently loses events). Helper class `GPU` lives in `gpu_sim/gpu.gd`. |
+| `GlobalEvents` | `globals/global_events.gd` | **Signal bus** — the single decoupling spine (snake_case signals). See §4. |
+| `Globals` | `globals/globals.gd` | Mutable run state: economy (`gold`, `spend_gold()`, `add_gold()`, `reset_gold()`), mana (`mana`, `spend_mana()`), `equipped_abilities`, `selected_map`, `auto_test_active`, `currentMap`. (The old camelCase signal layer is gone — everything is on `GlobalEvents`.) |
+| `Data` | `globals/data.gd` | Static config: `maps` (**registry only** — id → name/scene/description; gameplay values live in each map's `MapConfig`, §7), `bullets`, `stats`. |
 | `SoundManager` | `globals/sound_manager.gd` | Procedural SFX + audio buses. `play_sfx("wave_start" / "wave_clear" / "build" / "hit" / "defeat" / ...)`. |
 | `SaveManager` | `globals/save_manager.gd` | High scores (`update_high_score(map_id, wave)`) and settings persistence. |
 | `_mcp_game_helper` | `addons/godot_ai/runtime/game_helper.gd` | Editor/runtime MCP bridge (tooling only — leave alone). |
@@ -58,30 +63,25 @@ Init order is the order in `project.godot`; `GPUSim` first, helpers, then state 
 
 ## 4. The signal bus & wiring
 
-There are **two** signal systems. Both are live; they overlap and should eventually be consolidated (see §10).
-
-### `GlobalEvents` — gameplay bus (snake_case, in `globals/global_events.gd`)
+One signal system: **`GlobalEvents`** (snake_case, in `globals/global_events.gd`). The old
+camelCase `Globals` layer was deleted (it had no live listeners).
 
 | Signal | Emitted by | Listened by |
 |---|---|---|
-| `wave_started(wave, count)` | `WaveManager.start_wave()` | `AbilityManager`, others |
-| `wave_cleared(wave)` | `WaveManager.start_inter_wave()` | — |
-| `inter_wave_tick(secs)` | `WaveManager.tick()` | — |
-| `aoe_damage_requested(pos, r, dmg, is_player)` | `AbilityManager`, `acid_pool_effect` | **`GPUSim` → `apply_aoe_damage`** |
-| `aoe_slow_requested(pos, r, factor)` | `AbilityManager`, `acid_pool_effect` | **`GPUSim` → `apply_aoe_slow`** |
+| `wave_started(wave, count)` | `WaveManager.start_wave()` | `BattleHUD`, `AbilityManager`, `wave_announcement`, `TurretPlacementManager` |
+| `wave_cleared(wave)` | `WaveManager.start_inter_wave()` | `BattleHUD` ("Start Early" button) |
+| `inter_wave_tick(secs)` | `WaveManager.tick()` | `BattleHUD` (countdown label) |
+| `aoe_damage_requested(pos, r, dmg, is_player)` | `AbilityManager`, ability effects | **`GPUSim` → `apply_aoe_damage`** |
+| `aoe_slow_requested(pos, r, factor)` | `AbilityManager`, ability effects | **`GPUSim` → `apply_aoe_slow`** |
 | `aoe_freeze_requested(pos, r, dur)` | (frost abilities) | **`GPUSim` → `apply_aoe_freeze`** |
 | `nexus_destroyed` | `nexus.gd` (HP ≤ 0) | `Battle._on_nexus_destroyed` (game over) |
-| `nexus_damaged(amount)` | **⚠ no emitter found** | `nexus.gd._on_damaged` |
-| `enemy_killed(type, pos, gold)` | **⚠ no emitter found** | `Battle._on_enemy_killed` (gold + splitter) |
-| `gold_changed(amount)` | `Globals.add_gold/spend_gold` | turret UI |
-| `mana_changed(cur, max)` | `Globals._process/spend_mana` | `AbilityManager`, mana bar |
-| `turret_placed / turret_upgraded / turret_sold` | placement/turret | UI |
-| `turret_update_requested(turret)` | (turret → GPUSim hook) | — |
-
-### `Globals` — UI-facing signals (camelCase, in `globals/globals.gd`)
-
-`goldChanged`, `baseHpChanged`, `waveStarted`, `waveCleared`, `enemyDestroyed`.
-Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is emitted by `nexus.gd`.
+| `nexus_damaged(amount)` | **`GPUSim` readback** (0.2s drain of the GPU damage buffer) | `nexus.gd._on_damaged` |
+| `base_hp_changed(hp, max)` | `nexus.gd` (`_on_damaged`, `set_base_hp`) | `BattleHUD` (HP label) |
+| `enemy_killed(type, pos, gold)` | **`GPUSim` readback** (damage deaths only — nexus arrivals excluded) | `Battle._on_enemy_killed` (gold + splitter spawns) |
+| `gold_changed(amount)` | `Globals.add_gold/spend_gold` | `BattleHUD`, build menu |
+| `mana_changed(cur, max)` | `Globals._process/spend_mana` | `AbilityManager` → mana bar |
+| `turret_placed / turret_upgraded / turret_sold` | placement manager / turret | (available; no listener yet) |
+| `turret_update_requested(turret)` | turret upgrade | `GPUSim.update_turret` |
 
 ### Data-flow diagram
 
@@ -92,15 +92,16 @@ Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is em
                                           │  (GPU agents)
  Battle._process every frame:             ▼
    flow field + nexus data ──► GPUSim.dispatch_physics ──► GPUSim.draw_agents
-                                          │
+                                          │ (shader records deaths + nexus hits)
         ┌─────────────────────────────────┴───────────────────────────┐
-        ▼ (intended, see §10 gap)                                       ▼
+        ▼ GPUSim 0.2s readback drain (LIVE)                            ▼
    GlobalEvents.enemy_killed ──► Battle._on_enemy_killed         GlobalEvents.nexus_damaged
-        → Globals.add_gold + split spawn                            → nexus.gd → Globals.baseHpChanged
-                                                                       → (HP 0) nexus_destroyed → game over
+        → Globals.add_gold + split spawn                            → nexus.gd → base_hp_changed → HUD
+        → GPUSim.alive_count -= deaths                                → (HP 0) nexus_destroyed → game over
+        (alive_count == 0 → wave clears → inter-wave / victory)
 
  Abilities / Towers ──► GlobalEvents.aoe_*_requested ──► GPUSim.apply_aoe_* (on GPU agents)
- Economy/HP/wave changes ──► Globals.* / GlobalEvents.* ──► HUD labels
+ Economy/HP/wave changes ──► GlobalEvents.* ──► BattleHUD labels (signal-driven; enemy count polled)
 ```
 
 **Node lookup convention:** scripts find in-scene nodes via `get_tree().current_scene.get_node_or_null("...")`
@@ -114,12 +115,12 @@ Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is em
 |---|---|---|
 | `globals/` | Autoload singletons (state, data, events, audio, save). | `globals.gd`, `data.gd`, `global_events.gd`, `sound_manager.gd`, `save_manager.gd` |
 | `gpu_sim/` | The GPU enemy simulation autoload + its helper class. | `gpu_sim.gd` (GPUSim), `gpu.gd` (`class GPU`) |
-| `battle/` | The main gameplay scene and all in-battle systems. | `battle.tscn`/`battle.gd` (orchestrator), `wave_manager.gd`, `spawner.gd`/`.tscn`, `nexus.gd`/`.tscn`, `flow_field_manager.gd`, `turret_placement_manager.gd`, `enemy_config.gd`, `polygon_duck_type.gd`, `map_wave_config.gd` |
-| `towers/` | Turret system + art. | `turret.gd`/`.tscn`, `turret_definition.gd`, art in `towers/art/` |
-| `enemies/` | Enemy definition script + sprites. | `enemy_definition.gd`, sprites in `enemies/art/` |
+| `battle/` | The main gameplay scene and all in-battle systems. | `battle.tscn`/`battle.gd` (orchestrator), `wave_manager.gd`, `spawner.gd`/`.tscn`, `nexus.gd`/`.tscn`, `flow_field_manager.gd`, `turret_placement_manager.gd`, `enemy_config.gd`, `polygon_duck_type.gd` |
+| `towers/` | Turret system + art + per-turret stat resources. | `turret.gd`/`.tscn`, `turret_definition.gd` (Resource), `definitions/*.tres` (one per turret), art in `towers/art/` |
+| `enemies/` | Enemy stat resources + sprites. | `enemy_definition.gd` (Resource), `definitions/*.tres` (one per enemy — **array order in battle.tscn = GPU type index**), sprites in `enemies/art/` |
 | `abilities/` | Ability manager/config + one subfolder per ability (effect script + art). | `ability_manager.gd`, `ability_config.gd`, `ability_loadout.*`, `frost_nova/`, `acid_pool/`, `chain_lightning/`, `orbital_beam/`, `overdrive/`, `dynamite/` |
-| `levels/` | Map scenes + the reusable Polygon2D piece kit. | `map_1.tscn`/`map_2.tscn` — **mask-driven** (`Map1Gen`/`Map2Gen`: hand-typed `ROUTE` outline, `round_polygon`, baked `map_*_mask.png`; 1920×1080). **`map_3.tscn`** is **assembled from the piece kit** `levels/pieces/*.tscn` (~25 pieces: corridors/corners/curves/caps/T/cross, chambers round/oval/large/hex/irregular, irregular dirt/rock blobs incl. **`dirt_mound_map2`** ported from Map2) placed on a 160 grid (wide **3840×1786**); root script `kit_map.gd` (`world_size` only, no mask); walkability = group `map_path` minus `map_wall`. Composite chunks in `levels/prefabs/*.tscn` (`prefab_chamber_island`, `prefab_loop_section`). Spawn/nexus = draggable `SpawnMarker`/`NexusMarker` (`placement_marker.gd`). **No Path2D.** Generators: `tools/gen_map_pieces.py`, `gen_prefabs.py`, `assemble_map_3.py`; map1/2 bakers `gen_map_{1,2}_mask.py`. |
-| `ui/` | All menus and HUD (snake_case subfolders). | `level_selector.*`, `settings_menu.*`, `hud.gd`, `hud_build_menu.gd`, `map_selector.tscn`, `main_menu/`, `game_over/`, `map_completed/`, `turret_ui/` |
+| `levels/` | Map scenes + the reusable Polygon2D piece kit. | `map_1.tscn`/`map_2.tscn` — **mask-driven** (`Map1Gen`/`Map2Gen`: hand-typed `ROUTE` outline, `round_polygon`, baked `map_*_mask.png`; 1920×1080). **`map_3.tscn`** is **assembled from the piece kit** `levels/pieces/*.tscn` (~25 pieces: corridors/corners/curves/caps/T/cross, chambers round/oval/large/hex/irregular, irregular dirt/rock blobs incl. **`dirt_mound_map2`** ported from Map2) placed on a 160 grid (wide **3840×1786**); root script `kit_map.gd` (`world_size` + `config`, no mask); walkability = group `map_path` minus `map_wall`. Composite chunks in `levels/prefabs/*.tscn` (`prefab_chamber_island`, `prefab_loop_section`). Spawn/nexus = draggable `SpawnMarker`/`NexusMarker` (`placement_marker.gd`). **No Path2D.** **Per-map gameplay config**: `map_config.gd` (`MapConfig` Resource) + `map_{1,2,3}_config.tres`, exported as `config` on each map root (waves, base HP, starting gold — see §7). Generators: `tools/gen_map_pieces.py`, `gen_prefabs.py`, `assemble_map_3.py`; map1/2 bakers `gen_map_{1,2}_mask.py`. |
+| `ui/` | All menus and HUD (snake_case subfolders). | `level_selector.*` (data-driven entry screen), `settings_menu.*`, `hud/` (standalone `BattleHUD` scene: `hud.tscn`/`hud.gd` + `hud_build_menu.gd`). Old `main_menu/`, `game_over/`, `map_completed/`, `turret_ui/`, `map_selector.tscn`, `hud.gd` are in `_archive/ui/`. |
 | `fx/` | Visual-effect helpers (CPU nodes). | `bullet_tracer.gd`, `camera_shake.gd`, `damage_text_manager.gd`, `enemy_health_bars.gd`, `range_indicator.gd`, `wave_announcement.gd` |
 | `shaders/` | Compute shaders + includes, plus canvas shaders. | `compute_physics.glsl`, `compute_flow_field.glsl`, `agent_draw.glsl`, `sdf_solver.gdshaderinc`, `bindings.gdshaderinc`, `world_gen/`; **`terrain_mask.gdshader`** (renders grass/dirt from a walkable mask; legacy — no current map uses it, maps render via Polygon2D fills/pieces). |
 | `assets/` | Shared, type-based art (not per-entity). | `bullets/`, `shader/`, `tileset/` |
@@ -134,13 +135,17 @@ Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is em
 
 **Orchestrator:** `battle/battle.gd` (`class Battle`, scene root `Battle`).
 
-1. **`_ready()`** — resolve `Globals.selected_map` (default `"map1"`), instantiate the map scene from
+1. **`_ready()`** — `GPUSim.reset_wave_slots()` (agents from a previous battle must not leak in),
+   resolve `Globals.selected_map` (default `"map1"`), instantiate the map scene from
    `Data.maps[id].scene`, **`_apply_map_config()`** (see below), run `_setup_map_logic()`, generate the flow field around
-   the nexus, wire `WaveManager.enemy_config`, connect `GlobalEvents.nexus_destroyed`/`enemy_killed`, hook HUD buttons,
-   `Globals.reset_gold()`.
-   - **`_apply_map_config(map_root)`** — optional **per-map world config**. Reads `world_size` / `spawn_pos` /
+   the nexus, wire `WaveManager.enemy_config`, feed `GPUSim.set_enemy_type_data(type_golds, type_nexus_dmg)`,
+   connect `GlobalEvents.nexus_destroyed`/`enemy_killed`, connect the HUD's `next_wave_pressed`/`exit_requested`
+   signals, `Globals.reset_gold()`.
+   - **`_apply_map_config(map_root)`** — applies the map's **`MapConfig`** (`map_root.config`, fallback to
+     defaults with a warning): `wave_manager.apply_config(cfg)`, `Globals.starting_gold = cfg.starting_gold`,
+     `nexus.set_base_hp(cfg.base_hp)`. Then per-map world config: reads `world_size` / `spawn_pos` /
      `spawn_extents` / `nexus_pos` / `nexus_extents` from the map root (every read falls back to the `battle.tscn`
-     defaults, so map1/map2 — which expose none — are unchanged). Sets `Battle.map_world_size` (the mask-UV domain,
+     defaults). Sets `Battle.map_world_size` (the mask-UV domain,
      a `var` not a const), relocates `$Nexus` / `$EnemySpawner`, and calls **`_fit_camera()`** (zoom-only fit:
      `camera.zoom = viewport / map_world_size`, keeping the camera's FIXED_TOP_LEFT anchor at (0,0) so the GPU
      agent-draw mapping stays valid). map3 ships a wide 3840×1786 world (cover-fit, panned with left- or middle-drag); map1/map2 stay 1920×1080 at zoom 1.0.
@@ -157,10 +162,10 @@ Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is em
    - **Turret placement** (`turret_placement_manager.gd`) is **mask-based**: `_is_position_valid` forbids placing on
      walkable cells by sampling `flow_field.obs_image` (white = wall = OK, black = path = blocked) — accurate for any
      map shape incl. mazes/loops/islands, replacing the old single-`Grass_Path`-polygon test.
-3. **`_process(delta)`** — `_update_hud()` (polls `Globals.gold`, `wave_manager.current_wave`, `GPUSim.active_count`
-   into `$HUD/Overlay/*` labels) → push flow-field + nexus data into `GPUSim.update_flow_field_textures` +
+3. **`_process(delta)`** — push flow-field + nexus data into `GPUSim.update_flow_field_textures` +
    `GPUSim.dispatch_physics` → `GPUSim.draw_agents` on the render thread → `wave_manager.tick(delta, _spawn_single_enemy)`
-   → inter-wave / victory checks → update Next-Wave button + countdown label.
+   → wave-clear check (`GPUSim.alive_count == 0` → `reset_wave_slots()` → inter-wave or victory).
+   (The HUD drives itself — see **BattleHUD** below; battle.gd has no label/button code.)
    - **Congestion-aware repath + hybrid per-agent route splitting (all maps):** every ~2s the debug readback
      (`GPUSim.get_agent_data_async`) feeds `FlowFieldManager.update_density(positions, healths)` (blurred coarse
      density texture; dead agents filtered) and kicks `start_flow_rebuild()`. The rebuild is **amortized**:
@@ -181,15 +186,24 @@ Connected in **`ui/hud.gd`** (`_ready`) and the turret UI. `baseHpChanged` is em
 4. **Spawning** — `_spawn_single_enemy()` picks a spawner (group `"spawner"`), chooses a type via
    `_determine_enemy_type_to_spawn()` (boss overrides: type `5` on the final wave, type `4` on waves 5 & 10) and
    `_weighted_type_for_wave()` (weights by `spawn_weight`, gated by `min_wave`), then `GPUSim.spawn_enemy(...)`.
-5. **Kills / splitting** — `_on_enemy_killed()` awards `Globals.add_gold` and spawns split children (`type_split_count`/`type_split_type`).
-   *(Depends on `enemy_killed` being emitted — see §10.)*
-6. **Game over / victory** — `nexus_destroyed` → `_on_nexus_destroyed()`; reaching `max_waves` with no enemies → `_on_victory()`.
-   Both record a high score via `SaveManager.update_high_score`.
+5. **Kills / splitting** — the `GPUSim` readback emits `enemy_killed(type, pos, gold)` for damage deaths
+   (nexus arrivals excluded); `_on_enemy_killed()` awards `Globals.add_gold(gold)` and spawns split children
+   (`type_split_count`/`type_split_type` — the Splitter spawns 3 Swarmers).
+6. **Game over / victory** — `nexus_destroyed` → `_on_nexus_destroyed()`; reaching `max_waves` with
+   `alive_count == 0` → `_on_victory()`. Both record a high score via `SaveManager.update_high_score`
+   and show the matching HUD panel (`hud.show_game_over()` / `hud.show_victory()`).
 
 **Wave lifecycle:** `battle/wave_manager.gd` (`class WaveManager`). `start_wave()` computes
 `enemies_for_wave()` (geometric scaling by `wave_scaler`; final wave = 1 Big Boss), spawns over time in `tick()`,
-then `start_inter_wave()` runs the countdown; `skip_inter_wave()` is the "Start Early" button. Exports are overridden
-per map by a `MapWaveConfig` child node.
+then `start_inter_wave()` runs the countdown; `skip_inter_wave()` is the "Start Early" button. Settings come from
+the map's `MapConfig` via `apply_config(cfg)` (called by `battle._apply_map_config`).
+
+**BattleHUD** (`ui/hud/hud.tscn`, `class BattleHUD`): standalone CanvasLayer scene instanced as `HUD` in
+battle.tscn. Self-drives from `GlobalEvents` (`gold_changed`, `wave_started/cleared`, `inter_wave_tick`,
+`base_hp_changed`) + polls `GPUSim.alive_count` for the enemy count; exposes `show_game_over()/show_victory()`,
+`mana_bar`/`ability_container` accessors, and emits `next_wave_pressed`/`exit_requested`. Joins group
+`"battle_hud"` so other systems (AbilityManager) find it without hardcoded paths. `hud_build_menu.gd`
+(same folder) resolves `TurretPlacementManager`/`WaveManager` via `current_scene`.
 
 **Economy:** `Globals.gold` mutated only through `spend_gold()` / `add_gold()` (which emit `GlobalEvents.gold_changed`).
 **Mana:** regenerates in `Globals._process`; `spend_mana()` for ability costs.
@@ -207,14 +221,18 @@ child nodes (keyed by `turret_type`), handles the place/aim state machine, and i
 
 ## 7. Data-driven design
 
-Entity stats live as **child Nodes inside `battle.tscn`**, each carrying a definition script. The manager reads them at `_ready()`.
+Entity stats are **`Resource` `.tres` files**, referenced from typed exported arrays in `battle.tscn`
+(or from the map scene for map config). The managers read them at `_ready()`.
 
 | Definition | Script (class) | Where instances live | Read by |
 |---|---|---|---|
-| Enemy type | `enemies/enemy_definition.gd` (`EnemyDefinition`) | children of `EnemyManager` in `battle.tscn` | `battle/enemy_config.gd` (`EnemyConfig`) → `type_healths/speeds/scales/split_*` arrays |
-| Turret type | `towers/turret_definition.gd` (`TurretDefinition`) | children of `TurretPlacementManager` | `TurretPlacementManager.definitions{}` keyed by `turret_type` |
-| Wave config | `battle/map_wave_config.gd` (`MapWaveConfig`) | child of `WaveManager` named by map id | `WaveManager._ready` |
+| Enemy type | `enemies/enemy_definition.gd` (`EnemyDefinition`, a `Resource`) | `enemies/definitions/*.tres`, listed in `EnemyManager.definitions` (typed array in `battle.tscn`) | `battle/enemy_config.gd` (`EnemyConfig`) → `type_healths/speeds/scales/split_*/golds/nexus_dmg` arrays |
+| Turret type | `towers/turret_definition.gd` (`TurretDefinition`, a `Resource`) | `towers/definitions/*.tres`, listed in `TurretPlacementManager.definition_resources` | `TurretPlacementManager.definitions{}` keyed by `turret_type` |
+| Map config | `levels/map_config.gd` (`MapConfig`, a `Resource`) | `levels/map_N_config.tres`, exported as `config` on each map root | `battle._apply_map_config` → `WaveManager.apply_config`, nexus HP, starting gold |
 | Ability | `abilities/ability_config.gd` (`AbilityConfig`, a `Resource`) | `AbilityManager.ability_configs` (or fallback dict) | `AbilityManager._initialize_abilities` |
+
+**`MapConfig` fields:** `base_enemies_per_wave`, `wave_scaler`, `spawn_rate`, `inter_wave_duration`,
+`max_waves`, `base_hp`, `starting_gold`.
 
 **`EnemyDefinition` fields:** `enemy_name`, `texture_path`, `hframes`, `scale`, `speed`, `health`, `spawn_weight`,
 `gold_yield`, `armor`, `nexus_damage`, `is_boss`, `min_wave`, `is_flying`, `split_count`, `split_type_index`, `death_effect`.
@@ -222,24 +240,31 @@ Entity stats live as **child Nodes inside `battle.tscn`**, each carrying a defin
 **`TurretDefinition` fields:** `turret_name`, `turret_type`, `damage`, `attack_range`, `fire_rate`, `scale`, `cost`,
 `upgrade_cost`, `max_level`, `rotates`, `sprite_path`, plus an Upgrade Stats group.
 
-`EnemyConfig` detects a child as an enemy type by checking `"enemy_definition" in child.get_script().resource_path`;
-`TurretPlacementManager` uses the same trick with `"turret_definition"`. So the **filename of the definition script
-matters** — keep them named `enemy_definition.gd` / `turret_definition.gd`.
+`EnemyConfig` and `TurretPlacementManager` validate entries with proper type checks
+(`d is EnemyDefinition` / `d is TurretDefinition`) — the old script-filename-substring discovery is gone.
+**The order of `EnemyManager.definitions` IS the GPU type index** (0 Swarmer, 1 Tank, 2 Runner, 3 Armored,
+4 MiniBoss, 5 BigBoss, 6 Flyer, 7 Splitter): GPU buffers, `split_type_index`, and the boss overrides in
+`battle.gd::_determine_enemy_type_to_spawn` all reference enemies by index — append new types at the END.
 
 ---
 
 ## 8. Where new features go (by type)
 
 **New enemy**
-1. In `battle.tscn`, add a child `Node` under `EnemyManager`; attach `enemies/enemy_definition.gd`.
-2. Set its exports (name, `health`, `speed`, `scale`, `spawn_weight`, `min_wave`, `gold_yield`, `split_*`, etc.).
-3. Put its sprite in `enemies/art/` and point `texture_path` at it.
-4. It auto-appears in spawning via `spawn_weight` (gated by `min_wave`). For boss behavior, see the type-index overrides in `battle.gd:_determine_enemy_type_to_spawn` (currently magic ints — see §10).
+1. Create `enemies/definitions/<name>.tres` (a `Resource` with script `enemies/enemy_definition.gd`) —
+   copy an existing one and set `enemy_name`, `health`, `speed`, `scale`, `spawn_weight`, `min_wave`,
+   `gold_yield`, `nexus_damage`, `split_*`, etc.
+2. Put its sprite in `enemies/art/` and point `texture_path` at it.
+3. **Append** it to `EnemyManager.definitions` in `battle.tscn` (append at the END — array order is the
+   GPU type index; never reorder existing entries).
+4. It auto-appears in spawning via `spawn_weight` (gated by `min_wave`). For boss behavior, see the
+   type-index overrides in `battle.gd:_determine_enemy_type_to_spawn` (currently magic ints — see §10).
 
 **New turret**
-1. In `battle.tscn`, add a child `Node` under `TurretPlacementManager`; attach `towers/turret_definition.gd` with a unique `turret_type`.
+1. Create `towers/definitions/<name>.tres` (script `towers/turret_definition.gd`) with a unique `turret_type`.
 2. Set stats/cost/upgrades; put the sprite in `towers/art/` and set `sprite_path`.
-3. Surface it in the build menu — `ui/hud_build_menu.gd` and `ui/turret_ui/` (`turret_buy_container`, `turrets_panel`).
+3. Append it to `TurretPlacementManager.definition_resources` in `battle.tscn` — the build menu
+   (`ui/hud/hud_build_menu.gd`) generates its button automatically from `definitions`.
 4. Firing/behavior shared by `towers/turret.gd`; add a special case there only if needed.
 
 **New ability**
@@ -260,12 +285,12 @@ matters** — keep them named `enemy_definition.gd` / `turret_definition.gd`.
 - *Legacy single Polygon2D:* nodes named `Grass_Path`/`Dirt_Mound`/`Top_Dirt`/`Bottom_Dirt`.
 
 Then register (full registration — map1 is the mask example, map3 the kit example):
-1. Add an entry to `Data.maps` in `globals/data.gd` (name, `scene` path, `baseHp`, `startingGold`, `spawner_settings`).
+1. Create `levels/map_N_config.tres` (a `MapConfig`) with the map's waves/HP/gold; set it as the
+   `config` export on the map root.
+2. Add an entry to `Data.maps` in `globals/data.gd` (`name`, `scene` path, `description`).
    Filenames match in-game order: id `mapN` → `map_N.tscn`.
-2. Add a `MapWaveConfig` child node named with the map id under `WaveManager` in `battle.tscn` to tune waves
-   (`wave_manager.gd` looks it up by id — no script change).
-3. Add the map id to `SaveManager.high_scores` in `globals/save_manager.gd`.
-4. Add a card to the (hardcoded) `ui/level_selector.tscn` + a `_on_mapN_selected()` handler in `level_selector.gd`.
+That's it — the level selector builds its card from `Data.maps`, and `SaveManager.update_high_score`
+creates the high-score key on first win/loss automatically.
 
 ### Map Building Pipeline (the "orc way")
 Reproducible recipe for authoring a mask-driven map. Reference implementations: `map_1.tscn` +
@@ -352,8 +377,11 @@ default 100×60 grid). map3 = 3840×1786 → grid ≈ 140×76.
   reverts your change. Change autoloads with the `autoload_manage` MCP op; change project settings with
   `project_manage(op="settings_set")`.
 - **Moving files:** move the `.uid` and `.import` sidecars along with the file, then trigger a filesystem scan so the
-  script-class cache rebuilds before relying on `class_name` lookups. Definition-script **filenames** are load-bearing
-  (`enemy_definition.gd`, `turret_definition.gd`) because discovery matches on the path substring.
+  script-class cache rebuilds before relying on `class_name` lookups. (Definition discovery now uses
+  `is EnemyDefinition` / `is TurretDefinition` type checks — filenames are no longer load-bearing.)
+- **Hand-written `.tres`/`.tscn`:** reference other resources by **path-only `ext_resource`** (no `uid=` attr) —
+  hand-rolled uid strings aren't in the editor's uid cache and spam "invalid UID" warnings; the editor
+  assigns/registers real uids when it saves the file.
 - Rendering/perf rules (from `CLAUDE.md`): keep MultiMesh Y-sorting correct by sorting index arrays by `positions[i].y`;
   keep enemy visual variety static via `visual_offsets` (no per-frame wiggle).
 
@@ -460,31 +488,40 @@ default 100×60 grid). map3 = 3840×1786 → grid ≈ 140×76.
   readback during play raise `"Found open compute list at the end of the frame"` and can HALT GPUSim compute (agents
   freeze at full velocity — a probe artifact, not a game bug). Verify straggler behaviour by letting a wave run
   untouched, then taking at most ONE screenshot.
-- **Two signal systems.** `Globals` camelCase (`goldChanged`, `baseHpChanged`, `waveStarted`, `waveCleared`,
-  `enemyDestroyed`) feed the UI; `GlobalEvents` snake_case is the gameplay bus. They overlap (`goldChanged` vs
-  `gold_changed`, `waveStarted` vs `wave_started`). Consolidating onto `GlobalEvents` is a cleanup candidate — but the
-  camelCase ones are **currently connected** (`ui/hud.gd`, turret UI) so do not delete them blindly.
-- **Dual HUD wiring.** `ui/hud.gd` updates `%HPLabel`/`%GoldLabel`/… from the `Globals` camelCase signals, while
-  `battle.gd._update_hud()` separately polls `Globals.gold`/`wave`/`active_count` into its own inline
-  `$HUD/Overlay/{GoldLabel,WaveLabel,EnemyCountLabel}`. Two parallel HUD update paths exist.
-- **GPU→gameplay readback gap (verify).** `GlobalEvents.enemy_killed` and `nexus_damaged` are **declared and connected**
-  (`battle.gd` listens to `enemy_killed`; `nexus.gd` listens to `nexus_damaged`) but **no code emits them**. That means
-  kill-rewards-gold and enemy-reaches-nexus-damages-HP via these signals are likely **inactive**. Confirm how `GPUSim`
-  reports kills and nexus hits back to the CPU (probably needs a compute-buffer readback that emits these signals).
+- **Two signal systems — FIXED (2026-06-13).** The camelCase `Globals` signal layer is deleted; everything
+  is on `GlobalEvents` snake_case (the old `ui/hud.gd` that connected the camelCase ones was dead —
+  attached to no scene — and is archived).
+- **Dual HUD wiring — FIXED (2026-06-13).** `battle.gd._update_hud()` and the per-frame button/countdown
+  polling are gone; the standalone `BattleHUD` (`ui/hud/`) drives itself from signals (enemy count polled).
+  A new `HPLabel` finally displays nexus health.
+- **GPU→gameplay readback gap — FIXED (2026-06-13).** `GPUSim._process` drains the GPU `DeadEnemiesBuffer` +
+  `NexusDamageBuffer` every 0.2s and emits `enemy_killed`/`nexus_damaged` — kill gold, splitter spawns and
+  nexus damage are all live. **Protocol:** enqueue the async read FIRST, then `increment_write()` (one
+  render-thread block; reversed order silently loses a whole period of events). Reentrancy guard +
+  2s watchdog; a drift valve in `battle.gd`'s 2s debug readback force-clears `alive_count` if the
+  4095-records/segment cap ever overflows. New: `GPUSim.alive_count` (live agents, decremented by the
+  readback) vs `active_count` (slot occupancy) — the wave-clear check uses `alive_count == 0`, then
+  `reset_wave_slots()`; `battle._ready` also resets so agents never leak across battles (they used to).
+- **Mid-wave battle exit crash — FIXED (2026-06-13).** `change_scene` while the GPU sim was dispatching
+  segfaulted the process (signal 11 in `compute_list_dispatch`; reproduced pre-refactor). All exits now go
+  through `Battle.exit_to_selector()` (stop processing → drain one frame → change scene); the flow-field
+  PREDELETE frees are marshalled onto the render thread and `_exit_tree` force-syncs. Verified: three
+  mid-wave exits in a row incl. map3 with 672 live agents. **Do not call `change_scene_to_file` directly
+  from inside a battle.**
 - **Deferred refactors** (tracked as background task `task_999e220c`, need in-game playtest to verify):
-  ability-effect base class (`abilities/base_effect.gd`), routing all economy through `Globals.spend_gold/add_gold`,
-  and a shared enum for turret target-modes + enemy-type indices (replace the magic `4`/`5` in `battle.gd`).
-- **Broken / missing asset refs — FIXED (2026-06-06).** `ui/main_menu/main_menu.tscn` no longer references the
-  missing `assets/menu/bg.png` (the dead `ext_resource` + `TextureRect.texture` were removed; the `TextureRect`
-  node remains with a blank texture). The eight `assets/tileset/*.tres` texture paths were corrected from
-  `res://assets/<file>.png` to `res://assets/tileset/<file>.png`.
-- **Dead / quirky data:** `Data.enemies` (the `redDino`/`blueDino`… dict) is unused — the live enemy data is the
-  `EnemyDefinition` child nodes. (`Data.maps` id↔file mapping is now aligned: `map1` → `map_1.tscn`,
-  `map2` → `map_2.tscn`.)
-- **`_archive/`** holds quarantined old/dead files (dead enemy `.tres`, scratch scripts, `world_gen.gd`).
-  The two root-scene stray `.tscn` (`level_selector_root_stray`, `map_2_root_stray`) were deleted on 2026-06-06 —
-  they pointed at pre-refactor `res://scripts/*.gd` paths and spammed "File not found" on every editor scan.
-  Review and delete the rest when you're confident they're not needed.
+  ability-effect base class (`abilities/base_effect.gd`), and a shared enum for turret target-modes +
+  enemy-type indices (replace the magic `4`/`5` in `battle.gd`). (Economy single-sourcing through
+  `Globals.spend_gold/add_gold` is done — turret upgrade/sell included.)
+- **`turret_fire_events_buffer`** is allocated and shader-written but has no CPU consumer yet
+  (future: muzzle-flash tracers/SFX driven by actual GPU fire events).
+- **Broken / missing asset refs — FIXED (2026-06-06).** The eight `assets/tileset/*.tres` texture paths were
+  corrected from `res://assets/<file>.png` to `res://assets/tileset/<file>.png`.
+- **`_archive/`** holds quarantined old/dead files and has a **`.gdignore`** so Godot never scans it
+  (no more broken-ref spam). Archived 2026-06-13: `map_4.tscn` (broken leftover map3 trace),
+  `ui/main_menu/`, `ui/game_over/`, `ui/map_completed/`, `ui/turret_ui/`, `ui/map_selector.tscn`,
+  `ui/hud.gd` (was attached to nothing), `examples/` (disabled-plugin samples),
+  `shaders/terrain_mask.gdshader` (legacy), `docs/Proposed_Plan.txt` (implemented).
+  Review and delete when you're confident they're not needed.
 
 ---
 
@@ -496,24 +533,25 @@ default 100×60 grid). map3 = 3840×1786 → grid ≈ 140×76.
 |---|---|
 | `gpu_sim/gpu_sim.gd` | GPUSim autoload — GPU enemy simulation, AOE application, draw. |
 | `gpu_sim/gpu.gd` | `class GPU` — compute helpers (BaseCompute/SimpleCompute wrappers). |
-| `globals/globals.gd` | Run state, economy, mana, equipped abilities, UI signals. |
-| `globals/global_events.gd` | Gameplay signal bus. |
-| `globals/data.gd` | Static config (`maps`, `bullets`, `stats`). |
-| `globals/sound_manager.gd` / `save_manager.gd` | SFX / persistence. |
-| `battle/battle.gd` (`Battle`) | Orchestrator: map load, flow field, per-frame GPU dispatch, spawning, win/lose. |
-| `battle/wave_manager.gd` (`WaveManager`) | Wave/inter-wave lifecycle, spawn pacing. |
-| `battle/enemy_config.gd` (`EnemyConfig`) | Reads enemy-type child nodes into stat arrays. |
+| `globals/globals.gd` | Run state: economy, mana, equipped abilities, `selected_map`. |
+| `globals/global_events.gd` | The single gameplay signal bus. |
+| `globals/data.gd` | Map registry (`maps`: id → name/scene/description), `bullets`, `stats`. |
+| `globals/sound_manager.gd` / `save_manager.gd` | SFX / persistence (high scores auto-create per map id). |
+| `battle/battle.gd` (`Battle`) | Orchestrator: map load + MapConfig apply, flow field, per-frame GPU dispatch, spawning, win/lose, `exit_to_selector()`. |
+| `battle/wave_manager.gd` (`WaveManager`) | Wave/inter-wave lifecycle, spawn pacing; `apply_config(MapConfig)`. |
+| `battle/enemy_config.gd` (`EnemyConfig`) | Exports `definitions: Array[EnemyDefinition]` → builds the type-index stat arrays (order = GPU type index). |
 | `battle/flow_field_manager.gd` (`FlowFieldManager`) | Flow-field + SDF + obstacle textures for the GPU. |
-| `battle/turret_placement_manager.gd` (`TurretPlacementManager`) | Turret defs discovery + placement state machine. |
-| `battle/nexus.gd` / `spawner.gd` | Base HP/destruction; enemy spawn points (group `"spawner"`). |
-| `towers/turret.gd` (`Turret`) / `turret_definition.gd` (`TurretDefinition`) | Turret behavior / stats. |
-| `enemies/enemy_definition.gd` (`EnemyDefinition`) | Enemy stat definition. |
-| `abilities/ability_manager.gd` (`AbilityManager`) | Cast/cooldown/mana, spawns effects, emits AOE requests. |
+| `battle/turret_placement_manager.gd` (`TurretPlacementManager`) | Exports `definition_resources: Array[TurretDefinition]`; placement state machine. |
+| `battle/nexus.gd` / `spawner.gd` | Base HP (`set_base_hp`, `base_hp_changed`); enemy spawn points (group `"spawner"`). |
+| `towers/turret.gd` (`Turret`) / `turret_definition.gd` (`TurretDefinition`, Resource) | Turret behavior / stats (`towers/definitions/*.tres`). |
+| `enemies/enemy_definition.gd` (`EnemyDefinition`, Resource) | Enemy stat definition (`enemies/definitions/*.tres`). |
+| `levels/map_config.gd` (`MapConfig`, Resource) | Per-map waves/HP/gold (`levels/map_N_config.tres`, exported on each map root). |
+| `abilities/ability_manager.gd` (`AbilityManager`) | Cast/cooldown/mana, spawns effects, emits AOE requests; finds the HUD via group `"battle_hud"`. |
 | `abilities/<name>/<name>_effect.gd` | Per-ability visual + AOE emission. |
-| `battle/map_wave_config.gd` (`MapWaveConfig`) | Per-map wave tuning. |
-| `ui/level_selector.*` | Entry screen. `ui/hud*.gd` in-battle HUD/build menu. |
+| `ui/level_selector.*` | Data-driven entry screen (one card per `Data.maps` entry). |
+| `ui/hud/hud.tscn` / `hud.gd` (`BattleHUD`) | Standalone in-battle HUD; `ui/hud/hud_build_menu.gd` build/upgrade UI. |
 | `fx/*.gd` | Tracers, camera shake, damage text, health bars, range indicator, wave banner. |
-| `shaders/compute_physics.glsl` | Main enemy physics compute (includes `sdf_solver.gdshaderinc`). |
+| `shaders/compute_physics.glsl` | Main enemy physics compute (incl. death/nexus-hit recording; `sdf_solver.gdshaderinc`). |
 | `shaders/compute_flow_field.glsl` / `agent_draw.glsl` | Flow-field compute / agent draw. |
 
 ### `GlobalEvents` cheat-sheet
@@ -521,9 +559,8 @@ default 100×60 grid). map3 = 3840×1786 → grid ≈ 140×76.
 ```
 Waves:    wave_started(wave,count)  wave_cleared(wave)  inter_wave_tick(secs)
 Economy:  gold_changed(amount)      mana_changed(cur,max)
-Nexus:    nexus_damaged(amount)*    nexus_destroyed
-Enemies:  enemy_killed(type,pos,gold)*
+Nexus:    nexus_damaged(amount)     nexus_destroyed     base_hp_changed(hp,max)
+Enemies:  enemy_killed(type,pos,gold)
 Turrets:  turret_placed(type,pos)   turret_upgraded(node)  turret_sold(node)  turret_update_requested(node)
 AOE→GPU:  aoe_damage_requested(pos,r,dmg,is_player)  aoe_slow_requested(pos,r,factor)  aoe_freeze_requested(pos,r,dur)
-          (* = declared/connected but no emitter found — see §10)
 ```

@@ -109,6 +109,7 @@ func _clear_readback_inflight() -> void:
 func _on_dead_events(count: int, bytes: PackedByteArray) -> void:
 	# Record layout (16 bytes): [id | 0x80000000 if nexus arrival, type, pos.x bits, pos.y bits].
 	# The atomic count can exceed the segment capacity when records were dropped — clamp.
+	@warning_ignore("integer_division")
 	count = mini(count, mini(DEAD_SEGMENT_CAP, bytes.size() / 16))
 	for i in range(count):
 		var off := i * 16

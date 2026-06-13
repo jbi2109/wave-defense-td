@@ -16,20 +16,25 @@
 - Always follow global rules for this project.
 
 ## Project Structure (feature-folder layout)
-Files are grouped by feature, not by type. Each entity folder holds its script(s), scene, and art together.
+Files are grouped by feature, not by type. Each entity folder holds its script(s), scene, art and stat resources together.
 - `globals/` — autoload singletons (globals.gd, data.gd, global_events.gd, sound_manager.gd, save_manager.gd).
-- `gpu_sim/` — GPU compute simulation autoload (GPUSim) + GPU helper class.
+- `gpu_sim/` — GPU compute simulation autoload (GPUSim) + GPU helper class. Drains the GPU death/nexus buffers every 0.2s and emits `enemy_killed`/`nexus_damaged`.
 - `battle/` — main gameplay: battle.tscn/.gd, wave_manager, spawner, nexus, flow_field_manager, turret_placement_manager, enemy_config.
-- `towers/` — turret system: turret.gd/.tscn, turret_definition.gd, art under `towers/art/`.
-- `enemies/` — enemy_definition.gd + sprites under `enemies/art/`.
+- `towers/` — turret system: turret.gd/.tscn, turret_definition.gd (Resource) + one `.tres` per turret in `towers/definitions/`, art under `towers/art/`.
+- `enemies/` — enemy_definition.gd (Resource) + one `.tres` per enemy in `enemies/definitions/` (array order in battle.tscn = GPU type index — append only), sprites under `enemies/art/`.
 - `abilities/` — ability_manager/config/loadout + one subfolder per ability (`frost_nova/`, `acid_pool/`, …) holding its `*_effect.gd` and art.
-- `levels/` — map scenes (`map_1.tscn`, `map_2.tscn`) + map_wave_config.gd.
-- `ui/` — all menus/HUD; snake_case subfolders `main_menu/ game_over/ map_completed/ turret_ui/`.
+- `levels/` — map scenes (`map_1..3.tscn`), the Polygon2D piece kit (`pieces/`, `prefabs/`), and per-map `MapConfig` resources (`map_config.gd` + `map_N_config.tres`, exported as `config` on each map root: waves, base HP, starting gold).
+- `ui/` — `level_selector.*` (data-driven: one card per `Data.maps` entry), `settings_menu.*`, `hud/` (standalone BattleHUD scene + build menu).
 - `fx/` — visual-effect helpers (bullet_tracer, camera_shake, damage_text_manager, range_indicator, wave_announcement, enemy_health_bars).
 - `shaders/` — `.glsl` / `.gdshaderinc`.
 - `assets/` — shared type-based art: `bullets/ shader/ tileset/`.
 - `tools/` — Python asset-gen scripts and helper utilities.
-- `_archive/` — quarantined old/dead/unused files kept for safety (review periodically; safe to delete).
+- `_archive/` — quarantined old/dead/unused files, `.gdignore`d so Godot never scans it (review periodically; safe to delete).
+
+## Hard-won runtime rules
+- Never `change_scene_to_file` directly from inside a battle — use `Battle.exit_to_selector()` (changing scene mid GPU dispatch segfaults; see ARCHITECTURE §10).
+- Hand-written `.tres`/`.tscn` must reference resources by path-only `ext_resource` (no hand-rolled `uid=` attrs).
+- Enemy definition array order is the GPU type index — never reorder, only append.
 
 ## File Conventions
 - **snake_case** for all files AND folders. Autoload *symbols* keep their PascalCase names (Globals, Data, GPUSim) but their files are snake_case.
